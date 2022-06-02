@@ -1,3 +1,5 @@
+![Multipacks banner](docs%5Cimages%5Cbanner.png)
+
 # Multipacks
 Welcome to Multipacks, the resources and data pack packager!
 
