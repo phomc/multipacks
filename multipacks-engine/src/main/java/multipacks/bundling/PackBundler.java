@@ -72,7 +72,27 @@ public class PackBundler {
 		}
 	}
 
-	public BundleResult bundle(Pack source, OutputStream stream) throws IOException {
+	private boolean shouldWrite(BundleInclude[] includes, String path) {
+		for (BundleInclude incl : includes) {
+			if (incl == BundleInclude.RESOURCES && path.startsWith("assets/")) return true;
+			if (incl == BundleInclude.DATA && path.startsWith("data/")) return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Bundle the pack and write pack data as ZIP package to stream.
+	 * @param source The source pack.
+	 * @param stream The stream to write.
+	 * @param includes Pack types to includes. If this array contains nothing, it will includes everything.
+	 * @return The bundling result, usually contains some informations generated from data transformers (font
+	 * icons for example).
+	 */
+	public BundleResult bundle(Pack source, OutputStream stream, BundleInclude... includes) throws IOException {
+		if (includes == null || includes.length == 0) includes = BundleInclude.values();
+		final BundleInclude[] includesFinal = includes;
+
 		// Resolving
 		HashMap<String, Pack> resolvedMap = new HashMap<>();
 		List<Pack> resolvedList = new ArrayList<>();
@@ -127,7 +147,7 @@ public class PackBundler {
 						return;
 					}
 
-					root.put(path, t.getAsBytes());
+					if (shouldWrite(includesFinal, path)) root.put(path, t.getAsBytes());
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.err.println("Failed to get data from " + t.path + " in TFS");

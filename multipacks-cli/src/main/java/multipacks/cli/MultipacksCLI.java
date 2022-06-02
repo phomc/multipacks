@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import multipacks.bundling.BundleIgnore;
+import multipacks.bundling.BundleInclude;
 import multipacks.bundling.PackBundler;
 import multipacks.bundling.PackagingFailException;
 import multipacks.management.LocalRepository;
@@ -35,6 +36,7 @@ public class MultipacksCLI {
 	public boolean ignoreErrors = false;
 	public File outputTo = null;
 	public List<BundleIgnore> bundleIgnoreFeatures = new ArrayList<>();
+	public BundleInclude[] bundleIncludes = null;
 
 	public MultipacksCLI(Platform platform) {
 		this.platform = platform;
@@ -272,7 +274,7 @@ public class MultipacksCLI {
 
 			System.out.println("Bundling...");
 			FileOutputStream out = new FileOutputStream(outputTo);
-			bundler.bundle(pack, out);
+			bundler.bundle(pack, out, bundleIncludes);
 
 			System.out.println("Done.");
 		} catch (IOException e) {

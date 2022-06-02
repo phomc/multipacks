@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import multipacks.bundling.BundleIgnore;
+import multipacks.bundling.BundleInclude;
 import multipacks.management.PacksRepository;
 import multipacks.packs.PackIdentifier;
 import multipacks.versioning.Version;
@@ -41,6 +42,9 @@ public class Main {
 			System.out.println("  -I  --ignore <Pack feature>");
 			System.out.println("        Ignore pack features (use -I multiple times to ignores more)");
 			System.out.println("        Available features to ignore: " + String.join(", ", Stream.of(BundleIgnore.values()).map(v -> v.toString().toLowerCase()).toArray(String[]::new)));
+			System.out.println("      --include <Pack type A, Pack type B...>");
+			System.out.println("        Include 1 or more different pack types to output. The parameter is separated with comma (',') character");
+			System.out.println("        Available pack types: " + String.join(", ", Stream.of(BundleInclude.values()).map(v -> v.toString().toLowerCase()).toArray(String[]::new)));
 			return;
 		}
 
@@ -102,6 +106,24 @@ public class Main {
 					System.exit(1);
 					return;
 				}
+			} else if (s.equals("--include")) {
+				String includeString = args[++i];
+				String[] split = includeString.split(",");
+				BundleInclude[] includes = new BundleInclude[split.length];
+
+				for (int j = 0; j < split.length; j++) {
+					String includeStr = split[j];
+
+					try {
+						includes[j] = BundleInclude.valueOf(includeStr.trim().toUpperCase());
+					} catch (IllegalArgumentException e) {
+						System.err.println("Unknown pack type: " + includeStr);
+						System.exit(1);
+						return;
+					}
+				}
+
+				cli.bundleIncludes = includes;
 			} else {
 				System.err.println("Unknown option: " + s);
 				System.exit(1);
