@@ -116,6 +116,7 @@ public class TransformativeFileSystem {
 			if (sourceRoot == null) return null;
 
 			File realFile = new File(sourceRoot, path.replace('/', File.separatorChar));
+			if (!realFile.exists()) return null;
 
 			try {
 				InputStream in = new FileInputStream(realFile);
