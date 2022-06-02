@@ -1,0 +1,16 @@
+plugins {
+    id 'java-library'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':multipacks-engine')
+}
+
+application {
+    mainClass = 'multipacks.cli.Main'
+}
