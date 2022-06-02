@@ -1,5 +1,6 @@
 package multipacks.cli;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -91,6 +92,8 @@ public class Main {
 						return;
 					}
 				}
+			} else if (s.equals("-O") || s.equals("--output")) {
+				cli.outputTo = new File(args[++i].replace('/', File.separatorChar).replace('\\', File.separatorChar));
 			} else if (s.equals("--skip")) {
 				cli.skipPrompts = true;
 			} else if (s.equals("--ignore-errors")) {
