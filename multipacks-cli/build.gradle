@@ -9,6 +9,7 @@ repositories {
 
 dependencies {
     implementation project(':multipacks-engine')
+    implementation 'com.google.code.gson:gson:2.7'
 }
 
 application {
