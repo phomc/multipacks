@@ -18,7 +18,19 @@ package multipacks.cli;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
@@ -49,6 +61,7 @@ public class MultipacksCLI {
 	public PacksRepository selectedRepository;
 	public boolean skipPrompts = false;
 	public boolean ignoreErrors = false;
+	public boolean watchInputs = false;
 	public File outputTo = null;
 	public List<BundleIgnore> bundleIgnoreFeatures = new ArrayList<>();
 	public BundleInclude[] bundleIncludes = null;
@@ -268,6 +281,11 @@ public class MultipacksCLI {
 		if (path == null) path = ".";
 		File packDir = new File(path);
 
+		if (watchInputs) {
+			System.out.println("Watch mode enabled. Make changes to the directory to rebuild");
+			exec$packBuild$watch(packDir);
+		}
+
 		if (!new File(packDir, "multipacks.json").exists()) {
 			System.err.println("Cannot find multipacks.json");
 			System.err.println("Invalid pack.");
@@ -303,6 +321,118 @@ public class MultipacksCLI {
 			System.exit(1);
 			return;
 		}
+	}
+
+	private void exec$packBuild$watch(File packDir) {
+		WatchService watcher;
+		HashMap<WatchKey, Path> keys = new HashMap<>();
+
+		try {
+			watcher = FileSystems.getDefault().newWatchService();
+			exec$patchBuild$watch$registerAll(packDir.toPath(), watcher, keys);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Cannot initialize files watcher");
+			System.exit(1);
+			return;
+		}
+
+		PackBundler bundler = new PackBundler(cliLogger);
+		bundler.repositories.add(selectedRepository);
+		bundler.ignoreResolveFail = ignoreErrors;
+		bundler.bundlingIgnores.addAll(bundleIgnoreFeatures);
+		boolean firstRun = true;
+
+		try {
+			while (true) {
+				WatchKey keyA = firstRun? null : watcher.poll();
+				Path dir = keyA != null? keys.get(keyA) : null;
+
+				if (!firstRun && keyA == null) {
+					Thread.sleep(1000);
+					continue;
+				}
+
+				try {
+					Pack pack = new Pack(packDir);
+					File outputTo = this.outputTo != null? this.outputTo : new File(pack.getIndex().id + "-v" + pack.getIndex().packVersion.toStringNoPrefix() + ".zip");
+
+					FileOutputStream out = new FileOutputStream(outputTo);
+					bundler.bundle(pack, out, bundleIncludes);
+
+					// Watch
+					if (!firstRun) for (WatchEvent<?> event : keyA.pollEvents()) {
+						if (event.kind() == StandardWatchEventKinds.OVERFLOW) continue;
+						@SuppressWarnings("unchecked")
+						WatchEvent<Path> ev = (WatchEvent<Path>) event;
+						Path name = ev.context();
+						Path child = dir.resolve(name);
+
+						if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+							try {
+								if (Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS)) exec$patchBuild$watch$registerAll(child, watcher, keys);
+								System.out.println("+ " + child);
+							} catch (IOException e) {
+								e.printStackTrace();
+								System.err.println("IOException while trying to add " + child + " to watching list");
+							}
+						}
+					}
+
+					System.out.println("Bundle built, awaiting next update...");
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.err.println("IOException thrown while reading pack data");
+				} catch (PackagingFailException e) {
+					System.err.println("Packaging failed: " + e.getMessage());
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.err.println("Asdasjlkdakdal");
+				} finally {
+					firstRun = false;
+					boolean valid = keyA != null? keyA.reset() : true;
+
+					if (!valid) {
+						keys.remove(keyA);
+						System.out.println("- " + dir);
+					}
+				}
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.out.println("Multipacks buildwatch interruped while waiting, stopping buildwatch...");
+			return;
+		}
+	}
+
+	private void exec$packBuild$watch$register(Path dir, WatchService ws, HashMap<WatchKey, Path> keys) throws IOException {
+		WatchKey key = dir.register(ws, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+		keys.put(key, dir);
+	}
+
+	private void exec$patchBuild$watch$registerAll(Path start, WatchService ws, HashMap<WatchKey, Path> keys) throws IOException {
+		Files.walkFileTree(start, new FileVisitor<>() {
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				exec$packBuild$watch$register(dir, ws, keys);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+		});
 	}
 
 	private void exec$packInstall(String path) {

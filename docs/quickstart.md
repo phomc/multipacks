@@ -41,20 +41,7 @@ Subcommands:
 Options:
   -F  --filter <ID> [>=, >, <=, <]<Version>
         Set filter for querying packs
-  -R  --repo <'#' + Index | 'file:/path/'>
-        Select repository (see index with 'list repo')
-  -O  --output </path/to/output>
-        Set output path
-      --skip
-        Skip 'pack init' prompts
-      --ignore-errors
-        Ignore errors as much as possible
-  -I  --ignore <Pack feature>
-        Ignore pack features (use -I multiple times to ignores more)
-        Available features to ignore: licenses
-      --include <Pack type A, Pack type B...>
-        Include 1 or more different pack types to output. The parameter is separated with comma (',') character
-        Available pack types: none, resources, data
+  ... Output trimmed ...
 ```
 
 Type ``./multipacks-cli <Subcommand>`` to view its help, such as ``pack``:

@@ -61,6 +61,8 @@ public class Main {
 			System.out.println("      --include <Pack type A, Pack type B...>");
 			System.out.println("        Include 1 or more different pack types to output. The parameter is separated with comma (',') character");
 			System.out.println("        Available pack types: " + String.join(", ", Stream.of(BundleInclude.values()).map(v -> v.toString().toLowerCase()).toArray(String[]::new)));
+			System.out.println("  -W  --watch");
+			System.out.println("        Watch for any changes (usable with pack build)");
 			return;
 		}
 
@@ -142,6 +144,8 @@ public class Main {
 				}
 
 				cli.bundleIncludes = includes;
+			} else if (s.equals("-W") || s.equals("--watch")) {
+				cli.watchInputs = true;
 			} else {
 				System.err.println("Unknown option: " + s);
 				System.exit(1);
