@@ -8,6 +8,7 @@ In order to get Multipacks knows your pack info, you need to add ``multipacks.js
     "name": "Pack Name",
     "author": "Your Name!",
     "description": "Pack Description",
+    "type": "standard OR library",
     "version": "1.0.0",
     "gameVersion": ">=1.19",
     "include": {
@@ -27,6 +28,9 @@ This is your pack id. This value shouldn't have any spaces to ensure that your p
 
 ### ``name``, ``author`` and ``description`` (Optional)
 Some basic metadata stuffs. These informations will be shown with ``multipacks-cli pack info`` command and maybe some packs explorer.
+
+### ``type`` (Optional)
+The Multipacks pack type. By default, it will be ``Standard``, which will isolates transformation passes with dependants. If this value is ``Library``, all contents will not be isolated and will be affected by dependants' transformation passes. This value is case-insensitive.
 
 ### ``version`` (Required)
 This is your pack version (not game version, which is in ``gameVersion`` field). This one is required for dependencies resolution to works.

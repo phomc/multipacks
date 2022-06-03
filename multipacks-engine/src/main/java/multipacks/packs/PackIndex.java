@@ -30,6 +30,7 @@ public class PackIndex {
 	public String name;
 	public String author;
 	public String description;
+	public PackType type = PackType.STANDARD;
 	public Version packVersion;
 	public Version gameVersion; // TODO: Use pack_format value
 	public PackIdentifier[] include;
@@ -45,6 +46,7 @@ public class PackIndex {
 		out.name = Selects.getChain(json.get("name"), j -> j.getAsString(), out.id);
 		out.author = Selects.getChain(json.get("author"), j -> j.getAsString(), null);
 		out.description = Selects.getChain(json.get("description"), j -> j.getAsString(), null);
+		out.type = Selects.getChain(json.get("type"), j -> PackType.valueOf(j.getAsString().toUpperCase()), PackType.STANDARD);
 		out.packVersion = Selects.getChain(json.get("version"), j -> new Version(j.getAsString()), new Version("1"));
 		out.gameVersion = Selects.getChain(json.get("gameVersion"), j -> new Version(j.getAsString()), new Version(">=1.18.2"));
 		out.include = Selects.getChain(json.get("include"), j -> {

@@ -39,6 +39,7 @@ import multipacks.management.PacksRepository;
 import multipacks.packs.Pack;
 import multipacks.packs.PackIdentifier;
 import multipacks.packs.PackIndex;
+import multipacks.packs.PackType;
 import multipacks.transforms.TransformPass;
 import multipacks.transforms.TransformativeFileSystem;
 import multipacks.utils.logging.AbstractMPLogger;
@@ -80,7 +81,7 @@ public class PackBundler {
 				continue;
 			}
 
-			logger.info(parent + "/" + dependency.id + " " + dependency.version + " -> " + pack.getIndex().packVersion);
+			logger.info(parent + "/" + dependency.id + " " + dependency.version + " -> " + pack.getIndex().packVersion + (pack.getIndex().type == PackType.LIBRARY? " (Library)" : ""));
 			resolvedMap.put(dependency.id, pack);
 			resolvedList.add(pack);
 			resolveDependencies(parent + "/" + dependency.id, pack, resolvedMap, resolvedList);
@@ -97,6 +98,84 @@ public class PackBundler {
 	}
 
 	private static final String[] GLOBALLY_IGNORED = { ".git" };
+
+	private TransformativeFileSystem transform(HashMap<String, Pack> resolvedMap, HashMap<String, TransformativeFileSystem> libraryCache, TransformativeFileSystem root, Pack pack, BundleResult result, BundleInclude[] includes) throws IOException {
+		TransformativeFileSystem fs = new TransformativeFileSystem(pack.getRoot());
+
+		// Resolving libraries
+		if (pack.getIndex().include != null) for (PackIdentifier dependency : pack.getIndex().include) {
+			Pack dependencyPack = resolvedMap.get(dependency.id);
+			if (dependencyPack == null || dependencyPack.getIndex().type != PackType.LIBRARY) continue;
+
+			TransformativeFileSystem dependencyFs;
+
+			if ((dependencyFs = libraryCache.get(dependency.id)) == null) {
+				dependencyFs = transform(resolvedMap, libraryCache, fs, dependencyPack, result, includes);
+				libraryCache.put(dependency.id, fs);
+			} else dependencyFs.forEach(l -> {
+				try {
+					byte[] data = l.getAsBytes();
+					fs.put(l.path, data);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
+		}
+
+		// Transformations main
+		InputStream transformations = fs.openRead("transformations.json");
+
+		if (transformations != null) {
+			JsonArray arr = new JsonParser().parse(new InputStreamReader(transformations)).getAsJsonArray();
+			arr.forEach(element -> {
+				TransformPass pass = TransformPass.fromJson(element.getAsJsonObject());
+
+				if (pass == null) {
+					System.err.println("WARNING: Transformation pass with type '" + element.getAsJsonObject().get("type").getAsString() + "' does not exists in this version of Multipacks");
+					return;
+				}
+
+				try {
+					pass.transform(fs, result, logger);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.err.println("WARNING: Transformation pass with type '" + element.getAsJsonObject().get("type").getAsString() + "' failed while transforming " + pack.getIndex().id);
+				}
+			});
+			transformations.close();
+		}
+
+		fs.forEach(t -> {
+			try {
+				String path = t.path;
+				if (fs.isDeleted(path)) return;
+				if (pack.getIndex().isIgnored(path)) return;
+				for (String globalIgnore : GLOBALLY_IGNORED) if (path.startsWith(globalIgnore)) return;
+
+				String[] splits = t.path.split("/");
+				if (splits.length == 1) switch (splits[0].toLowerCase()) {
+				case "license":
+				case "license.md":
+				case "license.txt":
+				case "licence":
+				case "licence.md":
+				case "licence.txt":
+					if (this.bundlingIgnores.contains(BundleIgnore.LICENSES)) return;
+					path = "licenses/" + pack.getIndex().id;
+					break;
+				default:
+					return;
+				}
+
+				if (shouldWrite(includes, path)) root.put(path, t.getAsBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.err.println("Failed to get data from " + t.path + " in TFS");
+			}
+		});
+
+		return fs;
+	}
 
 	/**
 	 * Bundle the pack and write pack data as ZIP package to stream.
@@ -117,11 +196,14 @@ public class PackBundler {
 		resolvedList.add(source);
 
 		// Transforming
+		HashMap<String, TransformativeFileSystem> libraryCache = new HashMap<>();
 		TransformativeFileSystem root = new TransformativeFileSystem(null);
 		BundleResult result = new BundleResult();
 
 		for (Pack pack : resolvedList) {
-			TransformativeFileSystem fs = new TransformativeFileSystem(pack.getRoot());
+			if (pack.getIndex().type == PackType.LIBRARY && pack != source) continue;
+
+			/*TransformativeFileSystem fs = new TransformativeFileSystem(pack.getRoot());
 
 			InputStream transformations = fs.openRead("transformations.json");
 			if (transformations != null) {
@@ -171,7 +253,8 @@ public class PackBundler {
 					e.printStackTrace();
 					System.err.println("Failed to get data from " + t.path + " in TFS");
 				}
-			});
+			});*/
+			transform(resolvedMap, libraryCache, root, pack, result, includesFinal);
 		}
 
 		// Packaging
