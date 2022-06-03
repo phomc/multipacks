@@ -23,6 +23,8 @@ public class RemapTransformPass extends TransformPass {
 	public void transform(TransformativeFileSystem fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		for (String fileName : fs.ls(from)) {
 			byte[] data = fs.get(from + "/" + fileName);
+			if (data == null) continue;
+
 			fs.put(to + "/" + fileName, data);
 			fs.delete(from + "/" + fileName);
 		}

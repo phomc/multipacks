@@ -22,6 +22,7 @@ import java.util.function.Function;
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
+import multipacks.transforms.defaults.debug.PathTestTransformPass;
 import multipacks.transforms.defaults.fonticons.FontIconsTransformPass;
 import multipacks.transforms.defaults.multisprites.MultiSpritesTransformPass;
 import multipacks.transforms.defaults.overlay.OverlayTransformPass;
@@ -54,5 +55,7 @@ public abstract class TransformPass {
 		REGISTRY.put("include", IncludeTransformPass::new);
 		REGISTRY.put("overlay", OverlayTransformPass::new);
 		REGISTRY.put("delete", DeleteTransformPass::new);
+
+		REGISTRY.put("debug:test", PathTestTransformPass::new);
 	}
 }

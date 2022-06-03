@@ -47,9 +47,12 @@ public class TransformativeFileSystem {
 	}
 
 	private boolean canAccess(File file) {
-		if (file.getParentFile() == null) return false;
-		if (file.getParentFile() == sourceRoot) return true;
-		return canAccess(file.getParentFile());
+		try {
+			return file.getCanonicalPath().startsWith(sourceRoot.getCanonicalPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -91,7 +94,15 @@ public class TransformativeFileSystem {
 		String[] parts = path.split("/");
 		HashMap<String, Object> dir = parentDirOf(parts);
 		dir.put(parts[parts.length - 1], data);
+
 		markDelete.remove(path);
+		String unmarkParent = null;
+
+		for (int i = 0; i < parts.length - 1; i++) {
+			unmarkParent = unmarkParent == null? parts[i] : unmarkParent + "/" + parts[i];
+			markDelete.remove(unmarkParent);
+		}
+
 		return true;
 	}
 
@@ -175,8 +186,9 @@ public class TransformativeFileSystem {
 	}
 
 	private void forEachOrignal(String parentDir, File dir, Consumer<TFSListing> callback) {
-		if (!canAccess(dir)) return;
 		for (File child : dir.listFiles()) {
+			if (!canAccess(child)) return;
+
 			String path = parentDir != null? parentDir + "/" + child.getName() : child.getName();
 			if (isDeleted(path)) continue;
 			
