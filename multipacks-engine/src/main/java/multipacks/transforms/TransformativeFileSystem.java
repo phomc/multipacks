@@ -48,7 +48,9 @@ public class TransformativeFileSystem {
 
 	private boolean canAccess(File file) {
 		try {
-			return file.getCanonicalPath().startsWith(sourceRoot.getCanonicalPath());
+			String rootPath = sourceRoot.getCanonicalPath() + (sourceRoot.isDirectory()? File.separator : "");
+			String testPath = file.getCanonicalPath() + (file.isDirectory()? File.separator : "");
+			return testPath.startsWith(rootPath);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
