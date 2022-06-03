@@ -1,0 +1,37 @@
+name: Release
+on: [workflow_dispatch]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: eclipse-temurin:18-jdk
+      options: --user root
+    steps:
+      - run: apt update && apt install git -y && git --version
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Build and package
+        run: ./gradlew check build :multipacks-spigot:shadow :multipacks-cli:distZip --stacktrace --parallel --warning-mode=fail
+      - name: Get date and time for autonaming
+        id: datetime
+        run: echo "::set-output name=datetime::$(date -u +%y%m%d.%H%M)"
+      - name: Copy packages to release dir
+        run: |
+          mkdir -p releaseArtifacts
+          cp ./multipacks-spigot/build/libs/multipacks-spigot-all.jar ./releaseArtifacts/multipacks-spigot.jar
+          cp ./multipacks-cli/build/distributions/multipacks-cli.zip ./releaseArtifacts/multipacks-cli.zip
+      - name: Make release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ steps.datetime.outputs.datetime }}"
+          prerelease: false
+          title: "Multipacks ${{ steps.datetime.outputs.datetime }}"
+          files: |
+            ./releaseArtifacts/multipacks-spigot.jar
+            ./releaseArtifacts/multipacks-cli.zip
