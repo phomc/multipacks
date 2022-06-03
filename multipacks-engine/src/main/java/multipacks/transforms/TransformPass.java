@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
 import multipacks.transforms.defaults.fonticons.FontIconsTransformPass;
+import multipacks.transforms.defaults.singles.RemapTransformPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 
@@ -44,5 +45,6 @@ public abstract class TransformPass {
 
 	static {
 		REGISTRY.put("font-icons", FontIconsTransformPass::new);
+		REGISTRY.put("remap", RemapTransformPass::new);
 	}
 }
