@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import multipacks.bundling.BundleResult;
 import multipacks.transforms.defaults.fonticons.FontIconsTransformPass;
 import multipacks.transforms.defaults.multisprites.MultiSpritesTransformPass;
+import multipacks.transforms.defaults.overlay.OverlayTransformPass;
 import multipacks.transforms.defaults.singles.IncludeTransformPass;
 import multipacks.transforms.defaults.singles.RemapTransformPass;
 import multipacks.utils.Selects;
@@ -50,5 +51,6 @@ public abstract class TransformPass {
 		REGISTRY.put("multi-sprites", MultiSpritesTransformPass::new);
 		REGISTRY.put("remap", RemapTransformPass::new);
 		REGISTRY.put("include", IncludeTransformPass::new);
+		REGISTRY.put("overlay", OverlayTransformPass::new);
 	}
 }
