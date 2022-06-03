@@ -24,7 +24,7 @@ public class RemapTransformPass extends TransformPass {
 		for (String fileName : fs.ls(from)) {
 			byte[] data = fs.get(from + "/" + fileName);
 			fs.put(to + "/" + fileName, data);
-			fs.markDelete.add(from + "/" + fileName);
+			fs.delete(from + "/" + fileName);
 		}
 	}
 }

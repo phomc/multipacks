@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 public class TransformativeFileSystem {
 	public final File sourceRoot;
 	public final HashMap<String, Object> transformed = new HashMap<>();
-	public final HashSet<String> markDelete = new HashSet<>();
+	private final HashSet<String> markDelete = new HashSet<>();
 
 	public TransformativeFileSystem(File source) {
 		sourceRoot = source;
@@ -221,5 +221,20 @@ public class TransformativeFileSystem {
 			if (v.length() == 0) return path;
 			return path + "/" + v;
 		}).toArray(String[]::new);
+	}
+
+	/**
+	 * Mark the file as deleted. This doesn't affect to user's pack data.
+	 */
+	public void delete(String path) {
+		while (path.startsWith("/")) path = path.substring(1);
+		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+		markDelete.add(path);
+	}
+
+	public boolean isDeleted(String path) {
+		while (path.startsWith("/")) path = path.substring(1);
+		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+		return markDelete.contains(path);
 	}
 }

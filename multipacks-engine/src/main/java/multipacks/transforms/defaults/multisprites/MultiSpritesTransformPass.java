@@ -54,7 +54,7 @@ public class MultiSpritesTransformPass extends TransformPass {
 				fs.put(pathSlicedTo, out.toByteArray());
 			}
 
-			fs.markDelete.add(pathFrom);
+			fs.delete(pathFrom);
 		}
 	}
 }

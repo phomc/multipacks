@@ -145,7 +145,7 @@ public class PackBundler {
 			fs.forEach(t -> {
 				try {
 					String path = t.path;
-					if (fs.markDelete.contains(path)) return;
+					if (fs.isDeleted(path)) return;
 
 					String[] splits = t.path.split("/");
 					if (splits.length == 1) switch (splits[0].toLowerCase()) {
