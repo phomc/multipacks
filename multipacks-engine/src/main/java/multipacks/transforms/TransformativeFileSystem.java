@@ -237,14 +237,14 @@ public class TransformativeFileSystem {
 		ls.addAll(Arrays.asList(lsTransformed(path)));
 
 		File realDir = new File(sourceRoot, path.replace('/', File.separatorChar));
-		if (!realDir.exists()) return new String[0];
-		if (!canAccess(realDir)) return new String[0];
-		if (!realDir.isDirectory()) return new String[] { "" };
+		if (canAccess(realDir) && realDir.exists()) {
+			if (!realDir.isDirectory()) ls.add("");
+		}
 
 		String[] realLs = realDir.list();
 		if (realLs == null) return ls.toArray(String[]::new);
 		ls.addAll(Arrays.asList(realLs));
-		return ls.stream().filter(v -> !markDelete.contains(v)).toArray(String[]::new);
+		return ls.stream().filter(v -> !markDelete.contains(path.length() > 0? path + "/" + v : v)).toArray(String[]::new);
 	}
 
 	public String[] lsFullPath(String path) {

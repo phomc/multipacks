@@ -26,6 +26,7 @@ import multipacks.transforms.defaults.debug.PathTestTransformPass;
 import multipacks.transforms.defaults.fonticons.FontIconsTransformPass;
 import multipacks.transforms.defaults.multisprites.MultiSpritesTransformPass;
 import multipacks.transforms.defaults.overlay.OverlayTransformPass;
+import multipacks.transforms.defaults.singles.CloneTransformPass;
 import multipacks.transforms.defaults.singles.DeleteTransformPass;
 import multipacks.transforms.defaults.singles.IncludeTransformPass;
 import multipacks.transforms.defaults.singles.RemapTransformPass;
@@ -55,6 +56,7 @@ public abstract class TransformPass {
 		REGISTRY.put("include", IncludeTransformPass::new);
 		REGISTRY.put("overlay", OverlayTransformPass::new);
 		REGISTRY.put("delete", DeleteTransformPass::new);
+		REGISTRY.put("clone", CloneTransformPass::new);
 
 		REGISTRY.put("debug:test", PathTestTransformPass::new);
 	}

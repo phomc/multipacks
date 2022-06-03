@@ -32,3 +32,4 @@ The file contains an array as top-level object, with JSON objects for each eleme
 - [Include: ``include``](include.md)
 - [Overlays: ``overlays``](overlays.md)
 - [Delete: ``delete``](delete.md)
+- [Clone: ``clone``](clone.md)
