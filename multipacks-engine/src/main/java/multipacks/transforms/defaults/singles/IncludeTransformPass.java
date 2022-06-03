@@ -29,7 +29,7 @@ public class IncludeTransformPass extends TransformPass {
 		JsonElement json = new JsonParser().parse(new InputStreamReader(stream));
 		stream.close();
 
-		if (!json.isJsonArray()) throw new TransformFailException();
+		if (!json.isJsonArray()) throw new TransformFailException("Invalid JSON type (Must be an array)");
 
 		JsonArray arr = json.getAsJsonArray();
 		TransformPass[] passes = new TransformPass[arr.size()];
