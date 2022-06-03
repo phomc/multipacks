@@ -46,6 +46,12 @@ public class TransformativeFileSystem {
 		sourceRoot = source;
 	}
 
+	private boolean canAccess(File file) {
+		if (file.getParentFile() == null) return false;
+		if (file.getParentFile() == sourceRoot) return true;
+		return canAccess(file.getParentFile());
+	}
+
 	@SuppressWarnings("unchecked")
 	private HashMap<String, Object> parentDirOf(String[] parts) {
 		HashMap<String, Object> dir = transformed;
@@ -109,6 +115,7 @@ public class TransformativeFileSystem {
 		if (bs != null) return bs;
 		if (sourceRoot == null) return null;
 		File realFile = new File(sourceRoot, path.replace('/', File.separatorChar));
+		if (!canAccess(realFile)) return null;
 
 		InputStream in = new FileInputStream(realFile);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -139,6 +146,7 @@ public class TransformativeFileSystem {
 
 			File realFile = new File(sourceRoot, path.replace('/', File.separatorChar));
 			if (!realFile.exists()) return null;
+			if (!canAccess(realFile)) return null;
 
 			try {
 				InputStream in = new FileInputStream(realFile);
@@ -167,6 +175,7 @@ public class TransformativeFileSystem {
 	}
 
 	private void forEachOrignal(String parentDir, File dir, Consumer<TFSListing> callback) {
+		if (!canAccess(dir)) return;
 		for (File child : dir.listFiles()) {
 			String path = parentDir != null? parentDir + "/" + child.getName() : child.getName();
 			if (isDeleted(path)) continue;
@@ -217,6 +226,7 @@ public class TransformativeFileSystem {
 
 		File realDir = new File(sourceRoot, path.replace('/', File.separatorChar));
 		if (!realDir.exists()) return new String[0];
+		if (!canAccess(realDir)) return new String[0];
 		if (!realDir.isDirectory()) return new String[] { "" };
 
 		String[] realLs = realDir.list();
