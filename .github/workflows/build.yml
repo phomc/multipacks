@@ -1,0 +1,15 @@
+name: Build (Push)
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: eclipse-temurin:18-jdk
+      options: --user root
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: gradle/wrapper-validation-action@v1
+      - run: ./gradlew check build --stacktrace --parallel --warning-mode=fail
