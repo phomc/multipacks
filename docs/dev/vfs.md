@@ -5,9 +5,9 @@ The ``TransformativeFileSystem`` class allow you to apply data transformations t
 The VFS contains some methods, and some of them are documented using JavaDocs. Files should be opened with ``openRead(String path)`` and the stream must be closed once you've done with it, and files can be written using ``put(String path, byte[] binaryData)`` (tip: use ``ByteArrayOutputStream``).
 
 ### Mark a file as deleted
-Sometimes you might want to mark a file as deleted so it won't shows up in output package. You can do that by adding a path in ``TransformativeFileSystem#markDelete`` set:
+Sometimes you might want to mark a file as deleted so it won't shows up in output package. You can do that by using ``TransformativeFileSystem#delete()``:
 
 ```
 fs.put("assets/minecraft/font/default.json", myFontJsonAsBinary);
-fs.markDelete.add("assets/mynamespace/font/default.json");
+fs.delete("assets/mynamespace/font/default.json");
 ```

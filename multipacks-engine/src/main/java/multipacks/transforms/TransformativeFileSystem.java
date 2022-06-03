@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * A virtual file system for transforming resources on the fly. May eats a lot of free
@@ -39,10 +40,21 @@ import java.util.function.Consumer;
 public class TransformativeFileSystem {
 	public final File sourceRoot;
 	public final HashMap<String, Object> transformed = new HashMap<>();
-	public final HashSet<String> markDelete = new HashSet<>();
+	private final HashSet<String> markDelete = new HashSet<>();
 
 	public TransformativeFileSystem(File source) {
 		sourceRoot = source;
+	}
+
+	private boolean canAccess(File file) {
+		try {
+			String rootPath = sourceRoot.getCanonicalPath() + (sourceRoot.isDirectory()? File.separator : "");
+			String testPath = file.getCanonicalPath() + (file.isDirectory()? File.separator : "");
+			return testPath.startsWith(rootPath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -84,11 +96,21 @@ public class TransformativeFileSystem {
 		String[] parts = path.split("/");
 		HashMap<String, Object> dir = parentDirOf(parts);
 		dir.put(parts[parts.length - 1], data);
+
 		markDelete.remove(path);
+		String unmarkParent = null;
+
+		for (int i = 0; i < parts.length - 1; i++) {
+			unmarkParent = unmarkParent == null? parts[i] : unmarkParent + "/" + parts[i];
+			markDelete.remove(unmarkParent);
+		}
+
 		return true;
 	}
 
 	public byte[] getTransformed(String path) {
+		if (isDeleted(path)) return null;
+
 		while (path.startsWith("/")) path = path.substring(1);
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
 		String[] parts = path.split("/");
@@ -100,10 +122,13 @@ public class TransformativeFileSystem {
 	}
 
 	public byte[] get(String path) throws IOException {
+		if (isDeleted(path)) return null;
+
 		byte[] bs = getTransformed(path);
 		if (bs != null) return bs;
 		if (sourceRoot == null) return null;
 		File realFile = new File(sourceRoot, path.replace('/', File.separatorChar));
+		if (!canAccess(realFile)) return null;
 
 		InputStream in = new FileInputStream(realFile);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -121,6 +146,8 @@ public class TransformativeFileSystem {
 	 * it.
 	 */
 	public InputStream openRead(String path) {
+		if (isDeleted(path)) return null;
+
 		while (path.startsWith("/")) path = path.substring(1);
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
 		String[] parts = path.split("/");
@@ -132,6 +159,7 @@ public class TransformativeFileSystem {
 
 			File realFile = new File(sourceRoot, path.replace('/', File.separatorChar));
 			if (!realFile.exists()) return null;
+			if (!canAccess(realFile)) return null;
 
 			try {
 				InputStream in = new FileInputStream(realFile);
@@ -150,6 +178,8 @@ public class TransformativeFileSystem {
 	private void forEachTransformed(String parentDir, HashMap<String, Object> dir, Consumer<TFSListing> callback) {
 		for (Entry<String, Object> entry : dir.entrySet()) {
 			String path = parentDir != null? parentDir + "/" + entry.getKey() : entry.getKey();
+			if (isDeleted(path)) continue;
+
 			Object obj = entry.getValue();
 
 			if (obj instanceof byte[] bs) callback.accept(new TFSListing(path, bs));
@@ -159,7 +189,10 @@ public class TransformativeFileSystem {
 
 	private void forEachOrignal(String parentDir, File dir, Consumer<TFSListing> callback) {
 		for (File child : dir.listFiles()) {
+			if (!canAccess(child)) return;
+
 			String path = parentDir != null? parentDir + "/" + child.getName() : child.getName();
+			if (isDeleted(path)) continue;
 			
 			if (child.isDirectory()) forEachOrignal(path, child, callback);
 			else callback.accept(new TFSListing(path, child));
@@ -185,10 +218,20 @@ public class TransformativeFileSystem {
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
 		String[] parts = path.split("/");
 		HashMap<String, Object> dir = dirOf(parts);
-		if (dir == null) return new String[0];
+
+		if (dir == null) {
+			HashMap<String, Object> parent = parentDirOf(parts);
+			if (parent.containsKey(parts[parts.length - 1])) return new String[] { "" };
+			return new String[0];
+		}
+
 		return dir.keySet().toArray(String[]::new);
 	}
 
+	/**
+	 * Get all file names inside a directory. If the file at given path is not a directory, this method
+	 * will returns an array with a single empty string.
+	 */
 	public String[] ls(String path) {
 		if (sourceRoot == null) return lsTransformed(path);
 
@@ -196,10 +239,35 @@ public class TransformativeFileSystem {
 		ls.addAll(Arrays.asList(lsTransformed(path)));
 
 		File realDir = new File(sourceRoot, path.replace('/', File.separatorChar));
-		if (!realDir.exists() || !realDir.isDirectory()) return new String[0];
+		if (canAccess(realDir) && realDir.exists()) {
+			if (!realDir.isDirectory()) ls.add("");
+		}
+
 		String[] realLs = realDir.list();
 		if (realLs == null) return ls.toArray(String[]::new);
 		ls.addAll(Arrays.asList(realLs));
-		return ls.stream().filter(v -> !markDelete.contains(v)).toArray(String[]::new);
+		return ls.stream().filter(v -> !markDelete.contains(path.length() > 0? path + "/" + v : v)).toArray(String[]::new);
+	}
+
+	public String[] lsFullPath(String path) {
+		return Stream.of(ls(path)).map(v -> {
+			if (v.length() == 0) return path;
+			return path + "/" + v;
+		}).toArray(String[]::new);
+	}
+
+	/**
+	 * Mark the file as deleted. This doesn't affect to user's pack data.
+	 */
+	public void delete(String path) {
+		while (path.startsWith("/")) path = path.substring(1);
+		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+		for (String p : lsFullPath(path)) markDelete.add(p);
+	}
+
+	public boolean isDeleted(String path) {
+		while (path.startsWith("/")) path = path.substring(1);
+		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
+		return markDelete.contains(path);
 	}
 }

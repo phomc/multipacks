@@ -94,7 +94,7 @@ public class FontIconsTransformPass extends TransformPass {
 					JsonObject obj = parser.parse(new InputStreamReader(in)).getAsJsonObject();
 					in.close();
 					rawGlyphs.add(obj);
-					fs.markDelete.add(source + "/" + p);
+					fs.delete(source + "/" + p);
 
 					if (!obj.has("id")) logger.warning(source + "/" + p + ": 'id' field not found, may generates random file name");
 				}
@@ -125,7 +125,7 @@ public class FontIconsTransformPass extends TransformPass {
 			}
 
 			fs.put(mappedTexturePath, source);
-			fs.markDelete.add(sourceTexturePath);
+			fs.delete(sourceTexturePath);
 
 			JsonObject glyph = new JsonObject();
 			glyph.addProperty("type", "bitmap");

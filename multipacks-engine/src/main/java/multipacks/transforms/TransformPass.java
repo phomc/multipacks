@@ -22,7 +22,14 @@ import java.util.function.Function;
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
+import multipacks.transforms.defaults.debug.PathTestTransformPass;
 import multipacks.transforms.defaults.fonticons.FontIconsTransformPass;
+import multipacks.transforms.defaults.multisprites.MultiSpritesTransformPass;
+import multipacks.transforms.defaults.overlay.OverlayTransformPass;
+import multipacks.transforms.defaults.singles.CloneTransformPass;
+import multipacks.transforms.defaults.singles.DeleteTransformPass;
+import multipacks.transforms.defaults.singles.IncludeTransformPass;
+import multipacks.transforms.defaults.singles.RemapTransformPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 
@@ -44,5 +51,13 @@ public abstract class TransformPass {
 
 	static {
 		REGISTRY.put("font-icons", FontIconsTransformPass::new);
+		REGISTRY.put("multi-sprites", MultiSpritesTransformPass::new);
+		REGISTRY.put("remap", RemapTransformPass::new);
+		REGISTRY.put("include", IncludeTransformPass::new);
+		REGISTRY.put("overlay", OverlayTransformPass::new);
+		REGISTRY.put("delete", DeleteTransformPass::new);
+		REGISTRY.put("clone", CloneTransformPass::new);
+
+		REGISTRY.put("debug:test", PathTestTransformPass::new);
 	}
 }
