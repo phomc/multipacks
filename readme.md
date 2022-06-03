@@ -3,29 +3,8 @@
 # Multipacks
 Welcome to Multipacks, the resources and data pack packager!
 
-## Using Multipacks CLI
-Multipacks CLI distributions can be installed by using ``./gradlew :multipacks-cli:installDist``.
-
-```sh
-# Initialize pack
-multipacks-cli pack init path/to/pack
-vim path/to/pack/multipacks.json
-
-# View pack info
-multipacks-cli pack info path/to/pack
-
-# Build and bundle
-multipacks-cli pack build path/to/pack --output myResourcesPack.zip --include resources
-multipacks-cli pack build path/to/pack --output myDataPack.zip --include data
-
-# Install to repository
-multipacks-cli pack install pack/to/pack
-ls ~/.multipacks
-
-# List
-multipacks-cli list repo
-multipacks-cli list pack
-```
+## Getting Multipacks
+Multipacks CLI tool can be obtained in [this Release page](https://github.com/MangoPlex/Multipacks/releases/). Download ``multipacks-cli.zip``, extract it and run ``multipacks-cli`` inside ``bin/`` folder with a terminal to use.
 
 ## Using Multipacks Engine
 You can use Multipacks Engine with your project by including ``multipacks-engine`` as dependency.

@@ -5,27 +5,9 @@ Make sure you have
 - A terminal (Powershell, Bash or whatever that can run commands)
 - Any plain text editor (Microsoft Notepad, Notepad++, vim, etc...)
 - Knowledge about JSON basics
-- [Git](https://git-scm.com/)
-  + You may already have Git installed on Linux
 
-## Getting Multipacks
-Open your terminal in whatever folder you want and clone the repository:
-
-```sh
-git clone https://github.com/MangoPlex/Multipacks.git
-cd Multipacks
-```
-
-## Build Multipacks
-Make sure ``JAVA_HOME`` enviroment variable is points toward Java 17 binary (we haven't tested on older Java version yet) and run ``./gradle distZip`` to generate binaries:
-
-```sh
-./gradlew distZip
-```
-
-> On Windows, you might have to replace ``/`` with ``\`` if you are using cmd.exe. You don't have to if you are using Powershell.
-
-You binaries should be located in ``Multipacks/multipacks-cli/build/distributions/multipacks-cli.zip``. Copy this file and extract it to somewhere else.
+## Getting Multipacks CLI
+Go to [this Release page](https://github.com/MangoPlex/Multipacks/releases/) and download ``multipacks-cli.zip``, then extract the archive to somewhere else (in your Desktop for example).
 
 ## Multipacks CLI
 Once you've extracted the zip file, open a new terminal inside ``multipacks-cli/bin``. You'll see these messages when you run ``./multipacks-cli``:
@@ -93,7 +75,7 @@ Open ``myPack/`` and you will see all the pack contents, including resources pac
 }
 ```
 
-Optional fields are: ``name``, ``author``, ``description``, ``version`` and ``include``, with ``include`` being the dependencies map. Fields that are required for every Multipacks packs are ``id`` and ``version``.
+For more information, please look at [Pack Index](packindex.md) page.
 
 ### License file
 You can also add ``LICENSE`` or ``LICENSE.md`` inside your pack folder to add a license. Your license text will be located in ``pack.zip/licenses/packid``.
@@ -114,4 +96,4 @@ Once you've done with your Multipacks pack, you can pack it into a single ``.zip
 ```
 
 ## Ok but what's next?
-You've created a pack using Multipacks! You can make more advanced packs with pack [transformations](transforms%5Cindex.md), or you can combine pre-existing packs to modify some textures without directly modifying the resources pack itself.
+You've created a pack using Multipacks! You can make more advanced packs with pack [transformations](transforms/index.md), or you can combine pre-existing packs to modify some textures without directly modifying the resources pack itself.
