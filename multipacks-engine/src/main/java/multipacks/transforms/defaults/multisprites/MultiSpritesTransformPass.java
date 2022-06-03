@@ -44,6 +44,7 @@ public class MultiSpritesTransformPass extends TransformPass {
 
 			InputStream in = fs.openRead(pathFrom);
 			BufferedImage source = ImageIO.read(in);
+			in.close();
 
 			for (SpriteTemplate template : templates) {
 				String pathSlicedTo = pathTo + template.suffix + ".png";
