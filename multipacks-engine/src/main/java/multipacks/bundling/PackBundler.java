@@ -96,6 +96,8 @@ public class PackBundler {
 		return false;
 	}
 
+	private static final String[] GLOBALLY_IGNORED = { ".git" };
+
 	/**
 	 * Bundle the pack and write pack data as ZIP package to stream.
 	 * @param source The source pack.
@@ -146,6 +148,8 @@ public class PackBundler {
 				try {
 					String path = t.path;
 					if (fs.isDeleted(path)) return;
+					if (pack.getIndex().isIgnored(path)) return;
+					for (String globalIgnore : GLOBALLY_IGNORED) if (path.startsWith(globalIgnore)) return;
 
 					String[] splits = t.path.split("/");
 					if (splits.length == 1) switch (splits[0].toLowerCase()) {

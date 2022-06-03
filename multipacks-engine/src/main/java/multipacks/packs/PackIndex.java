@@ -17,6 +17,7 @@ package multipacks.packs;
 
 import java.util.Map.Entry;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -32,6 +33,7 @@ public class PackIndex {
 	public Version packVersion;
 	public Version gameVersion; // TODO: Use pack_format value
 	public PackIdentifier[] include;
+	public String[] ignore;
 
 	public PackIdentifier getIdentifier() {
 		return new PackIdentifier(id, packVersion);
@@ -56,6 +58,19 @@ public class PackIndex {
 
 			return ids;
 		}, new PackIdentifier[0]);
+		out.ignore = Selects.getChain(json.get("ignore"), j -> {
+			JsonArray arr = j.getAsJsonArray();
+			String[] ignore = new String[arr.size()];
+
+			for (int i = 0; i < arr.size(); i++) {
+				String processed = arr.get(i).getAsString();
+				while (processed.startsWith("/")) processed = processed.substring(1);
+				while (processed.endsWith("/")) processed = processed.substring(0, processed.length() - 1);
+				ignore[i] = processed;
+			}
+
+			return ignore;
+		}, null);
 		return out;
 	}
 
@@ -74,6 +89,19 @@ public class PackIndex {
 		}
 
 		return obj;
+	}
+
+	public boolean isIgnored(String path) {
+		if (ignore == null) return false;
+		while (path.startsWith("/")) path = path.substring(1);
+		while (path.endsWith("/")) path.substring(0, path.length() - 1);
+
+		for (String pattern : ignore) {
+			if (pattern.endsWith("*") && path.startsWith(pattern.substring(0, pattern.length() - 1))) return true;
+			if (path.equals(pattern)) return true;
+		}
+
+		return false;
 	}
 
 	public JsonObject getMcMeta() {
