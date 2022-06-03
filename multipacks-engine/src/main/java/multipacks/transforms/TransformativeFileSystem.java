@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * A virtual file system for transforming resources on the fly. May eats a lot of free
@@ -185,10 +186,20 @@ public class TransformativeFileSystem {
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
 		String[] parts = path.split("/");
 		HashMap<String, Object> dir = dirOf(parts);
-		if (dir == null) return new String[0];
+
+		if (dir == null) {
+			HashMap<String, Object> parent = parentDirOf(parts);
+			if (parent.containsKey(parts[parts.length - 1])) return new String[] { "" };
+			return new String[0];
+		}
+
 		return dir.keySet().toArray(String[]::new);
 	}
 
+	/**
+	 * Get all file names inside a directory. If the file at given path is not a directory, this method
+	 * will returns an array with a single empty string.
+	 */
 	public String[] ls(String path) {
 		if (sourceRoot == null) return lsTransformed(path);
 
@@ -196,10 +207,19 @@ public class TransformativeFileSystem {
 		ls.addAll(Arrays.asList(lsTransformed(path)));
 
 		File realDir = new File(sourceRoot, path.replace('/', File.separatorChar));
-		if (!realDir.exists() || !realDir.isDirectory()) return new String[0];
+		if (!realDir.exists()) return new String[0];
+		if (!realDir.isDirectory()) return new String[] { "" };
+
 		String[] realLs = realDir.list();
 		if (realLs == null) return ls.toArray(String[]::new);
 		ls.addAll(Arrays.asList(realLs));
 		return ls.stream().filter(v -> !markDelete.contains(v)).toArray(String[]::new);
+	}
+
+	public String[] lsFullPath(String path) {
+		return Stream.of(ls(path)).map(v -> {
+			if (v.length() == 0) return path;
+			return path + "/" + v;
+		}).toArray(String[]::new);
 	}
 }

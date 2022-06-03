@@ -36,11 +36,10 @@ public class MultiSpritesTransformPass extends TransformPass {
 
 	@Override
 	public void transform(TransformativeFileSystem fs, BundleResult result, AbstractMPLogger logger) throws IOException {
-		for (String fileName : fs.ls(from)) {
-			String outFileNamePrefix = fileName;
+		for (String pathFrom : fs.lsFullPath(from)) {
+			String[] split = pathFrom.split("/");
+			String outFileNamePrefix = split[split.length - 1];
 			while (outFileNamePrefix.endsWith(".png")) outFileNamePrefix = outFileNamePrefix.substring(0, outFileNamePrefix.length() - 4);
-
-			String pathFrom = from + "/" + fileName;
 			String pathTo = to + "/" + outFileNamePrefix;
 
 			InputStream in = fs.openRead(pathFrom);
