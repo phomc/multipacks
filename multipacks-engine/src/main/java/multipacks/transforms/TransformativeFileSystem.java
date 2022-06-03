@@ -90,6 +90,8 @@ public class TransformativeFileSystem {
 	}
 
 	public byte[] getTransformed(String path) {
+		if (isDeleted(path)) return null;
+
 		while (path.startsWith("/")) path = path.substring(1);
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
 		String[] parts = path.split("/");
@@ -101,6 +103,8 @@ public class TransformativeFileSystem {
 	}
 
 	public byte[] get(String path) throws IOException {
+		if (isDeleted(path)) return null;
+
 		byte[] bs = getTransformed(path);
 		if (bs != null) return bs;
 		if (sourceRoot == null) return null;
@@ -122,6 +126,8 @@ public class TransformativeFileSystem {
 	 * it.
 	 */
 	public InputStream openRead(String path) {
+		if (isDeleted(path)) return null;
+
 		while (path.startsWith("/")) path = path.substring(1);
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
 		String[] parts = path.split("/");
@@ -151,6 +157,8 @@ public class TransformativeFileSystem {
 	private void forEachTransformed(String parentDir, HashMap<String, Object> dir, Consumer<TFSListing> callback) {
 		for (Entry<String, Object> entry : dir.entrySet()) {
 			String path = parentDir != null? parentDir + "/" + entry.getKey() : entry.getKey();
+			if (isDeleted(path)) continue;
+
 			Object obj = entry.getValue();
 
 			if (obj instanceof byte[] bs) callback.accept(new TFSListing(path, bs));
@@ -161,6 +169,7 @@ public class TransformativeFileSystem {
 	private void forEachOrignal(String parentDir, File dir, Consumer<TFSListing> callback) {
 		for (File child : dir.listFiles()) {
 			String path = parentDir != null? parentDir + "/" + child.getName() : child.getName();
+			if (isDeleted(path)) continue;
 			
 			if (child.isDirectory()) forEachOrignal(path, child, callback);
 			else callback.accept(new TFSListing(path, child));
@@ -229,7 +238,7 @@ public class TransformativeFileSystem {
 	public void delete(String path) {
 		while (path.startsWith("/")) path = path.substring(1);
 		while (path.endsWith("/")) path = path.substring(0, path.length() - 1);
-		markDelete.add(path);
+		for (String p : lsFullPath(path)) markDelete.add(p);
 	}
 
 	public boolean isDeleted(String path) {
