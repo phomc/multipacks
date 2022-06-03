@@ -27,3 +27,5 @@ The file contains an array as top-level object, with JSON objects for each eleme
 
 ## All transformations
 - [Font Icons: ``font-icons``](font-icons.md)
+- [Remap: ``remap``](remap.md)
+- [Multiple Sprites: ``multi-sprites``](multisprites.md)
