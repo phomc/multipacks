@@ -14,6 +14,7 @@ In order to get Multipacks knows your pack info, you need to add ``multipacks.js
     "include": {
         "otherpackid": ">=1.0.0",
         "anotherpackid": "<15.1.2",
+        "localpack": "file:../localfolder",
         "...": "..."
     },
     "ignore": [
@@ -39,7 +40,13 @@ This is your pack version (not game version, which is in ``gameVersion`` field).
 The targetted game version. Putting ``>``, ``<``, ``>=`` or ``<=`` doesn't really do anything... for now.
 
 ### ``include`` (Optional)
-This field is a JSON object, with its key as pack id and its value is a version filter. ``>``, ``<``, ``>=`` and ``<=`` version prefixes does works so you can target any pack versions in the range.
+This field is a JSON object, with its key as pack id and its value is a version filter or a path to file, prefixed by ``file:``. For versions, ``>``, ``<``, ``>=`` and ``<=`` version prefixes does works so you can target any pack versions in the range. For local files, the current path will always be at the pack folder, so ``./mypack`` will pick the ``mypack`` folder inside your pack.
+
+```
+>=7.2.7
+file:./mypack_items
+file:./mypack_blocks
+```
 
 ### ``ignore`` (Optional)
 An array that contains all paths to ignore. By default, Multipacks will excludes these files from package:
