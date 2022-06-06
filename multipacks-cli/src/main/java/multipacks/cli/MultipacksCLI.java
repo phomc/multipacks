@@ -258,7 +258,7 @@ public class MultipacksCLI {
 
 			if (index.include != null && index.include.length > 0) {
 				System.out.println(" - " + index.include.length + (index.include.length == 1? " depenency" : " depenencies"));
-				for (PackIdentifier i : index.include) System.out.println("   + " + i.id + " " + i.version);
+				for (PackIdentifier i : index.include) System.out.println("   + " + i.id + " " + (i.folder != null? "Local(" + i.folder + ")" : i.version));
 			}
 
 			File assets = pack.getAssetsRoot();
@@ -456,6 +456,14 @@ public class MultipacksCLI {
 
 		try {
 			Pack pack = new Pack(packDir);
+
+			if (pack.getIndex().hasLocalReference()) {
+				System.err.println("Cannot install pack with local references");
+				System.err.println("Please check multipacks.json and ensure that 'include' section does not contains 'file:...' in dependency version field");
+				System.exit(1);
+				return;
+			}
+
 			System.out.println("Installing " + pack.getIndex().id + " v" + pack.getIndex().packVersion + " to your repository...");
 			System.out.println("Current repository is " + selectedRepository);
 			uploadable.putPack(pack);
