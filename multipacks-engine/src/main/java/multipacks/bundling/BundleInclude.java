@@ -18,5 +18,6 @@ package multipacks.bundling;
 public enum BundleInclude {
 	NONE,
 	RESOURCES,
+	LICENSES,
 	DATA;
 }

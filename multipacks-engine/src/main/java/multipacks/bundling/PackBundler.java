@@ -106,6 +106,7 @@ public class PackBundler {
 		for (BundleInclude incl : includes) {
 			if (incl == BundleInclude.RESOURCES && path.startsWith("assets/")) return true;
 			if (incl == BundleInclude.DATA && path.startsWith("data/")) return true;
+			if (incl == BundleInclude.LICENSES && path.startsWith("licenses/")) return true;
 		}
 
 		return false;
