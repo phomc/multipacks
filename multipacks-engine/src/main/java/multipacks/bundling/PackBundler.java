@@ -54,7 +54,20 @@ public class PackBundler {
 		this.logger = logger;
 	}
 
-	private Pack getPack(PackIdentifier id) {
+	private Pack getPack(PackIdentifier id, File parentRoot, String parentName) {
+		if (id.folder != null) {
+			File packRoot = new File(parentRoot, id.folder.replace('/', File.separatorChar));
+			if (!packRoot.exists()) throw new PackagingFailException(parentName + ": Folder does not exists: " + packRoot);
+			if (!packRoot.isDirectory()) throw new PackagingFailException(parentName + ": Not a folder: " + packRoot);
+
+			try {
+				return new Pack(packRoot);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
 		for (PacksRepository repo : repositories) {
 			PackIndex latest = null;
 			Iterator<PackIndex> iter = repo.queryPacks(id);
@@ -73,15 +86,16 @@ public class PackBundler {
 	private void resolveDependencies(String parent, Pack source, HashMap<String, Pack> resolvedMap, List<Pack> resolvedList) {
 		for (PackIdentifier dependency : source.getIndex().include) {
 			if (resolvedMap.containsKey(dependency.id)) continue; // TODO: Grab the latest version if requested
+			String dependencyDisplayPath = parent + "/" + dependency.id + " " + (dependency.folder != null? "Local file: " + dependency.folder : dependency.version);
 
-			Pack pack = getPack(dependency);
+			Pack pack = getPack(dependency, source.getRoot(), parent);
 			if (pack == null) {
-				if (!ignoreResolveFail) throw new PackagingFailException((parent + "/" + dependency.id + " " + dependency.version + " -> FAILED while resolving this dependency"));
-				logger.warning(parent + "/" + dependency.id + " " + dependency.version + " -> FAILED while resolving (ignored)");
+				if (!ignoreResolveFail) throw new PackagingFailException((dependencyDisplayPath + " -> FAILED while resolving this dependency"));
+				logger.warning(dependencyDisplayPath + " -> FAILED while resolving (ignored)");
 				continue;
 			}
 
-			logger.info(parent + "/" + dependency.id + " " + dependency.version + " -> " + pack.getIndex().packVersion + (pack.getIndex().type == PackType.LIBRARY? " (Library)" : ""));
+			logger.info(dependencyDisplayPath + " -> " + pack.getIndex().packVersion + (pack.getIndex().type == PackType.LIBRARY? " (Library)" : ""));
 			resolvedMap.put(dependency.id, pack);
 			resolvedList.add(pack);
 			resolveDependencies(parent + "/" + dependency.id, pack, resolvedMap, resolvedList);
@@ -202,58 +216,6 @@ public class PackBundler {
 
 		for (Pack pack : resolvedList) {
 			if (pack.getIndex().type == PackType.LIBRARY && pack != source) continue;
-
-			/*TransformativeFileSystem fs = new TransformativeFileSystem(pack.getRoot());
-
-			InputStream transformations = fs.openRead("transformations.json");
-			if (transformations != null) {
-				JsonArray arr = new JsonParser().parse(new InputStreamReader(transformations)).getAsJsonArray();
-				arr.forEach(element -> {
-					TransformPass pass = TransformPass.fromJson(element.getAsJsonObject());
-
-					if (pass == null) {
-						System.err.println("WARNING: Transformation pass with type '" + element.getAsJsonObject().get("type").getAsString() + "' does not exists in this version of Multipacks");
-						return;
-					}
-
-					try {
-						pass.transform(fs, result, logger);
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.err.println("WARNING: Transformation pass with type '" + element.getAsJsonObject().get("type").getAsString() + "' failed while transforming " + pack.getIndex().id);
-					}
-				});
-				transformations.close();
-			}
-
-			fs.forEach(t -> {
-				try {
-					String path = t.path;
-					if (fs.isDeleted(path)) return;
-					if (pack.getIndex().isIgnored(path)) return;
-					for (String globalIgnore : GLOBALLY_IGNORED) if (path.startsWith(globalIgnore)) return;
-
-					String[] splits = t.path.split("/");
-					if (splits.length == 1) switch (splits[0].toLowerCase()) {
-					case "license":
-					case "license.md":
-					case "license.txt":
-					case "licence":
-					case "licence.md":
-					case "licence.txt":
-						if (this.bundlingIgnores.contains(BundleIgnore.LICENSES)) return;
-						path = "licenses/" + pack.getIndex().id;
-						break;
-					default:
-						return;
-					}
-
-					if (shouldWrite(includesFinal, path)) root.put(path, t.getAsBytes());
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.err.println("Failed to get data from " + t.path + " in TFS");
-				}
-			});*/
 			transform(resolvedMap, libraryCache, root, pack, result, includesFinal);
 		}
 

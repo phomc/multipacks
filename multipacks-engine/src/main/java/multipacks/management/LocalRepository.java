@@ -54,6 +54,7 @@ public class LocalRepository extends PacksRepository implements PacksUploadable 
 
 	@Override
 	public boolean putPack(Pack pack, boolean force) throws IllegalAccessException {
+		if (pack.getIndex().hasLocalReference()) return false;
 		File packDir = getPackDir(pack.getIdentifier());
 		if (packDir.exists()) return false;
 

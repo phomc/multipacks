@@ -70,6 +70,7 @@ Open ``myPack/`` and you will see all the pack contents, including resources pac
     "include": {
         "otherpackid": ">=1.0.0",
         "anotherpackid": "<15.1.2",
+        "localpack": "file:../myLocalPack",
         "...": "..."
     }
 }

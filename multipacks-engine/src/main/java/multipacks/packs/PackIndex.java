@@ -16,6 +16,7 @@
 package multipacks.packs;
 
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -55,7 +56,7 @@ public class PackIndex {
 			int i = 0;
 
 			for (Entry<String, JsonElement> entry : includeMap.entrySet()) {
-				ids[i++] = new PackIdentifier(entry.getKey(), new Version(entry.getValue().getAsString()));
+				ids[i++] = PackIdentifier.fromString(entry.getKey(), entry.getValue().getAsString());
 			}
 
 			return ids;
@@ -74,6 +75,14 @@ public class PackIndex {
 			return ignore;
 		}, null);
 		return out;
+	}
+
+	/**
+	 * Check if the pack index have local references. Pack with local references are not allowed to upload
+	 * to packs repository, simply because it's impossible (duh).
+	 */
+	public boolean hasLocalReference() {
+		return Stream.of(include).anyMatch(v -> v.folder != null);
 	}
 
 	public JsonObject toJson() {

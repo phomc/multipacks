@@ -20,15 +20,27 @@ import multipacks.versioning.Version;
 public class PackIdentifier {
 	public final String id;
 	public final Version version;
+	public final String folder;
 
 	public PackIdentifier(String id, Version version) {
 		this.id = id;
 		this.version = version;
+		this.folder = null;
+	}
+
+	public PackIdentifier(String id, String folder) {
+		this.id = id;
+		this.version = null;
+		this.folder = folder;
+	}
+
+	public static PackIdentifier fromString(String id, String location) {
+		return location.startsWith("file:")? new PackIdentifier(id, location.substring(5)) : new PackIdentifier(id, new Version(location)); 
 	}
 
 	@Override
 	public String toString() {
-		return id + ": " + version;
+		return id + ": " + (folder != null? "file:" + folder : version);
 	}
 
 	@Override
