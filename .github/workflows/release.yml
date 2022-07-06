@@ -20,6 +20,10 @@ jobs:
         run: echo "::set-output name=datetime::$(date -u +%y%m%d.%H%M)"
       - name: Build and package
         run: ./gradlew check build publish :multipacks-spigot:shadow :multipacks-cli:distZip -Pversion=${{ steps.datetime.outputs.datetime }}.0 --stacktrace --parallel --warning-mode=fail
+        env:
+          MAVEN_URL: ${{ secrets.MAVEN_URL }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: Copy packages to release dir
         run: |
           mkdir -p releaseArtifacts
