@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build and package
-        run: ./gradlew check build :multipacks-spigot:shadow :multipacks-cli:distZip --stacktrace --parallel --warning-mode=fail
+        run: ./gradlew check build publish :multipacks-spigot:shadow :multipacks-cli:distZip --stacktrace --parallel --warning-mode=fail
       - name: Get date and time for autonaming
         id: datetime
         run: echo "::set-output name=datetime::$(date -u +%y%m%d.%H%M)"
