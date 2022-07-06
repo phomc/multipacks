@@ -1,7 +1,11 @@
 plugins {
     id "java-library"
+    id "maven-publish"
     id "com.diffplug.spotless" version "6.6.1"
 }
+
+println("Multipacks $version")
+def env = System.getenv()
 
 allprojects {
     apply plugin: "java-library"
@@ -10,6 +14,51 @@ allprojects {
     spotless {
         java {
             licenseHeaderFile(rootProject.file("HEADER"))
+        }
+    }
+}
+
+["multipacks-engine", "multipacks-spigot"].forEach {
+    project(":$it") {
+        apply plugin: "maven-publish"
+
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                	from components.java
+                }
+            }
+
+            repositories {
+                mavenLocal()
+
+                if (env.MAVEN_URL) {
+                    maven {
+                        url env.MAVEN_URL
+                        println("Maven: Maven repository URL found in environment variable")
+
+                        if (env.MAVEN_USERNAME) {
+                            credentials {
+                                username env.MAVEN_USERNAME
+                                password env.MAVEN_PASSWORD
+                            }
+                        }
+                    }
+                }
+                if (findProperty("mavenRepo_url")) {
+                    maven {
+                        url "${mavenRepo_url}"
+                        println("Maven: URL ${mavenRepo_url} found from gradle.properties")
+
+                        if (findProperty("mavenRepo_username")) {
+                            credentials {
+                                username "${mavenRepo_username}"
+                                password "${mavenRepo_password}"
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
