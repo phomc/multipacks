@@ -22,6 +22,12 @@ dependencies {
     shadow project(':multipacks-engine')
 }
 
+processResources {
+    filesMatching("**/*.yml") {
+        expand version: version
+    }
+}
+
 shadowJar {
      relocate 'com.google.gson', 'multipacks.generated.relocated.gson'
 }
