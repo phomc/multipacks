@@ -35,7 +35,7 @@ allprojects {
                 if (env.MAVEN_URL) {
                     maven {
                         url env.MAVEN_URL
-                        println("Maven: URL ${env.MAVEN_URL} found in environment variable")
+                        println("Maven: Maven repository URL found in environment variable")
 
                         if (env.MAVEN_USERNAME) {
                             credentials {
