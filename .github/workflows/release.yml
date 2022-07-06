@@ -15,16 +15,16 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Build and package
-        run: ./gradlew check build publish :multipacks-spigot:shadow :multipacks-cli:distZip --stacktrace --parallel --warning-mode=fail
       - name: Get date and time for autonaming
         id: datetime
         run: echo "::set-output name=datetime::$(date -u +%y%m%d.%H%M)"
+      - name: Build and package
+        run: ./gradlew check build publish :multipacks-spigot:shadow :multipacks-cli:distZip -Pversion=${{ steps.datetime.outputs.datetime }}.0 --stacktrace --parallel --warning-mode=fail
       - name: Copy packages to release dir
         run: |
           mkdir -p releaseArtifacts
-          cp ./multipacks-spigot/build/libs/multipacks-spigot-all.jar ./releaseArtifacts/multipacks-spigot.jar
-          cp ./multipacks-cli/build/distributions/multipacks-cli.zip ./releaseArtifacts/multipacks-cli.zip
+          cp ./multipacks-spigot/build/libs/multipacks-spigot-${{ steps.datetime.outputs.datetime }}.0-all.jar ./releaseArtifacts/multipacks-spigot.jar
+          cp ./multipacks-cli/build/distributions/multipacks-cli-${{ steps.datetime.outputs.datetime }}.0.zip ./releaseArtifacts/multipacks-cli.zip
       - name: Make release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
