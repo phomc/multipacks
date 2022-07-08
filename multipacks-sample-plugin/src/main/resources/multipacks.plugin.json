@@ -1,0 +1,5 @@
+{
+    "name": "Sample plugin",
+    "author": "nahkd123",
+    "main": "multipacks.sampleplugin.SamplePlugin"
+}

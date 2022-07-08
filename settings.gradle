@@ -11,3 +11,4 @@ rootProject.name = 'multipacks'
 include('multipacks-engine')
 include('multipacks-cli')
 include('multipacks-spigot')
+include('multipacks-sample-plugin')
