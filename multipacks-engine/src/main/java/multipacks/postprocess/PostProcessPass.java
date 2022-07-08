@@ -59,12 +59,4 @@ public abstract class PostProcessPass {
 			else pass.apply(fs, result, logger);
 		}
 	}
-
-	static {
-		// Basic file operations
-		REGISTRY.put("include", IncludePass::new);
-		REGISTRY.put("move", MovePass::new);
-		REGISTRY.put("delete", DeletePass::new);
-		REGISTRY.put("copy", CopyPass::new);
-	}
 }

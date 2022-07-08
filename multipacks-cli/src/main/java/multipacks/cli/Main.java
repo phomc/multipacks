@@ -24,6 +24,8 @@ import multipacks.bundling.BundleIgnore;
 import multipacks.bundling.BundleInclude;
 import multipacks.management.PacksRepository;
 import multipacks.packs.PackIdentifier;
+import multipacks.plugins.MultipacksDefaultPlugin;
+import multipacks.plugins.MultipacksPlugin;
 import multipacks.versioning.Version;
 
 public class Main {
@@ -63,8 +65,14 @@ public class Main {
 			System.out.println("        Available pack types: " + String.join(", ", Stream.of(BundleInclude.values()).map(v -> v.toString().toLowerCase()).toArray(String[]::new)));
 			System.out.println("  -W  --watch");
 			System.out.println("        Watch for any changes (usable with pack build)");
+			System.out.println("      --plugin </path/to/plugin.jar>");
+			System.out.println("        Load Multipacks Engine plugin from a JAR file");
+			System.out.println("        By default, this will not load any plugin but the integrated one");
 			return;
 		}
+
+		// Load plugins
+		MultipacksPlugin.loadPlugin(new MultipacksDefaultPlugin());
 
 		MultipacksCLI cli = new MultipacksCLI(currentPlatform);
 		List<String> regularArguments = new ArrayList<>();
@@ -146,6 +154,10 @@ public class Main {
 				cli.bundleIncludes = includes;
 			} else if (s.equals("-W") || s.equals("--watch")) {
 				cli.watchInputs = true;
+			} else if (s.equals("--plugin")) {
+				String plugin = args[++i];
+				System.out.println("Plugin: " + plugin);
+				MultipacksPlugin.loadJarPlugin(new File(plugin));
 			} else {
 				System.err.println("Unknown option: " + s);
 				System.exit(1);

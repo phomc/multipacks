@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import multipacks.packs.Pack;
 import multipacks.packs.PackIdentifier;
 import multipacks.packs.PackIndex;
+import multipacks.plugins.MultipacksPlugin;
 
 public abstract class PacksRepository {
 	/**
@@ -61,7 +62,10 @@ public abstract class PacksRepository {
 	 * Parse repository string.
 	 */
 	public static PacksRepository parseRepository(File root, String str) {
-		if (str.startsWith("file:")) return new LocalRepository(new File(root, str.substring(5).replace('/', File.separatorChar)));
+		for (MultipacksPlugin plug : MultipacksPlugin.PLUGINS) {
+			PacksRepository repo = plug.parseRepository(root, str);
+			if (repo != null) return repo;
+		}
 		return null;
 	}
 }
