@@ -23,11 +23,14 @@ import com.google.gson.JsonObject;
 
 import multipacks.management.LocalRepository;
 import multipacks.management.PacksRepository;
-import multipacks.postprocess.CopyPass;
-import multipacks.postprocess.DeletePass;
-import multipacks.postprocess.IncludePass;
-import multipacks.postprocess.MovePass;
 import multipacks.postprocess.PostProcessPass;
+import multipacks.postprocess.atlas.AtlasPass;
+import multipacks.postprocess.basic.CopyPass;
+import multipacks.postprocess.basic.DeletePass;
+import multipacks.postprocess.basic.IncludePass;
+import multipacks.postprocess.basic.MovePass;
+import multipacks.postprocess.font.FontIconsPass;
+import multipacks.postprocess.overlays.OverlayPass;
 
 public class MultipacksDefaultPlugin implements MultipacksPlugin {
 	@Override
@@ -42,5 +45,9 @@ public class MultipacksDefaultPlugin implements MultipacksPlugin {
 		reg.put("move", MovePass::new);
 		reg.put("delete", DeletePass::new);
 		reg.put("copy", CopyPass::new);
+
+		reg.put("font-icons", FontIconsPass::new);
+		reg.put("atlas", AtlasPass::new);
+		reg.put("overlay", OverlayPass::new);
 	}
 }

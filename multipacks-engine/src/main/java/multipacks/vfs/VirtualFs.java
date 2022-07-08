@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
@@ -110,7 +111,7 @@ public class VirtualFs {
 	}
 
 	public void writeText(Path file, String text) { write(file, text.getBytes(StandardCharsets.UTF_8)); }
-	public void writeJson(Path file, JsonElement json) { writeText(file, json.toString()); }
+	public void writeJson(Path file, JsonElement json) { writeText(file, new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(json)); }
 
 	/**
 	 * List all paths from both virtual file system and underlying file system (if the path is not marked as deleted).

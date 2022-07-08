@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.postprocess;
+package multipacks.postprocess.basic;
 
 import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
+import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 import multipacks.vfs.Path;

@@ -13,29 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.postprocess;
+package multipacks.postprocess.basic;
 
 import java.io.IOException;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
+import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 import multipacks.vfs.Path;
 import multipacks.vfs.VirtualFs;
 
-public class IncludePass extends PostProcessPass {
-	private Path file;
+public class CopyPass extends PostProcessPass {
+	private Path from;
+	private Path to;
 
-	public IncludePass(JsonObject config) {
-		file = new Path(Selects.nonNull(config.get("file"), "'file' is empty").getAsString());
+	public CopyPass(JsonObject config) {
+		from = new Path(Selects.nonNull(config.get("from"), "'from' is empty").getAsString());
+		to = new Path(Selects.nonNull(config.get("to"), "'to' is empty").getAsString());
 	}
 
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
-		JsonElement json = fs.readJson(file);
-		PostProcessPass.apply(json, fs, result, logger);
+		for (Path pFrom : fs.ls(from)) {
+			String tail = pFrom.toString().substring(from.toString().length() + 1);
+			Path pTo = Path.join(to, new Path(tail));
+			byte[] bs = fs.read(pFrom);
+			fs.write(pTo, bs);
+		}
 	}
 }
