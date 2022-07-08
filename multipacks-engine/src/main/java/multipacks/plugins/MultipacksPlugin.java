@@ -30,15 +30,34 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import multipacks.bundling.PackBundler;
 import multipacks.management.PacksRepository;
+import multipacks.packs.DynamicPack;
+import multipacks.packs.Pack;
+import multipacks.packs.PackIdentifier;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 
 public interface MultipacksPlugin {
 	default void onLoad() {}
 
+	/**
+	 * Attempt to parse repository string. If this plugin can't parse the string, this method will returns
+	 * null.
+	 */
 	default PacksRepository parseRepository(File root, String uri) { return null; }
+
+	/**
+	 * Register post processing passed that can be used for packs. It is recommended to use "namespace:value"
+	 * for pass id to avoid conflicts.
+	 */
 	default void registerPostProcessPasses(HashMap<String, Function<JsonObject, PostProcessPass>> reg) {}
+
+	/**
+	 * Called when the pack is failed to resolve from {@link PackBundler}. You can, for example, returns an
+	 * empty {@link DynamicPack}, which will effectively works as error ignoring.
+	 */
+	default Pack packsResolutionFailback(PackIdentifier id) { return null; }
 
 	ArrayList<MultipacksPlugin> PLUGINS = new ArrayList<>();
 
