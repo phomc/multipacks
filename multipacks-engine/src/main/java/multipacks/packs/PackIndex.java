@@ -15,16 +15,19 @@
  */
 package multipacks.packs;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import multipacks.bundling.BundleInclude;
 import multipacks.utils.Selects;
 import multipacks.versioning.GameVersions;
 import multipacks.versioning.Version;
+import multipacks.vfs.Path;
 
 public class PackIndex {
 	public String id;
@@ -35,7 +38,8 @@ public class PackIndex {
 	public Version packVersion;
 	public Version gameVersion; // TODO: Use pack_format value
 	public PackIdentifier[] include;
-	public String[] ignore;
+	public Map<Path, BundleInclude[]> exports;
+	public JsonElement postProcess;
 
 	public PackIdentifier getIdentifier() {
 		return new PackIdentifier(id, packVersion);
@@ -61,19 +65,24 @@ public class PackIndex {
 
 			return ids;
 		}, new PackIdentifier[0]);
-		out.ignore = Selects.getChain(json.get("ignore"), j -> {
-			JsonArray arr = j.getAsJsonArray();
-			String[] ignore = new String[arr.size()];
+		out.exports = Selects.getChain(json.get("exports"), j -> {
+			JsonObject exportsMap = j.getAsJsonObject();
+			HashMap<Path, BundleInclude[]> exports = new HashMap<>();
 
-			for (int i = 0; i < arr.size(); i++) {
-				String processed = arr.get(i).getAsString();
-				while (processed.startsWith("/")) processed = processed.substring(1);
-				while (processed.endsWith("/")) processed = processed.substring(0, processed.length() - 1);
-				ignore[i] = processed;
+			for (Entry<String, JsonElement> entry : exportsMap.entrySet()) {
+				Path exportDir = new Path(entry.getKey());
+				String exportTypeStr = entry.getValue().getAsString().toUpperCase();
+				BundleInclude[] incl = exportTypeStr.equals("*")? new BundleInclude[] { BundleInclude.RESOURCES, BundleInclude.DATA } : new BundleInclude[] { BundleInclude.valueOf(exportTypeStr) };
+				exports.put(exportDir, incl);
 			}
 
-			return ignore;
-		}, null);
+			return exports;
+		}, Map.of(
+				new multipacks.vfs.Path("assets"), new BundleInclude[] { BundleInclude.RESOURCES },
+				new multipacks.vfs.Path("data"), new BundleInclude[] { BundleInclude.DATA },
+				new multipacks.vfs.Path("pack.png"), new BundleInclude[] { BundleInclude.RESOURCES, BundleInclude.DATA }
+				));
+		out.postProcess = json.get("postProcess");
 		return out;
 	}
 
@@ -97,22 +106,16 @@ public class PackIndex {
 		if (include != null && include.length > 0) {
 			JsonObject includeMap = new JsonObject();
 			for (PackIdentifier i : include) includeMap.addProperty(i.id, i.version.toString());
+			obj.add("include", includeMap);
 		}
 
+		if (exports != null && exports.size() > 0) {
+			JsonObject exportsMap = new JsonObject();
+			for (Entry<Path, BundleInclude[]> e : exports.entrySet()) exportsMap.addProperty(e.getKey().toString(), e.getValue().length == 2? "*" : e.getValue()[0].toString());
+			obj.add("exports", exportsMap);
+		}
+		obj.add("postProcess", postProcess);
 		return obj;
-	}
-
-	public boolean isIgnored(String path) {
-		if (ignore == null) return false;
-		while (path.startsWith("/")) path = path.substring(1);
-		while (path.endsWith("/")) path.substring(0, path.length() - 1);
-
-		for (String pattern : ignore) {
-			if (pattern.endsWith("*") && path.startsWith(pattern.substring(0, pattern.length() - 1))) return true;
-			if (path.equals(pattern)) return true;
-		}
-
-		return false;
 	}
 
 	public JsonObject getMcMeta() {

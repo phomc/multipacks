@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.transforms.defaults.overlay;
+package multipacks.postprocess;
 
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
+import multipacks.bundling.BundleResult;
 import multipacks.utils.Selects;
+import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.vfs.Path;
+import multipacks.vfs.VirtualFs;
 
-public class OverlaySprite {
-	public final String path;
-	public final int x, y;
-	protected BufferedImage overlayCache;
+public class DeletePass extends PostProcessPass {
+	private Path file;
 
-	public OverlaySprite(String path, int x, int y) {
-		this.path = path;
-		this.x = x;
-		this.y = y;
+	public DeletePass(JsonObject config) {
+		file = new Path(Selects.nonNull(config.get("file"), "'file' is empty").getAsString());
 	}
 
-	public OverlaySprite(JsonObject json) {
-		this.path = Selects.nonNull(json.get("path"), "'path' is empty").getAsString();
-		this.x = Selects.nonNull(json.get("x"), "'x' is empty").getAsInt();
-		this.y = Selects.nonNull(json.get("y"), "'y' is empty").getAsInt();
+	@Override
+	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
+		fs.delete(file);
 	}
 }

@@ -18,8 +18,11 @@ package multipacks.bundling;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
+import multipacks.vfs.VirtualFs;
+
 public class BundleResult {
 	private final HashMap<Class<?>, Object> transformResults = new HashMap<>();
+	public VirtualFs files;
 
 	@SuppressWarnings("unchecked")
 	public <T> T getOrCreate(Class<T> clazz, Supplier<T> creator) {

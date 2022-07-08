@@ -16,33 +16,29 @@
 package multipacks.bundling;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 
 import multipacks.management.PacksRepository;
 import multipacks.packs.Pack;
 import multipacks.packs.PackIdentifier;
 import multipacks.packs.PackIndex;
 import multipacks.packs.PackType;
-import multipacks.transforms.TransformPass;
-import multipacks.transforms.TransformativeFileSystem;
+import multipacks.postprocess.PostProcessPass;
+import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.vfs.Path;
+import multipacks.vfs.VirtualFs;
 
 public class PackBundler {
 	public final List<PacksRepository> repositories = new ArrayList<>();
@@ -102,155 +98,70 @@ public class PackBundler {
 		}
 	}
 
-	private boolean shouldWrite(BundleInclude[] includes, String path) {
-		for (BundleInclude incl : includes) {
-			if (incl == BundleInclude.RESOURCES && path.startsWith("assets/")) return true;
-			if (incl == BundleInclude.DATA && path.startsWith("data/")) return true;
-			if (incl == BundleInclude.LICENSES && path.startsWith("licenses/")) return true;
+	private boolean isIncluded(BundleInclude[] includes, BundleInclude... b) {
+		if (includes == null) return true;
+		for (BundleInclude i : b) {
+			for (BundleInclude included : includes) if (i == included) return true;
 		}
-
 		return false;
 	}
 
-	private static final String[] GLOBALLY_IGNORED = { ".git" };
-
-	private TransformativeFileSystem transform(HashMap<String, Pack> resolvedMap, HashMap<String, TransformativeFileSystem> libraryCache, TransformativeFileSystem root, Pack pack, BundleResult result, BundleInclude[] includes) throws IOException {
-		TransformativeFileSystem fs = new TransformativeFileSystem(pack.getRoot());
-
-		// Resolving libraries
-		if (pack.getIndex().include != null) for (PackIdentifier dependency : pack.getIndex().include) {
-			Pack dependencyPack = resolvedMap.get(dependency.id);
-			if (dependencyPack == null || dependencyPack.getIndex().type != PackType.LIBRARY) continue;
-
-			TransformativeFileSystem dependencyFs;
-
-			if ((dependencyFs = libraryCache.get(dependency.id)) == null) {
-				dependencyFs = transform(resolvedMap, libraryCache, fs, dependencyPack, result, includes);
-				libraryCache.put(dependency.id, fs);
-			} else dependencyFs.forEach(l -> {
-				try {
-					byte[] data = l.getAsBytes();
-					fs.put(l.path, data);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
+	private void apply(Pack pack, HashMap<String, Pack> resolvedMap, VirtualFs destination, BundleResult result, BundleInclude[] included) throws IOException {
+		VirtualFs packFiles = new VirtualFs(pack.getRoot());
+		for (PackIdentifier dependency : pack.getIndex().include) {
+			Pack p = resolvedMap.get(dependency.id);
+			if (p != null) apply(p, resolvedMap, packFiles, result, included);
 		}
 
-		// Transformations main
-		InputStream transformations = fs.openRead("transformations.json");
+		// Post processing (if any)
+		if (pack.getIndex().postProcess != null) PostProcessPass.apply(pack.getIndex().postProcess, packFiles, result, logger);
 
-		if (transformations != null) {
-			JsonArray arr = new JsonParser().parse(new InputStreamReader(transformations)).getAsJsonArray();
-			arr.forEach(element -> {
-				TransformPass pass = TransformPass.fromJson(element.getAsJsonObject());
-
-				if (pass == null) {
-					System.err.println("WARNING: Transformation pass with type '" + element.getAsJsonObject().get("type").getAsString() + "' does not exists in this version of Multipacks");
-					return;
-				}
-
-				try {
-					pass.transform(fs, result, logger);
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.err.println("WARNING: Transformation pass with type '" + element.getAsJsonObject().get("type").getAsString() + "' failed while transforming " + pack.getIndex().id);
-				}
-			});
-			transformations.close();
+		// Export all exported contents (defined in index)
+		Map<Path, BundleInclude[]> exports = Selects.firstNonNull(pack.getIndex().exports, Map.of(
+				new multipacks.vfs.Path("assets"), new BundleInclude[] { BundleInclude.RESOURCES },
+				new multipacks.vfs.Path("data"), new BundleInclude[] { BundleInclude.DATA }
+				));
+		for (Entry<Path, BundleInclude[]> e : exports.entrySet()) {
+			if (!isIncluded(included, e.getValue())) continue;
+			Path exportedDir = e.getKey();
+			for (Path file : packFiles.ls(exportedDir)) destination.write(file, packFiles.read(file));
 		}
 
-		fs.forEach(t -> {
-			try {
-				String path = t.path;
-				if (fs.isDeleted(path)) return;
-				if (pack.getIndex().isIgnored(path)) return;
-				for (String globalIgnore : GLOBALLY_IGNORED) if (path.startsWith(globalIgnore)) return;
-
-				String[] splits = t.path.split("/");
-				if (splits.length == 1) switch (splits[0].toLowerCase()) {
-				case "license":
-				case "license.md":
-				case "license.txt":
-				case "licence":
-				case "licence.md":
-				case "licence.txt":
-					if (this.bundlingIgnores.contains(BundleIgnore.LICENSES)) return;
-					path = "licenses/" + pack.getIndex().id;
-					break;
-				default:
-					return;
-				}
-
-				if (shouldWrite(includes, path)) root.put(path, t.getAsBytes());
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.err.println("Failed to get data from " + t.path + " in TFS");
+		// Write licenses
+		for (Path licFile : packFiles.ls(new Path("licenses"))) destination.write(licFile, packFiles.read(licFile));
+		final String[] LICENSE_FILES = { "license", "licence", "license.txt", "licence.txt", "license.md", "licence.md" };
+		if (!bundlingIgnores.contains(BundleIgnore.LICENSES)) for (String f : LICENSE_FILES) {
+			Path licFile = new Path(f);
+			if (packFiles.isExists(licFile)) {
+				byte[] data = packFiles.read(licFile);
+				destination.write(new Path("licenses", pack.getIdentifier().id + ".txt"), data);
 			}
-		});
-
-		return fs;
+		}
 	}
 
-	/**
-	 * Bundle the pack and write pack data as ZIP package to stream.
-	 * @param source The source pack.
-	 * @param stream The stream to write.
-	 * @param includes Pack types to includes. If this array contains nothing, it will includes everything.
-	 * @return The bundling result, usually contains some informations generated from data transformers (font
-	 * icons for example).
-	 */
-	public BundleResult bundle(Pack source, OutputStream stream, BundleInclude... includes) throws IOException {
-		if (includes == null || includes.length == 0) includes = BundleInclude.values();
-		final BundleInclude[] includesFinal = includes;
-
-		// Resolving
-		HashMap<String, Pack> resolvedMap = new HashMap<>();
-		List<Pack> resolvedList = new ArrayList<>();
-		resolveDependencies(source.getIdentifier().id, source, resolvedMap, resolvedList);
-		resolvedList.add(source);
-
-		// Transforming
-		HashMap<String, TransformativeFileSystem> libraryCache = new HashMap<>();
-		TransformativeFileSystem root = new TransformativeFileSystem(null);
+	public BundleResult bundle(Pack pack, OutputStream out, BundleInclude[] included) throws IOException {
 		BundleResult result = new BundleResult();
+		ArrayList<Pack> dependencies = new ArrayList<>();
+		HashMap<String, Pack> resolvedMap = new HashMap<>();
+		resolveDependencies(pack.getIndex().id, pack, resolvedMap, dependencies);
 
-		for (Pack pack : resolvedList) {
-			if (pack.getIndex().type == PackType.LIBRARY && pack != source) continue;
-			transform(resolvedMap, libraryCache, root, pack, result, includesFinal);
-		}
+		VirtualFs outputFs = new VirtualFs(null);
+		apply(pack, resolvedMap, outputFs, result, included);
+		result.files = outputFs;
 
-		// Packaging
-		ZipOutputStream zip = new ZipOutputStream(stream);
-		long creationTime = System.currentTimeMillis();
+		// Writing generated files
+		outputFs.writeJson(new Path("pack.mcmeta"), pack.getIndex().getMcMeta());
 
-		root.forEach(t -> {
-			try {
-				zip.putNextEntry(new ZipEntry(t.path).setCreationTime(FileTime.fromMillis(creationTime)));
-				zip.write(t.transformed);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.err.println("Failed to write " + t.path + " to ZipOutputStream, skipping");
+		if (out != null) {
+			ZipOutputStream zip = new ZipOutputStream(out, StandardCharsets.UTF_8);
+			FileTime time = FileTime.fromMillis(System.currentTimeMillis());
+			for (Entry<Path, byte[]> e : outputFs.emulatedFs.entrySet()) {
+				zip.putNextEntry(new ZipEntry(e.getKey().toString()).setCreationTime(time).setLastModifiedTime(time));
+				zip.write(e.getValue());
+				zip.closeEntry();
 			}
-		});
-
-		zip.putNextEntry(new ZipEntry("pack.mcmeta").setCreationTime(FileTime.fromMillis(creationTime)));
-		JsonWriter mcMetaWriter = new JsonWriter(new OutputStreamWriter(zip));
-		mcMetaWriter.setIndent("    ");
-		new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(source.getIndex().getMcMeta(), mcMetaWriter);
-		mcMetaWriter.flush();
-
-		File packPng = new File(source.getRoot(), "pack.png");
-
-		if (packPng.exists()) {
-			zip.putNextEntry(new ZipEntry("pack.png").setCreationTime(FileTime.fromMillis(creationTime)));
-			InputStream packPngIn = new FileInputStream(packPng);
-			packPngIn.transferTo(zip);
-			packPngIn.close();
+			zip.close();
 		}
-
-		zip.closeEntry();
-		zip.close();
 
 		return result;
 	}

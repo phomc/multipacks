@@ -13,33 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.transforms.defaults.debug;
+package multipacks.postprocess;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
-import multipacks.transforms.TransformPass;
-import multipacks.transforms.TransformativeFileSystem;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.vfs.Path;
+import multipacks.vfs.VirtualFs;
 
-public class PathTestTransformPass extends TransformPass {
-	private String test;
+public class CopyPass extends PostProcessPass {
+	private Path from;
+	private Path to;
 
-	public PathTestTransformPass(JsonObject json) {
-		test = Selects.nonNull(json.get("test"), "'test' is empty").getAsString();
+	public CopyPass(JsonObject config) {
+		from = new Path(Selects.nonNull(config.get("from"), "'from' is empty").getAsString());
+		to = new Path(Selects.nonNull(config.get("to"), "'to' is empty").getAsString());
 	}
 
 	@Override
-	public void transform(TransformativeFileSystem fs, BundleResult result, AbstractMPLogger logger) throws IOException {
-		try {
-			byte[] data = fs.get(test);
-			logger.info("File test: '" + test + "' " + (data != null? "FOUND" : "FAILED"));
-		} catch (FileNotFoundException e) {
-			logger.info("FileNotFoundException thrown...");
+	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
+		for (Path pFrom : fs.ls(from)) {
+			String tail = pFrom.toString().substring(from.toString().length() + 1);
+			Path pTo = Path.join(to, new Path(tail));
+			byte[] bs = fs.read(pFrom);
+			fs.write(pTo, bs);
 		}
 	}
 }

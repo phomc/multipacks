@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import multipacks.bundling.BundleIgnore;
@@ -185,6 +187,10 @@ public class MultipacksCLI {
 		PackIndex packIndex = new PackIndex();
 		packIndex.id = outDir.getName().toLowerCase().replace(' ', '-');
 		packIndex.name = outDir.getName();
+		packIndex.exports = Map.of(
+				new multipacks.vfs.Path("assets"), new BundleInclude[] { BundleInclude.RESOURCES },
+				new multipacks.vfs.Path("data"), new BundleInclude[] { BundleInclude.DATA }
+				);
 
 		if (!skipPrompts) {
 			System.out.println("Fill informations to initialize: (some fields are optional)");
@@ -261,13 +267,14 @@ public class MultipacksCLI {
 				for (PackIdentifier i : index.include) System.out.println("   + " + i.id + " " + (i.folder != null? "Local(" + i.folder + ")" : i.version));
 			}
 
-			File assets = pack.getAssetsRoot();
-			File data = pack.getDataRoot();
-
-			System.out.println("Pack content locations:");
 			System.out.println(" - Pack root: " + packDir.getAbsolutePath());
-			if (assets != null) System.out.println(" - Assets: " + assets.getAbsolutePath());
-			if (data != null) System.out.println(" - Data: " + data.getAbsolutePath());
+
+			if (pack.getIndex().exports != null) {
+				System.out.println("Pack exports:");
+				for (Entry<multipacks.vfs.Path, BundleInclude[]> e : pack.getIndex().exports.entrySet()) {
+					System.out.println(" - " + e.getKey().toString() + ": " + (e.getValue().length == 2? "* (all)" : e.getValue()[0].toString()));
+				}
+			}
 
 		} catch (IOException e) {
 			e.printStackTrace();

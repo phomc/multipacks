@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.transforms;
+package multipacks.postprocess;
 
-public class TransformFailException extends RuntimeException {
+public class ProcessFailException extends RuntimeException {
 	private static final long serialVersionUID = 1329721208999079531L;
 
-	public TransformFailException() {}
+	public ProcessFailException() {}
 
-	public TransformFailException(String message) {
+	public ProcessFailException(String message) {
 		super(message);
 	}
 }
