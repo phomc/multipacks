@@ -39,16 +39,6 @@ public class Pack {
 		return packRoot;
 	}
 
-	public File getAssetsRoot() {
-		File assets = new File(packRoot, "assets");
-		return assets.exists()? assets : null;
-	}
-
-	public File getDataRoot() {
-		File data = new File(packRoot, "data");
-		return data.exists()? data : null;
-	}
-
 	public PackIdentifier getIdentifier() {
 		return identifier;
 	}
