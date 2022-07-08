@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.postprocess.basic;
+package multipacks.packs;
 
 import java.io.IOException;
 
-import com.google.gson.JsonObject;
-
 import multipacks.bundling.BundleResult;
-import multipacks.postprocess.PostProcessPass;
-import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractMPLogger;
-import multipacks.vfs.Path;
 import multipacks.vfs.VirtualFs;
 
-public class DeletePass extends PostProcessPass {
-	private Path file;
-
-	public DeletePass(JsonObject config) {
-		file = new Path(Selects.nonNull(config.get("file"), "'file' is empty").getAsString());
+/**
+ * Dynamic packs allow you to add contents dynamically. An example would be composing .bbmodel (Blockbench
+ * Model) into a resource pack with its rotations + position fixed for Minecraft (because of the dumb
+ * restriction).
+ * @author nahkd
+ *
+ */
+public abstract class DynamicPack extends Pack {
+	public DynamicPack(PackIndex index) {
+		super(index);
 	}
 
-	public DeletePass(Path file) {
-		this.file = file;
-	}
-
-	@Override
-	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
-		fs.delete(file);
-	}
+	/**
+	 * Build the pack from configurations inside this dynamic pack.
+	 */
+	public abstract void build(VirtualFs outputFiles, BundleResult result) throws IOException;
 }

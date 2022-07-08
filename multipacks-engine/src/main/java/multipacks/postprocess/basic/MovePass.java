@@ -35,6 +35,11 @@ public class MovePass extends PostProcessPass {
 		to = new Path(Selects.nonNull(config.get("to"), "'to' is empty").getAsString());
 	}
 
+	public MovePass(Path from, Path to) {
+		this.from = from;
+		this.to = to;
+	}
+
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		for (Path pFrom : fs.ls(from)) {

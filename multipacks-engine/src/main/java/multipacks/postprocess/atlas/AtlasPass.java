@@ -50,6 +50,12 @@ public class AtlasPass extends PostProcessPass {
 		}
 	}
 
+	public AtlasPass(Path from, Path to, AtlasTemplate... templates) {
+		this.from = from;
+		this.to = to;
+		this.templates = templates;
+	}
+
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		for (Path src : fs.ls(from)) {

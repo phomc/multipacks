@@ -1,5 +1,5 @@
 name: Multipacks
 author: MangoPlex
 version: ${version}
-main: multipacks.spigot.MultipacksPlugin
+main: multipacks.spigot.MultipacksSpigot
 api-version: 1.18

@@ -50,6 +50,13 @@ public class FontIconsPass extends PostProcessPass {
 		for (int i = 0; i < mapping.length; i++) mapping[i] = new GlyphMapping(arr.get(i));
 	}
 
+	public FontIconsPass(Path from, Path to, Path texturesOutput, GlyphMapping... mapping) {
+		this.from = from;
+		this.to = to;
+		this.textures = texturesOutput;
+		this.mapping = mapping;
+	}
+
 	private int nextChar() {
 		for (GlyphMapping m : mapping) {
 			if (currentChar >= m.size()) {

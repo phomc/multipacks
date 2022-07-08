@@ -31,6 +31,16 @@ public class Pack {
 		this.identifier = index.getIdentifier();
 	}
 
+	/**
+	 * Construct a brand new pack without local root directory. Use this if you want to build a dynamic pack. Oh and
+	 * to actually build a dynamic pack, you'll have to extends {@link DynamicPack}. 
+	 */
+	public Pack(PackIndex index) {
+		this.packRoot = null;
+		this.index = index;
+		this.identifier = index.getIdentifier();
+	}
+
 	public PackIndex getIndex() {
 		return index;
 	}
