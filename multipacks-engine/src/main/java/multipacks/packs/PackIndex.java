@@ -45,6 +45,14 @@ public class PackIndex {
 		return new PackIdentifier(id, packVersion);
 	}
 
+	public PackIndex id(String id) { this.id = id; return this; }
+	public PackIndex name(String name) { this.name = name; return this; }
+	public PackIndex author(String author) { this.author = author; return this; }
+	public PackIndex description(String desc) { this.description = desc; return this; }
+	public PackIndex packType(PackType type) { this.type = type; return this; }
+	public PackIndex packVersion(Version version) { this.packVersion = version; return this; }
+	public PackIndex gameVersion(Version version) { this.gameVersion = version; return this; }
+
 	public static PackIndex fromJson(JsonObject json) {
 		PackIndex out = new PackIndex();
 		out.id = Selects.nonNull(json.get("id"), "Missing 'id' in pack index file").getAsString();
