@@ -42,13 +42,13 @@ import multipacks.utils.Selects;
  * @see #getInstance()
  *
  */
-public class MultipacksPlugin extends JavaPlugin {
+public class MultipacksSpigot extends JavaPlugin {
 	private JavaMPLogger logger;
 	private JsonObject config;
 	private List<PacksRepository> repos;
 	private PacksRepository selectedRepo;
 
-	private static MultipacksPlugin INSTANCE;
+	private static MultipacksSpigot INSTANCE;
 
 	@Override
 	public void onEnable() {
@@ -156,7 +156,7 @@ public class MultipacksPlugin extends JavaPlugin {
 	/**
 	 * Get instance of this plugin.
 	 */
-	public static MultipacksPlugin getInstance() {
+	public static MultipacksSpigot getInstance() {
 		return INSTANCE;
 	}
 }
