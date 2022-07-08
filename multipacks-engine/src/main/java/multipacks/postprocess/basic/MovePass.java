@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.postprocess;
+package multipacks.postprocess.basic;
 
 import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.BundleResult;
+import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 import multipacks.vfs.Path;
 import multipacks.vfs.VirtualFs;
 
-public class CopyPass extends PostProcessPass {
+public class MovePass extends PostProcessPass {
 	private Path from;
 	private Path to;
 
-	public CopyPass(JsonObject config) {
+	public MovePass(JsonObject config) {
 		from = new Path(Selects.nonNull(config.get("from"), "'from' is empty").getAsString());
 		to = new Path(Selects.nonNull(config.get("to"), "'to' is empty").getAsString());
 	}
@@ -41,6 +42,7 @@ public class CopyPass extends PostProcessPass {
 			Path pTo = Path.join(to, new Path(tail));
 			byte[] bs = fs.read(pFrom);
 			fs.write(pTo, bs);
+			fs.delete(pFrom);
 		}
 	}
 }

@@ -23,11 +23,11 @@ import com.google.gson.JsonObject;
 
 import multipacks.management.LocalRepository;
 import multipacks.management.PacksRepository;
-import multipacks.postprocess.CopyPass;
-import multipacks.postprocess.DeletePass;
-import multipacks.postprocess.IncludePass;
-import multipacks.postprocess.MovePass;
 import multipacks.postprocess.PostProcessPass;
+import multipacks.postprocess.basic.CopyPass;
+import multipacks.postprocess.basic.DeletePass;
+import multipacks.postprocess.basic.IncludePass;
+import multipacks.postprocess.basic.MovePass;
 
 public class MultipacksDefaultPlugin implements MultipacksPlugin {
 	@Override
