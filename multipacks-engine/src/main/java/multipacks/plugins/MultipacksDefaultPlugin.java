@@ -30,6 +30,7 @@ import multipacks.postprocess.basic.DeletePass;
 import multipacks.postprocess.basic.IncludePass;
 import multipacks.postprocess.basic.MovePass;
 import multipacks.postprocess.font.FontIconsPass;
+import multipacks.postprocess.overlays.OverlayPass;
 
 public class MultipacksDefaultPlugin implements MultipacksPlugin {
 	@Override
@@ -47,5 +48,6 @@ public class MultipacksDefaultPlugin implements MultipacksPlugin {
 
 		reg.put("font-icons", FontIconsPass::new);
 		reg.put("atlas", AtlasPass::new);
+		reg.put("overlay", OverlayPass::new);
 	}
 }
