@@ -30,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import multipacks.management.PacksRepository;
+import multipacks.packs.DynamicPack;
 import multipacks.packs.Pack;
 import multipacks.packs.PackIdentifier;
 import multipacks.packs.PackIndex;
@@ -108,13 +109,19 @@ public class PackBundler {
 
 	private void apply(Pack pack, HashMap<String, Pack> resolvedMap, VirtualFs destination, BundleResult result, BundleInclude[] included) throws IOException {
 		VirtualFs packFiles = new VirtualFs(pack.getRoot());
-		for (PackIdentifier dependency : pack.getIndex().include) {
+		if (pack.getIndex().include != null) for (PackIdentifier dependency : pack.getIndex().include) {
 			Pack p = resolvedMap.get(dependency.id);
 			if (p != null) apply(p, resolvedMap, packFiles, result, included);
 		}
 
 		// Post processing (if any)
 		if (pack.getIndex().postProcess != null) PostProcessPass.apply(pack.getIndex().postProcess, packFiles, result, logger);
+
+		// Dynamic packs are not allowed to use exports field!
+		if (pack instanceof DynamicPack dynamic) {
+			dynamic.build(packFiles, result);
+			return;
+		}
 
 		// Export all exported contents (defined in index)
 		Map<Path, BundleInclude[]> exports = Selects.firstNonNull(pack.getIndex().exports, Map.of(
