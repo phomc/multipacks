@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import multipacks.utils.ResourcePath;
+
 /**
  * Immutable path object. To be fair it is actually mutable, but you'll have to use reflections and crap
  * just to modify its internal segments array.
@@ -44,7 +46,7 @@ public class Path {
 	public Path(String... segments) {
 		List<String> stack = new ArrayList<>();
 		for (String s : segments) {
-			if (s.equals(".")) continue;
+			if (s.equals(".") || s.length() == 0) continue;
 			else if (s.equals("..")) {
 				if (stack.size() == 0 || stack.get(stack.size() - 1).equals("..")) stack.add("..");
 				else stack.remove(stack.size() - 1);
@@ -64,6 +66,10 @@ public class Path {
 
 	public Path parent() {
 		return Path.join(this, new Path(".."));
+	}
+
+	public String fileName() {
+		return segments[segments.length - 1];
 	}
 
 	/**
@@ -100,6 +106,18 @@ public class Path {
 
 	public File joinWith(File root) {
 		return new File(root, String.join(File.separator, segments));
+	}
+
+	public ResourcePath toNamespacedKey(int shifts) {
+		// Format: <assets or data>/<namespace>/<whatever this is>/<key>
+		if (isAccessingParent()) return null;
+		if (segments.length < 3) return new ResourcePath("minecraft", toString());
+		String namespace = segments[1];
+		Path shifted = new Path(segments[0], segments[1]);
+		while (shifted.segments.length < shifts) shifted = shifted.join(segments[shifted.segments.length]);
+
+		String key = toString().substring(shifted.toString().length() + 1);
+		return new ResourcePath(namespace, key);
 	}
 
 	public boolean isParentOf(Path child) {

@@ -17,6 +17,8 @@ package multipacks.utils;
 
 import java.util.Objects;
 
+import multipacks.vfs.Path;
+
 public class ResourcePath {
 	public final String namespace;
 	public final String path;
@@ -35,6 +37,13 @@ public class ResourcePath {
 			namespace = "minecraft";
 			path = str;
 		}
+	}
+
+	public ResourcePath noFileExtension() {
+		Path p = new Path(path);
+		String[] splits = p.fileName().split("\\.");
+		if (splits.length == 1) return this;
+		return new ResourcePath(namespace, path.substring(0, path.length() - splits[splits.length - 1].length() - 1));
 	}
 
 	@Override

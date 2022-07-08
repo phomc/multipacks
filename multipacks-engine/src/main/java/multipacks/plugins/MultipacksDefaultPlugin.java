@@ -28,6 +28,7 @@ import multipacks.postprocess.basic.CopyPass;
 import multipacks.postprocess.basic.DeletePass;
 import multipacks.postprocess.basic.IncludePass;
 import multipacks.postprocess.basic.MovePass;
+import multipacks.postprocess.font.FontIconsPass;
 
 public class MultipacksDefaultPlugin implements MultipacksPlugin {
 	@Override
@@ -42,5 +43,7 @@ public class MultipacksDefaultPlugin implements MultipacksPlugin {
 		reg.put("move", MovePass::new);
 		reg.put("delete", DeletePass::new);
 		reg.put("copy", CopyPass::new);
+
+		reg.put("font-icons", FontIconsPass::new);
 	}
 }
