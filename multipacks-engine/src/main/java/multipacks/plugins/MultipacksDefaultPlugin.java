@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import multipacks.management.LocalRepository;
 import multipacks.management.PacksRepository;
 import multipacks.postprocess.PostProcessPass;
+import multipacks.postprocess.atlas.AtlasPass;
 import multipacks.postprocess.basic.CopyPass;
 import multipacks.postprocess.basic.DeletePass;
 import multipacks.postprocess.basic.IncludePass;
@@ -45,5 +46,6 @@ public class MultipacksDefaultPlugin implements MultipacksPlugin {
 		reg.put("copy", CopyPass::new);
 
 		reg.put("font-icons", FontIconsPass::new);
+		reg.put("atlas", AtlasPass::new);
 	}
 }
