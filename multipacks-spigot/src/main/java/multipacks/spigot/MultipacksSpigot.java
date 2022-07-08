@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.gson.JsonArray;
@@ -33,13 +34,22 @@ import com.google.gson.JsonObject;
 import multipacks.bundling.BundleIgnore;
 import multipacks.bundling.PackBundler;
 import multipacks.management.PacksRepository;
+import multipacks.plugins.MultipacksDefaultPlugin;
+import multipacks.plugins.MultipacksPlugin;
 import multipacks.utils.IOUtils;
+import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 
 /**
- * The entry point for accessing Multipacks API for Spigot.
+ * The entry point for accessing Multipacks API for Spigot. Contains some methods for converting between Multipacks
+ * objects and Spigot/Bukkit objects, as well as packs generation.
  * @author nahkd
  * @see #getInstance()
+ * @apiNote While using Multipacks Spigot, please do not touch any method related to Multipacks dynamic plugins
+ * APIs (those are {@link MultipacksPlugin#loadJarPlugin(File)} and {@link MultipacksPlugin#loadJarPlugin(java.net.URL)}).
+ * Some users may use /reload (not recommended, but who cares?) or "plugins management" plugin to controls how server
+ * plugins works. Using any of these methods will causes memory leak. The only exception is
+ * {@link MultipacksPlugin#loadPlugin(MultipacksPlugin)}, which loads the plugin instance.
  *
  */
 public class MultipacksSpigot extends JavaPlugin {
@@ -56,6 +66,7 @@ public class MultipacksSpigot extends JavaPlugin {
 		long benchmarkStart = System.nanoTime();
 
 		logger = new JavaMPLogger(getLogger());
+		MultipacksPlugin.loadPlugin(new MultipacksDefaultPlugin());
 
 		File configFile = new File(getDataFolder(), "config.json");
 
@@ -158,5 +169,21 @@ public class MultipacksSpigot extends JavaPlugin {
 	 */
 	public static MultipacksSpigot getInstance() {
 		return INSTANCE;
+	}
+
+	/**
+	 * Convert {@link ResourcePath} to {@link NamespacedKey}. This does call the "internal use only" constructor
+	 * (and they might remove it in the future).
+	 */
+	@SuppressWarnings("deprecation")
+	public static NamespacedKey toNamespacedKey(ResourcePath resPath) {
+		return new NamespacedKey(resPath.namespace, resPath.path);
+	}
+
+	/**
+	 * Convert {@link NamespacedKey} to {@link ResourcePath}.
+	 */
+	public static ResourcePath toResourcePath(NamespacedKey key) {
+		return new ResourcePath(key.getNamespace(), key.getKey());
 	}
 }
