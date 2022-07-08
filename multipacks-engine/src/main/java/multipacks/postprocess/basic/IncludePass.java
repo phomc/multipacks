@@ -34,6 +34,10 @@ public class IncludePass extends PostProcessPass {
 		file = new Path(Selects.nonNull(config.get("file"), "'file' is empty").getAsString());
 	}
 
+	public IncludePass(Path file) {
+		this.file = file;
+	}
+
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		JsonElement json = fs.readJson(file);

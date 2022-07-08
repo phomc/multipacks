@@ -33,6 +33,10 @@ public class DeletePass extends PostProcessPass {
 		file = new Path(Selects.nonNull(config.get("file"), "'file' is empty").getAsString());
 	}
 
+	public DeletePass(Path file) {
+		this.file = file;
+	}
+
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		fs.delete(file);

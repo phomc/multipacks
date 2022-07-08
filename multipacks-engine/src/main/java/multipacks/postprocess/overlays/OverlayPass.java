@@ -44,9 +44,16 @@ public class OverlayPass extends PostProcessPass {
 		for (int i = 0; i < overlays.length; i++) overlays[i] = new Overlay(arr.get(i));
 	}
 
+	public OverlayPass(Path target, Overlay... overlays) {
+		this.target = target;
+		this.overlays = overlays;
+	}
+
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		for (Overlay overlay : overlays) {
+			if (overlay.overlayFile == null) continue;
+
 			InputStream in = fs.getStream(overlay.overlayFile);
 			if (in == null) {
 				logger.warning("Overlay " + overlay.overlayFile + " doesn't exists, skipping...");

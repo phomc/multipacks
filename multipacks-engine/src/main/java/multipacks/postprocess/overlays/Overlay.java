@@ -46,4 +46,10 @@ public class Overlay {
 			y = Selects.nonNull(obj.get("y"), "'y' is empty").getAsInt();
 		} else throw new JsonSyntaxException("Invalid JSON object type: " + json.getClass().getName());
 	}
+
+	public Overlay(BufferedImage overlay, int x, int y) {
+		overlayFile = null;
+		this.cachedImage = overlay;
+		this.x = x; this.y = y;
+	}
 }
