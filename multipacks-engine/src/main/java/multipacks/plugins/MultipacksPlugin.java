@@ -60,6 +60,7 @@ public interface MultipacksPlugin {
 	default Pack packsResolutionFailback(PackIdentifier id) { return null; }
 
 	ArrayList<MultipacksPlugin> PLUGINS = new ArrayList<>();
+	ArrayList<URLClassLoader> JAR_HANDLES = new ArrayList<>();
 
 	static void loadPlugin(MultipacksPlugin plugin) {
 		plugin.onLoad();
@@ -68,30 +69,36 @@ public interface MultipacksPlugin {
 	}
 
 	static void loadJarPlugin(URL jarUrl) throws IOException {
-		try (URLClassLoader clsLoader = new URLClassLoader(new URL[] { jarUrl }, MultipacksPlugin.class.getClassLoader())) {
-			InputStream in = clsLoader.getResourceAsStream("multipacks.plugin.json");
-			if (in == null) throw new PluginLoadException("Missing multipacks.plugin.json inside " + jarUrl + " plugin");
-			JsonElement json = new JsonParser().parse(new InputStreamReader(in));
-			in.close();
+		URLClassLoader clsLoader = new URLClassLoader(new URL[] { jarUrl }, MultipacksPlugin.class.getClassLoader());
+		InputStream in = clsLoader.getResourceAsStream("multipacks.plugin.json");
+		if (in == null) {
+			clsLoader.close();
+			throw new PluginLoadException("Missing multipacks.plugin.json inside " + jarUrl + " plugin");
+		}
+		JsonElement json = new JsonParser().parse(new InputStreamReader(in));
+		in.close();
 
-			String mainClass;
+		String mainClass;
 
-			if (json.isJsonPrimitive()) {
-				mainClass = json.getAsString();
-			} else if (json.isJsonObject()) {
-				mainClass = Selects.nonNull(json.getAsJsonObject().get("main"), "Missing 'main' in multipacks.plugin.json").getAsString();
-			} else throw new PluginLoadException("Cannot read main class inside multipacks.plugin.json in " + jarUrl + " plugin");
+		if (json.isJsonPrimitive()) {
+			mainClass = json.getAsString();
+		} else if (json.isJsonObject()) {
+			mainClass = Selects.nonNull(json.getAsJsonObject().get("main"), "Missing 'main' in multipacks.plugin.json").getAsString();
+		} else {
+			clsLoader.close();
+			throw new PluginLoadException("Cannot read main class inside multipacks.plugin.json in " + jarUrl + " plugin");
+		}
 
-			try {
-				Class<?> cls = Class.forName(mainClass, true, clsLoader);
-				Constructor<?> ctor = cls.getDeclaredConstructor();
-				Object obj = ctor.newInstance();
+		try {
+			Class<?> cls = Class.forName(mainClass, true, clsLoader);
+			Constructor<?> ctor = cls.getDeclaredConstructor();
+			Object obj = ctor.newInstance();
 
-				if (obj instanceof MultipacksPlugin plugin) loadPlugin(plugin);
-				else System.err.println("Warning: Plugin '" + jarUrl + "' have its main class not an instance of MultipacksPlugin");
-			} catch (Exception e) {
-				throw new PluginLoadException("Cannot load plugin " + jarUrl, e);
-			}
+			if (obj instanceof MultipacksPlugin plugin) loadPlugin(plugin);
+			else System.err.println("Warning: Plugin '" + jarUrl + "' have its main class not an instance of MultipacksPlugin");
+			JAR_HANDLES.add(clsLoader);
+		} catch (Exception e) {
+			throw new PluginLoadException("Cannot load plugin " + jarUrl, e);
 		}
 	}
 
