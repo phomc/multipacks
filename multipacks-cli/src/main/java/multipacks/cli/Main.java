@@ -16,6 +16,8 @@
 package multipacks.cli;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -29,7 +31,7 @@ import multipacks.plugins.MultipacksPlugin;
 import multipacks.versioning.Version;
 
 public class Main {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Platform currentPlatform = Platform.getPlatform();
 
 		if (currentPlatform == Platform.UNKNOWN) {
@@ -166,5 +168,8 @@ public class Main {
 		}
 
 		cli.exec(regularArguments.toArray(String[]::new));
+
+		// Clean up
+		for (URLClassLoader loader : MultipacksPlugin.JAR_HANDLES) loader.close();
 	}
 }
