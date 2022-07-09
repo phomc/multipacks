@@ -22,6 +22,10 @@ allprojects {
     project(":$it") {
         apply plugin: "maven-publish"
 
+        java {
+            withSourcesJar()
+        }
+
         publishing {
             publications {
                 mavenJava(MavenPublication) {
