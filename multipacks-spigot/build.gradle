@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':multipacks-engine')
+    api project(':multipacks-engine')
     compileOnly 'org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT'
 
     shadow project(':multipacks-engine')
