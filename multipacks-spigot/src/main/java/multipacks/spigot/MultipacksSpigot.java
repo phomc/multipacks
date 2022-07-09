@@ -17,6 +17,7 @@ package multipacks.spigot;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLClassLoader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,6 +131,16 @@ public class MultipacksSpigot extends JavaPlugin {
 		repos = null;
 		config = null;
 		logger = null;
+
+		// Resources releasing
+		for (URLClassLoader loader : MultipacksPlugin.JAR_HANDLES) {
+			try {
+				loader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				logger.error("Cannot close " + loader.getName() + " class loader. Expect some memory leaks when using /reload");
+			}
+		}
 	}
 
 	/**
