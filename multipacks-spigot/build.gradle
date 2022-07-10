@@ -29,5 +29,7 @@ processResources {
 }
 
 shadowJar {
-     relocate 'com.google.gson', 'multipacks.generated.relocated.gson'
+    dependencies {
+        include(project(':multipacks-engine'))
+    }
 }
