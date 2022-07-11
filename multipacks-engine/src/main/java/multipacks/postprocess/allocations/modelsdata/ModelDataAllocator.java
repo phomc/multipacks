@@ -13,29 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.bundling;
-
-import java.util.HashMap;
-import java.util.function.Supplier;
+package multipacks.postprocess.allocations.modelsdata;
 
 import multipacks.postprocess.allocations.Allocator;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.Path;
 
-public class BundleResult {
-	private final HashMap<Class<?>, Object> transformResults = new HashMap<>();
-	public VirtualFs files;
-
-	@SuppressWarnings("unchecked")
-	public <T> T getOrCreate(Class<T> clazz, Supplier<T> creator) {
-		if (clazz == Allocator.class) throw new IllegalArgumentException("Cannot take in Allocator class. Please extends Allocator.");
-
-		Object obj = transformResults.get(clazz);
-
-		if (obj == null) {
-			obj = creator.get();
-			transformResults.put(clazz, obj);
-		}
-
-		return (T) obj;
-	}
+public class ModelDataAllocator extends Allocator<AllocatedModelData, Path> {
 }
