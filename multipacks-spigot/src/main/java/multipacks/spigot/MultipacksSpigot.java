@@ -232,16 +232,23 @@ public class MultipacksSpigot extends JavaPlugin {
 
 			// Optionally serving the pack
 			if (packServer != null) for (Player p : getServer().getOnlinePlayers()) {
-				try {
-					packServer.serve(p, packArtifact);
-				} catch (Exception e) {
-					e.printStackTrace();
-					logger.warning("Cannot serve master pack to " + p.getName() + " (UUID = " + p.getUniqueId() + ")");
-				}
+				supplyMasterPack(p);
 			}
 
 			return true;
 		}
+	}
+
+	/**
+	 * Ask the packs server to supply the pack to target player. Does not return anything.
+	 */
+	public void supplyMasterPack(Player p) {
+		packServer.serve(p, packArtifact).whenComplete((result, e) -> {
+			if (e != null) {
+				e.printStackTrace();
+				logger.warning("Cannot serve master pack to " + p.getName() + " (UUID = " + p.getUniqueId() + ")");
+			}
+		});
 	}
 
 	@Override

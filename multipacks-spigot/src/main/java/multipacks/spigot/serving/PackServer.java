@@ -23,15 +23,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.google.gson.JsonObject;
 
+import multipacks.spigot.MultipacksSpigot;
 import multipacks.utils.PlatformAPI;
 import multipacks.utils.logging.AbstractMPLogger;
 
 /**
  * It's not the kind of HTTP or TCP server, but instead an interface for servers to serves the pack to
- * players. This server is responsible for taking the pack and force player to install it. 
+ * players. This server is responsible for taking the pack and force player to install it.<br>
+ * When the pack server is constructed, it should also register to {@link PlayerJoinEvent} to watch for players
+ * changes and supply them with built artifact (calls {@link MultipacksSpigot#supplyMasterPack(Player)} to
+ * supply).
  * @author nahkd
  *
  */
