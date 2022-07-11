@@ -2,5 +2,21 @@
     "repositories": [
         "file:packsRepository"
     ],
-    "selectedRepo": 0
+    "selectedRepo": 0,
+    "pack": {
+        "comment//0": "Master pack configuration. This is the one and only pack that all plugins will access.",
+        "comment//1": "Including other packs by editing multipacks.json inside your master pack",
+
+        "enabled": false,
+        "folder": "my-pack",
+        "result": "my-pack-artifact.zip",
+
+        "serving": {
+            "comment//0": "This options is used for serving packs (Eg: over HTTP or copy to .minecraft/resourcespack)",
+            "comment//1": "Serving types can be installed by installing other Spigot plugins",
+
+            "enabled": false,
+            "servingType": "local"
+        }
+    }
 }
