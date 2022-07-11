@@ -68,7 +68,7 @@ public class MainCommand implements TabCompleter, CommandExecutor {
 				return print(sender, "&cCommand failed: &f" + Selects.firstNonNull(e.getMessage(), "Details printed in console"));
 			}
 
-			return print(sender, success? "&cRebuild failed: &fDetail messages printed in console" : "&7Rebuilt!");
+			return print(sender, success? "&7Master pack rebuilt!" : "&cRebuild failed: &fDetail messages printed in console");
 		}
 		if (args[0].equalsIgnoreCase("install") && sender.hasPermission(INSTALL)) {
 			if (args.length < 2) return print(sender, "&cCommand failed: &fMissing path to pack");
@@ -79,7 +79,7 @@ public class MainCommand implements TabCompleter, CommandExecutor {
 			print(sender, "&7Installing...");
 			plugin.getLogger().info("Reading pack folder (relative to current working directory)...");
 			File packRoot = new File(args[1]);
-			if (!packRoot.exists() || packRoot.isDirectory()) {
+			if (!packRoot.exists() || !packRoot.isDirectory()) {
 				plugin.getLogger().severe("Cannot install " + args[1] + ": Doesn't exists or not a directory");
 				return print(sender, "&cCommand failed: &f" + args[1] + " doesn't exists or not a folder");
 			}
