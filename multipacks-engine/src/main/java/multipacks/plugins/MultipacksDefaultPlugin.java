@@ -35,7 +35,7 @@ import multipacks.postprocess.overlays.OverlayPass;
 public class MultipacksDefaultPlugin implements MultipacksPlugin {
 	@Override
 	public PacksRepository parseRepository(File root, String uri) {
-		if (uri.startsWith("file:")) return new LocalRepository(new File(uri.substring(5)));
+		if (uri.startsWith("file:")) return new LocalRepository(new File(root, uri.substring(5)));
 		return null;
 	}
 
