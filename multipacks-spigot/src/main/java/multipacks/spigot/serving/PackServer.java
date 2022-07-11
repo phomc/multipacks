@@ -17,13 +17,17 @@ package multipacks.spigot.serving;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 
 import org.bukkit.entity.Player;
 
+import com.google.gson.JsonObject;
+
 import multipacks.utils.PlatformAPI;
+import multipacks.utils.logging.AbstractMPLogger;
 
 /**
  * It's not the kind of HTTP or TCP server, but instead an interface for servers to serves the pack to
@@ -36,26 +40,26 @@ public interface PackServer {
 	/**
 	 * Serve the bundled pack to player.
 	 * @param player Player that will be receiving the pack.
-	 * @param prompt Message that will be dusplayed on player's pack load request screen, or null to use
-	 * default prompt.
 	 * @param stream Bundled pack but as {@link InputStream}.
 	 * @return Async object: true if player accepted the pack and it is installed, false if they rejected
 	 * request.
 	 */
-	CompletableFuture<Boolean> serve(Player player, String prompt, InputStream stream) throws IOException;
+	CompletableFuture<Boolean> serve(Player player, InputStream stream);
 
 	/**
 	 * Serve the artifact as bundled pack to player. This method by default does not perform any caching.
 	 * @param player Player that will be receiving the pack.
-	 * @param prompt Message that will be displayed on player's pack load request screen, or null to use
-	 * default prompt.
 	 * @param artifact Built artifact location.
 	 * @return Async object: true if player accepted the pack and it is installed, false if they rejected
 	 * request.
 	 */
-	default CompletableFuture<Boolean> serve(Player player, String prompt, File artifact) throws IOException {
+	default CompletableFuture<Boolean> serve(Player player, File artifact) {
 		try (FileInputStream in = new FileInputStream(artifact)) {
-			return serve(player, prompt, in);
+			return serve(player, in);
+		} catch (Exception e) {
+			return CompletableFuture.failedFuture(e);
 		}
 	}
+
+	static HashMap<String, BiFunction<AbstractMPLogger, JsonObject, PackServer>> BUILDERS = new HashMap<>();
 }

@@ -25,11 +25,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.gson.JsonArray;
@@ -43,10 +45,13 @@ import multipacks.management.PacksRepository;
 import multipacks.packs.Pack;
 import multipacks.plugins.MultipacksDefaultPlugin;
 import multipacks.plugins.MultipacksPlugin;
+import multipacks.spigot.serving.LocalPackServer;
+import multipacks.spigot.serving.PackServer;
 import multipacks.utils.IOUtils;
 import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
+import multipacks.utils.logging.AbstractMPLogger;
 
 /**
  * The entry point for accessing Multipacks API for Spigot. Contains some methods for converting between Multipacks
@@ -74,6 +79,7 @@ public class MultipacksSpigot extends JavaPlugin {
 	private Pack masterPack;
 	private File packArtifact;
 	private BundleResult packOutput;
+	private PackServer packServer;
 
 	// Callbacks
 	private HashSet<Consumer<BundleResult>> onMasterRebuild = new HashSet<>();
@@ -83,6 +89,7 @@ public class MultipacksSpigot extends JavaPlugin {
 	@Override
 	public void onLoad() {
 		MultipacksPlugin.loadPlugin(new MultipacksDefaultPlugin());
+		PackServer.BUILDERS.put("local", LocalPackServer::new);
 	}
 
 	@Override
@@ -173,6 +180,22 @@ public class MultipacksSpigot extends JavaPlugin {
 				String result = Selects.getChain(packConfig.get("result"), j -> j.getAsString(), "master-pack.zip");
 				File masterPackResult = new File(getDataFolder(), result.replace('/', File.separatorChar));
 
+				if (packConfig.has("serving")) {
+					JsonObject servingConfig = packConfig.get("serving").getAsJsonObject();
+					if (servingConfig.has("enabled") && servingConfig.get("enabled").getAsBoolean()) {
+						logger.info("Master pack serving is enabled");
+						String builderName = Selects.getChain(servingConfig.get("servingType"), j -> j.getAsString(), "local");
+						BiFunction<AbstractMPLogger, JsonObject, PackServer> builder = PackServer.BUILDERS.get(builderName);
+						if (builder == null) {
+							builder = LocalPackServer::new;
+							logger.warning("Unknown pack server: " + builderName);
+						}
+
+						packServer = builder.apply(logger, servingConfig);
+						logger.info("Pack server is ready!");
+					}
+				}
+
 				if (masterPackDir.exists()) {
 					masterPack = new Pack(masterPackDir);
 					packArtifact = masterPackResult;
@@ -206,6 +229,17 @@ public class MultipacksSpigot extends JavaPlugin {
 			packOutput = bundler.bundle(masterPack, out, new BundleInclude[] { BundleInclude.RESOURCES });
 			for (Consumer<BundleResult> c : onMasterRebuild) c.accept(packOutput);
 			logger.info("Master pack built!");
+
+			// Optionally serving the pack
+			if (packServer != null) for (Player p : getServer().getOnlinePlayers()) {
+				try {
+					packServer.serve(p, packArtifact);
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.warning("Cannot serve master pack to " + p.getName() + " (UUID = " + p.getUniqueId() + ")");
+				}
+			}
+
 			return true;
 		}
 	}
@@ -281,6 +315,11 @@ public class MultipacksSpigot extends JavaPlugin {
 	 * @return true if the callback is unregistered.
 	 */
 	public boolean unregisterMasterPackBuildCallback(Consumer<BundleResult> callback) { return onMasterRebuild.remove(callback); }
+
+	/**
+	 * Get the pack server that is serving the pack every time the pack is built.
+	 */
+	public PackServer getPackServer() { return packServer; }
 
 	/**
 	 * Get instance of this plugin. This is the main entry point for accessing most of Multipacks features on Spigot.

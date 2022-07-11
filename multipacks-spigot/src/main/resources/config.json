@@ -1,11 +1,15 @@
 {
+    "comment//0": "List of repositories that Multipacks will use. 'file:' always relatives to plugin data folder.",
     "repositories": [
         "file:packsRepository"
     ],
+
+    "comment//1": "The primary repository that plugins depending on Multipacks will use.",
     "selectedRepo": 0,
+
     "pack": {
-        "comment//0": "Master pack configuration. This is the one and only pack that all plugins will access.",
-        "comment//1": "Including other packs by editing multipacks.json inside your master pack",
+        "comment//0": "Master pack configuration. This is the one and only pack that all plugins will use.",
+        "comment//1": "Including other packs by editing multipacks.json inside your master pack.",
 
         "enabled": false,
         "folder": "my-pack",
@@ -16,6 +20,9 @@
             "comment//1": "Serving types can be installed by installing other Spigot plugins",
 
             "enabled": false,
+
+            "comment//2": "Local serving type will try copying multipacks-spigot-generated.zip to .minecraft/resourcepacks. Using",
+            "comment//3": "/mp rebuild will copy that file once again.",
             "servingType": "local"
         }
     }
