@@ -45,6 +45,7 @@ import multipacks.management.PacksRepository;
 import multipacks.packs.Pack;
 import multipacks.plugins.MultipacksDefaultPlugin;
 import multipacks.plugins.MultipacksPlugin;
+import multipacks.spigot.commands.MainCommand;
 import multipacks.spigot.serving.LocalPackServer;
 import multipacks.spigot.serving.PackServer;
 import multipacks.utils.IOUtils;
@@ -99,6 +100,8 @@ public class MultipacksSpigot extends JavaPlugin {
 
 		logger = new JavaMPLogger(getLogger());
 		reloadJsonConfig(true);
+
+		getCommand("multipacks").setExecutor(new MainCommand(this));
 		logger.info("Plugin enabled in " + new DecimalFormat("#0.000").format(((System.nanoTime() - benchmarkStart) / 1000000.0)) + "ms");
 	}
 
