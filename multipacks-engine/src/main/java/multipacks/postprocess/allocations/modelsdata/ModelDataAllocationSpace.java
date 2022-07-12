@@ -48,6 +48,8 @@ public class ModelDataAllocationSpace extends AllocationSpace<AllocatedModelData
 	@Override
 	public AllocatedModelData allocate(int index, VirtualFs fs, Path model) throws IOException {
 		int modelId = startId + index;
+		String[] split = model.fileName().split("\\.");
+		if (split.length > 1) model = new Path(model.toString().substring(0, model.toString().length() - split[split.length - 1].length() - 1));
 
 		Path modelPath = new Path("assets", itemId.namespace, "models", "item", itemId.path + ".json");
 		JsonObject json = fs.isExists(modelPath)? fs.readJson(modelPath).getAsJsonObject() : new JsonObject();
