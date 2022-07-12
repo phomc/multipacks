@@ -43,9 +43,16 @@ public class MovePass extends PostProcessPass {
 	@Override
 	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
 		for (Path pFrom : fs.ls(from)) {
+			byte[] bs = fs.read(pFrom);
+
+			if (pFrom.toString().equals(from.toString())) {
+				fs.write(to, bs);
+				fs.delete(from);
+				return;
+			}
+
 			String tail = pFrom.toString().substring(from.toString().length() + 1);
 			Path pTo = Path.join(to, new Path(tail));
-			byte[] bs = fs.read(pFrom);
 			fs.write(pTo, bs);
 			fs.delete(pFrom);
 		}
