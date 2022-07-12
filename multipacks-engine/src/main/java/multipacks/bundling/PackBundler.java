@@ -119,7 +119,7 @@ public class PackBundler {
 		VirtualFs packFiles = new VirtualFs(pack.getRoot());
 		if (pack.getIndex().include != null) for (PackIdentifier dependency : pack.getIndex().include) {
 			Pack p = resolvedMap.get(dependency.id);
-			if (p != null) apply(p, resolvedMap, packFiles, result, included);
+			if (p != null) apply(p, resolvedMap, packFiles, result, new BundleInclude[] { BundleInclude.RESOURCES, BundleInclude.DATA });
 		}
 
 		// Post processing (if any)
