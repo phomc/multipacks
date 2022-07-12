@@ -18,6 +18,7 @@ package multipacks.bundling;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
+import multipacks.postprocess.allocations.Allocator;
 import multipacks.vfs.VirtualFs;
 
 public class BundleResult {
@@ -26,6 +27,8 @@ public class BundleResult {
 
 	@SuppressWarnings("unchecked")
 	public <T> T getOrCreate(Class<T> clazz, Supplier<T> creator) {
+		if (clazz == Allocator.class) throw new IllegalArgumentException("Cannot take in Allocator class. Please extends Allocator.");
+
 		Object obj = transformResults.get(clazz);
 
 		if (obj == null) {
