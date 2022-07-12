@@ -1,4 +1,6 @@
-# Multipacks Documentation
+> ![](images/outdated_bro.png) Hello! If you are reading this, please note that this documentations is outdated! We are moving to [Wiki page](https://github.com/MangoPlex/Multipacks/wiki), so please visit there if you are using version newer than 220708.1526.
+
+# Multipacks Documentation (before 220708.1526)
 Welcome to Multipacks Documentation! If you are new to Multipacks, you might want to look at our [Quick Start](quickstart.md) guide.
 
 ## Table of contents
