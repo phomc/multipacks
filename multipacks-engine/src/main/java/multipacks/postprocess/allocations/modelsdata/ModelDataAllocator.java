@@ -15,8 +15,18 @@
  */
 package multipacks.postprocess.allocations.modelsdata;
 
+import java.util.HashMap;
+
 import multipacks.postprocess.allocations.Allocator;
+import multipacks.utils.ResourcePath;
 import multipacks.vfs.Path;
 
 public class ModelDataAllocator extends Allocator<AllocatedModelData, Path> {
+	/**
+	 * Mapped models with its named id assigned to allocated model numerical id. An use case would be a custom
+	 * Spigot plugin that reads all mapped models and convert them to numerical id, something like <code>"/give
+	 * player ${model(namespace:id).gameId}{CustomModelData:${model(namespace:id).modelId}}"</code>. Currently
+	 * this map is limited to calls on {@link CustomModelsPass}. 
+	 */
+	public final HashMap<ResourcePath, AllocatedModelData> mappedModels = new HashMap<>();
 }

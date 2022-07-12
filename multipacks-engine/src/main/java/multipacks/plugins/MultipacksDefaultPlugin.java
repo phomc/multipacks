@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import multipacks.management.LocalRepository;
 import multipacks.management.PacksRepository;
 import multipacks.postprocess.PostProcessPass;
+import multipacks.postprocess.allocations.modelsdata.CustomModelsPass;
 import multipacks.postprocess.atlas.AtlasPass;
 import multipacks.postprocess.basic.CopyPass;
 import multipacks.postprocess.basic.DeletePass;
@@ -49,5 +50,6 @@ public class MultipacksDefaultPlugin implements MultipacksPlugin {
 		reg.put("font-icons", FontIconsPass::new);
 		reg.put("atlas", AtlasPass::new);
 		reg.put("overlay", OverlayPass::new);
+		reg.put("custom-models", CustomModelsPass::new);
 	}
 }

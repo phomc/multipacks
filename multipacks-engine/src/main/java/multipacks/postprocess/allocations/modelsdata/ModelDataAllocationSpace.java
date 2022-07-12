@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.postprocess.allocations.AllocationSpace;
 import multipacks.utils.ResourcePath;
+import multipacks.utils.Selects;
 import multipacks.vfs.Path;
 import multipacks.vfs.VirtualFs;
 
@@ -33,6 +34,12 @@ public class ModelDataAllocationSpace extends AllocationSpace<AllocatedModelData
 		this.itemId = itemId;
 		this.startId = startId;
 		this.endId = endId;
+	}
+
+	public ModelDataAllocationSpace(JsonObject json) {
+		itemId = new ResourcePath(Selects.nonNull(json.get("id"), "'id' is empty").getAsString());
+		startId = Selects.getChain(json.get("start"), j -> j.getAsInt(), 1);
+		endId = Selects.getChain(json.get("end"), j -> j.getAsInt(), startId);
 	}
 
 	@Override
