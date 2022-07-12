@@ -119,6 +119,11 @@ public class VirtualFs {
 	public Path[] ls(Path dir) {
 		List<Path> l = new ArrayList<>();
 		for (Path p : emulatedFs.keySet()) if (dir.isParentOf(p)) l.add(p);
+		if (emulatedFs.containsKey(dir)) {
+			// Not a directory!
+			return new Path[] { dir };
+		}
+
 		if (root != null) {
 			File underlyingDir = dir.joinWith(root);
 			if (underlyingDir.exists()) lsExpand(underlyingDir, dir, l);
