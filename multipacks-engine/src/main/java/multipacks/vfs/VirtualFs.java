@@ -30,6 +30,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import multipacks.utils.Blob;
+
 /**
  * Multipacks virtual file system, primarily used for performing data transformation without tampering the underlying
  * file, or used for dynamically generating a temporary pack.
@@ -98,6 +100,7 @@ public class VirtualFs {
 		return bs;
 	}
 
+	public Blob readBlob(Path file) throws IOException { return new Blob(Blob.findMimeType(file.fileName()), read(file)); }
 	public String readText(Path file) throws IOException { return new String(read(file), StandardCharsets.UTF_8); }
 	public JsonElement readJson(Path file) throws IOException { return new JsonParser().parse(readText(file)); }
 
@@ -110,6 +113,7 @@ public class VirtualFs {
 		emulatedFs.put(file, bs);
 	}
 
+	public void write(Path file, Blob blob) { write(file, blob.data); }
 	public void writeText(Path file, String text) { write(file, text.getBytes(StandardCharsets.UTF_8)); }
 	public void writeJson(Path file, JsonElement json) { writeText(file, new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(json)); }
 
