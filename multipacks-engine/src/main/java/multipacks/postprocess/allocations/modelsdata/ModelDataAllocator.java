@@ -15,11 +15,13 @@
  */
 package multipacks.postprocess.allocations.modelsdata;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import multipacks.postprocess.allocations.Allocator;
 import multipacks.utils.ResourcePath;
 import multipacks.vfs.Path;
+import multipacks.vfs.VirtualFs;
 
 public class ModelDataAllocator extends Allocator<AllocatedModelData, Path> {
 	/**
@@ -29,4 +31,17 @@ public class ModelDataAllocator extends Allocator<AllocatedModelData, Path> {
 	 * this map is limited to calls on {@link CustomModelsPass}. 
 	 */
 	public final HashMap<ResourcePath, AllocatedModelData> mappedModels = new HashMap<>();
+
+	private HashMap<Path, AllocatedModelData> allocatedPaths = new HashMap<>();
+
+	public boolean isAlreadyAllocated(Path path) {
+		return allocatedPaths.containsKey(path);
+	}
+
+	@Override
+	public AllocatedModelData allocateNew(VirtualFs fs, Path data) throws IOException {
+		AllocatedModelData allocated = allocatedPaths.get(data);
+		if (allocated == null) allocatedPaths.put(data, allocated = super.allocateNew(fs, data));
+		return allocated;
+	}
 }
