@@ -48,6 +48,8 @@ public class CustomModelsPass extends PostProcessPass {
 		boolean alreadyAdded = false;
 
 		for (Path p : fs.ls(from)) {
+			if (allocator.isAlreadyAllocated(p)) continue;
+
 			AllocatedModelData data = allocator.allocateNew(fs, p);
 			if (data == null) {
 				if (alreadyAdded || allocateOutOfSpace.length == 0) throw new PackagingFailException("Custom Model Data: Out of space to allocate new model id");
