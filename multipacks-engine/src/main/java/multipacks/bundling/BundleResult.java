@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 import multipacks.postprocess.allocations.Allocator;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 public class BundleResult {
 	private final HashMap<Class<?>, Object> transformResults = new HashMap<>();

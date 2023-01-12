@@ -21,7 +21,7 @@ import java.util.HashMap;
 import multipacks.postprocess.allocations.Allocator;
 import multipacks.utils.ResourcePath;
 import multipacks.vfs.Path;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 public class ModelDataAllocator extends Allocator<AllocatedModelData, Path> {
 	/**

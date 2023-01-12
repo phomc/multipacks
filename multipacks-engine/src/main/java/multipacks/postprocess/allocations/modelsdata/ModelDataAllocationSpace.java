@@ -24,7 +24,7 @@ import multipacks.postprocess.allocations.AllocationSpace;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 import multipacks.vfs.Path;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 public class ModelDataAllocationSpace extends AllocationSpace<AllocatedModelData, Path> {
 	public ResourcePath itemId;

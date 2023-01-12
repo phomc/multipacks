@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 import multipacks.bundling.BundleResult;
 import multipacks.vfs.Path;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 /**
  * Allocations allow different post processing passes to obtain the same content type without introducing
