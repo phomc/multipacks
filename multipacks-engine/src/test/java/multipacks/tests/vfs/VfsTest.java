@@ -17,12 +17,14 @@ package multipacks.tests.vfs;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
+import multipacks.vfs.Path;
 import multipacks.vfs.Vfs;
 
 /**
@@ -49,8 +51,16 @@ class VfsTest {
 		try (InputStream s = helloTxt.getInputStream()) { assertEquals(testString, new String(s.readAllBytes(), StandardCharsets.UTF_8)); }
 
 		assertEquals(helloTxt, dirA.get("hello.txt"));
+		assertEquals(helloTxt, root.get(new Path("dirA/hello.txt")));
 
 		root.delete("dirA");
 		assertNull(root.get("dirA"));
+	}
+
+	@Test
+	void testSimplePathTraversal() throws Exception {
+		Vfs root = Vfs.createRoot(new File("."));
+		Vfs parent = root.get(new Path(".."));
+		assertEquals(root, parent);
 	}
 }
