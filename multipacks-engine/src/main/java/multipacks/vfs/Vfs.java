@@ -149,7 +149,7 @@ public class Vfs {
 		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
 
 		Vfs file = get(name);
-		if (file.isDir()) return file;
+		if (file != null && file.isDir()) return file;
 
 		file = new Vfs(this, name).initAsDir();
 		directoryContent.put(name, file);
@@ -161,7 +161,7 @@ public class Vfs {
 		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
 
 		Vfs file = get(name);
-		if (!file.isDir()) return file;
+		if (file != null && !file.isDir()) return file;
 
 		file = new Vfs(this, name);
 		file.content = new byte[0];
