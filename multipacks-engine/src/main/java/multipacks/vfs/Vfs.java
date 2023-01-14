@@ -95,6 +95,9 @@ public class Vfs {
 	}
 
 	public Vfs get(String name) {
+		if (name.equals(".")) return this;
+		if (name.equals("..")) return parent != null? parent : this;
+
 		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
 
 		if (removedChildren.contains(name)) return null;
@@ -105,6 +108,17 @@ public class Vfs {
 		File physicalChild = new File(attachedFile, name);
 		if (physicalChild.exists()) return initChildFile(physicalChild);
 		return null;
+	}
+
+	public Vfs get(Path path) {
+		Vfs stack = this;
+
+		for (String s : path.getSegments()) {
+			stack = stack.get(s);
+			if (stack == null) return null;
+		}
+
+		return stack;
 	}
 
 	public String getName() {
