@@ -31,7 +31,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import multipacks.bundling.PackBundler;
-import multipacks.management.PacksRepository;
+import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.DynamicPack;
 import multipacks.packs.Pack;
 import multipacks.packs.PackIdentifier;

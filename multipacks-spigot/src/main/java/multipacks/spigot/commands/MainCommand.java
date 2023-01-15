@@ -25,8 +25,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
-import multipacks.management.PacksRepository;
-import multipacks.management.PacksUploadable;
+import multipacks.management.legacy.PacksRepository;
+import multipacks.management.legacy.PacksUploadable;
 import multipacks.packs.Pack;
 import multipacks.plugins.MultipacksPlugin;
 import multipacks.spigot.MultipacksSpigot;

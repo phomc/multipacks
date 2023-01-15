@@ -21,8 +21,8 @@ import java.util.function.Function;
 
 import com.google.gson.JsonObject;
 
-import multipacks.management.LocalRepository;
-import multipacks.management.PacksRepository;
+import multipacks.management.legacy.LocalRepository;
+import multipacks.management.legacy.PacksRepository;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.postprocess.allocations.modelsdata.CustomModelsPass;
 import multipacks.postprocess.atlas.AtlasPass;

@@ -41,7 +41,7 @@ import multipacks.bundling.BundleIgnore;
 import multipacks.bundling.BundleInclude;
 import multipacks.bundling.BundleResult;
 import multipacks.bundling.PackBundler;
-import multipacks.management.PacksRepository;
+import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.Pack;
 import multipacks.plugins.MultipacksDefaultPlugin;
 import multipacks.plugins.MultipacksPlugin;
