@@ -18,7 +18,7 @@ package multipacks.postprocess.allocations;
 import java.io.IOException;
 
 import multipacks.vfs.Path;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 /**
  * Allocation space.

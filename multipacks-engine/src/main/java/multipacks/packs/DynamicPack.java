@@ -18,7 +18,7 @@ package multipacks.packs;
 import java.io.IOException;
 
 import multipacks.bundling.BundleResult;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 /**
  * Dynamic packs allow you to add contents dynamically. An example would be composing .bbmodel (Blockbench

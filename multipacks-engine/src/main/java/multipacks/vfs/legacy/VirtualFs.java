@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.vfs;
+package multipacks.vfs.legacy;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -31,13 +31,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import multipacks.utils.Blob;
+import multipacks.vfs.Path;
 
 /**
  * Multipacks virtual file system, primarily used for performing data transformation without tampering the underlying
  * file, or used for dynamically generating a temporary pack.
  * @author nahkd
+ * @deprecated Legacy virtual file system implementation.
  *
  */
+@Deprecated
 public class VirtualFs {
 	public final File root;
 	public final HashMap<Path, byte[]> emulatedFs = new HashMap<>();

@@ -39,7 +39,7 @@ import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 import multipacks.vfs.Path;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 public class PackBundler {
 	public final List<PacksRepository> repositories = new ArrayList<>();

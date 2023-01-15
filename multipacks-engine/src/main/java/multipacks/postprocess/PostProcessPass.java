@@ -27,7 +27,7 @@ import com.google.gson.JsonObject;
 import multipacks.bundling.BundleResult;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
-import multipacks.vfs.VirtualFs;
+import multipacks.vfs.legacy.VirtualFs;
 
 /**
  * Multipacks post processing. This is used to perform files manipulation on virtual file system. An example
