@@ -15,9 +15,10 @@
  */
 package multipacks.packs;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import multipacks.packs.meta.PackIndex;
 import multipacks.utils.IOUtils;
@@ -31,23 +32,23 @@ public class LocalPack implements Pack {
 	public static final String FILE_INDEX = "multipacks.index.json";
 	public static final String FILE_INDEX_LEGACY = "multipacks.json";
 
-	public final File packRoot;
+	public final Path packRoot;
 	private PackIndex index;
 
-	public LocalPack(File packRoot) {
+	public LocalPack(Path packRoot) {
 		this.packRoot = packRoot;
 	}
 
 	public void loadFromStorage() throws IOException {
-		if (!packRoot.exists()) throw new FileNotFoundException(packRoot.toString());
-		File indexFile = new File(packRoot, FILE_INDEX);
+		if (!Files.exists(packRoot)) throw new FileNotFoundException(packRoot.toString());
+		Path indexFile = packRoot.resolve(FILE_INDEX);
 
-		if (!indexFile.exists()) {
+		if (!Files.exists(indexFile)) {
 			// TODO Attempt to load legacy file
 			throw new FileNotFoundException(indexFile.toString());
 		}
 
-		index = new PackIndex(IOUtils.jsonFromFile(indexFile).getAsJsonObject());
+		index = new PackIndex(IOUtils.jsonFromPath(indexFile).getAsJsonObject());
 	}
 
 	@Override
