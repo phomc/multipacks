@@ -15,7 +15,7 @@
  */
 package multipacks.repository;
 
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import multipacks.packs.LocalPack;
@@ -29,7 +29,12 @@ import multipacks.repository.query.PackQuery;
  *
  */
 public interface Repository {
-	CompletableFuture<Iterator<PackIdentifier>> search(PackQuery query);
+	/**
+	 * Query (a.k.a search) packs from this repository.
+	 * @param query Pack query info. Can be {@code null} to query all packs.
+	 * @return A collection of {@link PackIdentifier}.
+	 */
+	CompletableFuture<Collection<PackIdentifier>> search(PackQuery query);
 
 	/**
 	 * Stream pack contents from this repository to a new pack object. It is {@link #download(PackIdentifier)}, but

@@ -49,4 +49,9 @@ public class PackIdentifier {
 		json.addProperty(FIELD_PACK_VERSION, packVersion.toStringNoPrefix());
 		return json;
 	}
+
+	@Override
+	public String toString() {
+		return "PackIdentifier [name=" + name + ", packVersion=" + packVersion + "]";
+	}
 }

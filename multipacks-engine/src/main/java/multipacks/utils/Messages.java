@@ -15,6 +15,8 @@
  */
 package multipacks.utils;
 
+import multipacks.packs.meta.PackIdentifier;
+
 /**
  * @author nahkd
  *
@@ -22,5 +24,9 @@ package multipacks.utils;
 public class Messages {
 	public static String missingField(String fieldName) {
 		return "Missing '" + fieldName + "' field";
+	}
+
+	public static String packNotFoundRepo(PackIdentifier id) {
+		return "Pack not found in repository: " + id.name + " version " + id.packVersion.toStringNoPrefix();
 	}
 }
