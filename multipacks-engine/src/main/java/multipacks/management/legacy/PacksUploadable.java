@@ -15,7 +15,7 @@
  */
 package multipacks.management.legacy;
 
-import multipacks.packs.Pack;
+import multipacks.packs.legacy.Pack;
 
 public interface PacksUploadable {
 	/**

@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.packs;
+package multipacks.repository.query;
 
-public enum PackType {
-	/**
-	 * Standard pack type. This is the default one.
-	 */
-	STANDARD,
+import multipacks.packs.legacy.PackIdentifier;
 
-	/**
-	 * Library pack type. Library packs will be passed through transformations chain first, then its
-	 * data will be applied to dependants.
-	 */
-	LIBRARY;
+/**
+ * Packs query information. Used for searching pack ids with given conditions. 
+ * @author nahkd
+ *
+ */
+public interface PackQuery {
+	boolean matches(PackIdentifier pack);
 }

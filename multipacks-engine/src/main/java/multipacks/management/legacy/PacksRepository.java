@@ -19,9 +19,9 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
-import multipacks.packs.Pack;
-import multipacks.packs.PackIdentifier;
-import multipacks.packs.PackIndex;
+import multipacks.packs.legacy.Pack;
+import multipacks.packs.legacy.PackIdentifier;
+import multipacks.packs.legacy.PackIndex;
 import multipacks.plugins.MultipacksPlugin;
 
 public abstract class PacksRepository {
