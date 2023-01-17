@@ -15,7 +15,7 @@
  */
 package multipacks.repository.query;
 
-import multipacks.packs.legacy.PackIdentifier;
+import multipacks.packs.meta.PackInfo;
 
 /**
  * Packs query information. Used for searching pack ids with given conditions. 
@@ -23,5 +23,25 @@ import multipacks.packs.legacy.PackIdentifier;
  *
  */
 public interface PackQuery {
-	boolean matches(PackIdentifier pack);
+	public static final String SPLIT_PATTERN = "\\s*;\\s*";
+
+	boolean matches(PackInfo meta);
+
+	static PackQuery parse(String queryString) {
+		String[] queries = queryString.split(SPLIT_PATTERN);
+		if (queries.length == 1) return parseSingle(queries[0]);
+
+		PackQuery[] pq = new PackQuery[queries.length];
+		for (int i = 0; i < pq.length; i++) if ((pq[i] = parseSingle(queries[i])) == null) return null;
+		return new PackMultipleQueries(pq);
+	}
+
+	static PackQuery parseSingle(String singleQueryString) {
+		singleQueryString = singleQueryString.trim();
+		PackQuery ret;
+
+		if ((ret = PackVersionQuery.parse(singleQueryString)) != null) return ret;
+		if ((ret = PackNameQuery.parse(singleQueryString)) != null) return ret;
+		return null;
+	}
 }
