@@ -17,12 +17,11 @@ package multipacks.vfs;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +34,7 @@ import java.util.List;
 public class Vfs {
 	private Vfs parent;
 	private String name;
-	private File attachedFile;
+	private java.nio.file.Path nativePath;
 	protected byte[] content;
 	private HashMap<String, Vfs> directoryContent;
 	private HashSet<String> removedChildren;
@@ -45,12 +44,16 @@ public class Vfs {
 		this.name = name;
 	}
 
-	public static Vfs createRoot(File root) {
-		if (!root.isDirectory()) throw new IllegalArgumentException("File is not a directory");
+	public static Vfs createRoot(java.nio.file.Path root) {
+		if (!Files.isDirectory(root)) throw new IllegalArgumentException("Native path is not a directory");
 
 		Vfs vfs = new Vfs(null, null);
-		vfs.attachedFile = root;
+		vfs.nativePath = root;
 		return vfs.initAsDir();
+	}
+
+	public static Vfs createRoot(File root) {
+		return createRoot(root.toPath());
 	}
 
 	public static Vfs createVirtualRoot() {
@@ -72,10 +75,17 @@ public class Vfs {
 		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
 		List<Vfs> files = new ArrayList<>();
 
-		if (attachedFile != null) for (File child : attachedFile.listFiles()) {
-			if (removedChildren.contains(child.getName())) continue;
-			if (directoryContent.containsKey(child.getName())) continue;
-			files.add(initChildFile(child));
+		if (nativePath != null) {
+			try {
+				for (java.nio.file.Path child : Files.list(nativePath).toList()) {
+					String childName = child.getFileName().toString();
+					if (removedChildren.contains(childName)) continue;
+					if (directoryContent.containsKey(childName)) continue;
+					files.add(initChildFile(child));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		for (Vfs child : directoryContent.values()) {
@@ -86,11 +96,11 @@ public class Vfs {
 		return files.toArray(Vfs[]::new);
 	}
 
-	private Vfs initChildFile(File child) {
-		Vfs f = new Vfs(this, child.getName());
-		f.attachedFile = child;
-		if (child.isDirectory()) f.initAsDir();
-		directoryContent.put(child.getName(), f);
+	private Vfs initChildFile(java.nio.file.Path child) {
+		Vfs f = new Vfs(this, child.getFileName().toString());
+		f.nativePath = child;
+		if (Files.isDirectory(child)) f.initAsDir();
+		directoryContent.put(child.getFileName().toString(), f);
 		return f;
 	}
 
@@ -103,10 +113,11 @@ public class Vfs {
 		if (removedChildren.contains(name)) return null;
 		Vfs child = directoryContent.get(name);
 		if (child != null) return child;
-		if (attachedFile == null) return null;
+		if (nativePath == null) return null;
 
-		File physicalChild = new File(attachedFile, name);
-		if (physicalChild.exists()) return initChildFile(physicalChild);
+		// File physicalChild = new File(attachedFile, name);
+		java.nio.file.Path physicalChild = nativePath.resolve(name);
+		if (Files.exists(physicalChild)) return initChildFile(physicalChild);
 		return null;
 	}
 
@@ -172,10 +183,10 @@ public class Vfs {
 
 	public InputStream getInputStream() {
 		if (directoryContent != null) throw new IllegalArgumentException("This file is a directory");
-		if (attachedFile != null) {
+		if (nativePath != null) {
 			try {
-				return new FileInputStream(attachedFile);
-			} catch (FileNotFoundException e) {
+				return Files.newInputStream(nativePath, StandardOpenOption.READ);
+			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -184,25 +195,11 @@ public class Vfs {
 
 	public OutputStream getOutputStream() {
 		if (directoryContent != null) throw new IllegalArgumentException("This file is a directory");
-
-		if (attachedFile != null) {
-			// Transfer data to memory if physical and mark this file as virtual.
-			byte[] bs;
-			try {
-				bs = Files.readAllBytes(attachedFile.toPath());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-
-			content = bs;
-			attachedFile = null;
-		}
-
 		return new VfsOutputStream(this);
 	}
 
 	@Override
 	public String toString() {
-		return "vfs:/" + getPathFromRoot() + (attachedFile != null? " (physical)" : "");
+		return "vfs:/" + getPathFromRoot() + (nativePath != null? " (physical)" : "");
 	}
 }
