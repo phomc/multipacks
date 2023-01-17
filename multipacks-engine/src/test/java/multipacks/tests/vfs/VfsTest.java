@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
@@ -62,5 +63,12 @@ class VfsTest {
 		Vfs root = Vfs.createRoot(new File("."));
 		Vfs parent = root.get(new Path(".."));
 		assertEquals(root, parent);
+	}
+
+	@Test
+	void testResourcesInJar() throws Exception {
+		URI jar = this.getClass().getClassLoader().getResource("multipacksAssets").toURI();
+		Vfs vfs = Vfs.createRoot(java.nio.file.Path.of(jar));
+		assertNotNull(vfs.get("multipacks.index.json"));
 	}
 }
