@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import multipacks.bundling.BundleInclude;
+import multipacks.bundling.legacy.BundleInclude;
 import multipacks.utils.Selects;
 import multipacks.versioning.GameVersions;
 import multipacks.versioning.Version;

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import multipacks.bundling.BundleIgnore;
-import multipacks.bundling.BundleInclude;
+import multipacks.bundling.legacy.BundleIgnore;
+import multipacks.bundling.legacy.BundleInclude;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.PackIdentifier;
 import multipacks.plugins.MultipacksDefaultPlugin;

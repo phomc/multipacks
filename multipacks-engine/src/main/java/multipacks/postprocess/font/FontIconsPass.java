@@ -23,7 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import multipacks.bundling.BundleResult;
+import multipacks.bundling.legacy.BundleResult;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.postprocess.ProcessFailException;
 import multipacks.utils.ResourcePath;

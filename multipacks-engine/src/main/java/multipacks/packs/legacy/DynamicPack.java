@@ -17,7 +17,7 @@ package multipacks.packs.legacy;
 
 import java.io.IOException;
 
-import multipacks.bundling.BundleResult;
+import multipacks.bundling.legacy.BundleResult;
 import multipacks.vfs.legacy.VirtualFs;
 
 /**

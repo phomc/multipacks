@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.bundling;
+package multipacks.bundling.legacy;
 
-public class PackagingFailException extends RuntimeException {
-	private static final long serialVersionUID = 2251765351034996381L;
-
-	public PackagingFailException(String message) {
-		super(message);
-	}
+public enum BundleInclude {
+	NONE,
+	RESOURCES,
+	LICENSES,
+	DATA;
 }

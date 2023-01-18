@@ -30,7 +30,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import multipacks.bundling.PackBundler;
+import multipacks.bundling.legacy.PackBundler;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.DynamicPack;
 import multipacks.packs.legacy.Pack;

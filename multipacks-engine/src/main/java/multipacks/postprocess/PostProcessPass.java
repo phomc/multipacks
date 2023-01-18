@@ -24,7 +24,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import multipacks.bundling.BundleResult;
+import multipacks.bundling.legacy.BundleResult;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;
 import multipacks.vfs.legacy.VirtualFs;

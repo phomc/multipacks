@@ -20,8 +20,8 @@ import java.io.IOException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import multipacks.bundling.BundleResult;
-import multipacks.bundling.PackagingFailException;
+import multipacks.bundling.legacy.BundleResult;
+import multipacks.bundling.legacy.PackagingFailException;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
