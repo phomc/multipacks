@@ -40,6 +40,6 @@ class PacksTest {
 		assertEquals("sample-pack", index.name);
 		assertEquals("PhoMC", index.author);
 
-		assertNotNull(pack.createVfs(false).get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
+		assertNotNull(pack.createVfsWithoutModifiers().get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
 	}
 }

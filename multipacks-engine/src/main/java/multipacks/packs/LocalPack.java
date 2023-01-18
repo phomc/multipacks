@@ -58,7 +58,7 @@ public class LocalPack implements Pack {
 	}
 
 	@Override
-	public Vfs createVfs(boolean applyModifiers) {
+	public Vfs createVfsWithoutModifiers() {
 		Vfs vfs = Vfs.createRoot(packRoot);
 		// TODO apply modifiers
 		return vfs;

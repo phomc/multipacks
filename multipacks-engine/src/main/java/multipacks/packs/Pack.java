@@ -26,9 +26,16 @@ public interface Pack {
 	PackIndex getIndex();
 
 	/**
-	 * Create virtual file system with pack contents.
-	 * @param applyModifiers true to apply all modifiers declared from pack index.
+	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS content.
 	 * @return Virtual file system.
 	 */
-	Vfs createVfs(boolean applyModifiers);
+	Vfs createVfsWithoutModifiers();
+
+	default Vfs createVfs(boolean applyModifiers) {
+		Vfs vfs = createVfsWithoutModifiers();
+		if (!applyModifiers) return vfs;
+
+		// TODO: implement modifiers here
+		return vfs;
+	}
 }
