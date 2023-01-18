@@ -17,6 +17,9 @@ package multipacks.tests.packs;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,6 +109,10 @@ class RepositoriesTest {
 				return Arrays.asList(repo);
 			}
 		});
+
+		try (OutputStream stream = new FileOutputStream(new File("a.zip"))) {
+			bundler.bundleToStream(master, stream);
+		}
 
 		Vfs content = bundler.bundle(master);
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));

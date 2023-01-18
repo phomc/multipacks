@@ -50,6 +50,7 @@ public class PackVersionQuery implements PackQuery {
 		if (matcher.find()) {
 			String prefix = matcher.group(1);
 			String versionDigits = matcher.group(2);
+			if (prefix.equals("==")) prefix = "";
 			return new PackVersionQuery(new Version(prefix + versionDigits));
 		}
 
