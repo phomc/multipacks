@@ -215,20 +215,18 @@ public class Vfs {
 		return "vfs:/" + getPathFromRoot() + (nativePath != null? " (physical)" : "");
 	}
 
-	public static void copyRecursive(Vfs from, Vfs to, boolean override) {
+	public static void copyRecursive(Vfs from, Vfs to) {
 		if (!to.isDir()) throw new IllegalArgumentException(Messages.FILE_ISNOTDIR);
 
 		for (Vfs fromFile : from.listFiles()) {
 			Vfs toFile = to.get(fromFile.name);
 
 			if (fromFile.isDir()) {
-				if (!toFile.isDir()) {
-					to.delete(fromFile.name);
-					toFile = to.mkdir(fromFile.name);
-				}
-
-				copyRecursive(fromFile, toFile, override);
+				if (toFile != null && !toFile.isDir()) to.delete(fromFile.name);
+				toFile = to.mkdir(fromFile.name);
+				copyRecursive(fromFile, toFile);
 			} else {
+				if (toFile != null && toFile.isDir()) to.delete(fromFile.name);
 				toFile = to.touch(fromFile.name);
 				toFile.content = fromFile.getContent();
 			}

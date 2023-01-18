@@ -53,7 +53,7 @@ public interface Pack {
 		for (Vfs contentTypeDir : contentTypeDirs) {
 			Vfs contentTypeDirOut = outputVfs.get(contentTypeDir.getName());
 			if (contentTypeDirOut == null) contentTypeDirOut = outputVfs.mkdir(contentTypeDir.getName());
-			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut, true);
+			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut);
 		}
 	}
 }
