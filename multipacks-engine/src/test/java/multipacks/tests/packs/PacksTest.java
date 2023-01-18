@@ -17,10 +17,18 @@ package multipacks.tests.packs;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 
+import multipacks.bundling.Bundler;
 import multipacks.packs.LocalPack;
 import multipacks.packs.meta.PackIndex;
 
@@ -41,5 +49,19 @@ class PacksTest {
 		assertEquals("PhoMC", index.author);
 
 		assertNotNull(pack.createVfsWithoutModifiers().get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
+	}
+
+	@Test
+	void testPackBundling() throws Exception {
+		Path rootPath = Path.of(this.getClass().getClassLoader().getResource("multipacksAssets").toURI());
+		LocalPack pack = new LocalPack(rootPath);
+		pack.loadFromStorage();
+
+		Bundler bundler = new Bundler();
+		OutputStream stream = new FileOutputStream(new File("testartifact_PacksTest_001.zip"));
+		bundler.bundleToStream(pack, stream);
+
+		FileSystem fs = FileSystems.newFileSystem(Paths.get("testartifact_PacksTest_001.zip"));
+		assertTrue(Files.exists(fs.getPath("assets/multipacks/models/sample_model.json")));
 	}
 }
