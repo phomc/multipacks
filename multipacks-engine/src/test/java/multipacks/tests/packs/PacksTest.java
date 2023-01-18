@@ -59,7 +59,7 @@ class PacksTest {
 
 		Bundler bundler = new Bundler();
 		OutputStream stream = new FileOutputStream(new File("testartifact_PacksTest_001.zip"));
-		bundler.bundleToStream(pack, stream);
+		bundler.bundleToStream(pack, pack.getIndex().sourceGameVersion, stream);
 
 		FileSystem fs = FileSystems.newFileSystem(Paths.get("testartifact_PacksTest_001.zip"));
 		assertTrue(Files.exists(fs.getPath("assets/multipacks/models/sample_model.json")));

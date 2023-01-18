@@ -107,7 +107,7 @@ class RepositoriesTest {
 			}
 		});
 
-		Vfs content = bundler.bundle(master);
+		Vfs content = bundler.bundle(master, master.getIndex().sourceGameVersion);
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/b.txt")));
 		assertNotNull(content.get(new multipacks.vfs.Path("data/b.txt")));

@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.repository.query.PackQuery;
 import multipacks.utils.Selects;
+import multipacks.versioning.GameVersions;
 import multipacks.versioning.Version;
 
 /**
@@ -65,5 +66,16 @@ public class PackIndex extends PackInfo {
 		JsonArray json = new JsonArray();
 		for (PackQuery query : dependencies) json.add(query.toString());
 		return json;
+	}
+
+	public JsonObject buildPackMcmeta(Version targetGameVersion) {
+		JsonObject root = new JsonObject();
+
+		JsonObject pack = new JsonObject();
+		pack.addProperty("pack_format", GameVersions.getPackFormat(targetGameVersion));
+		if (description != null && description.trim().length() > 0) pack.addProperty("description", description);
+		root.add("pack", pack);
+
+		return root;
 	}
 }

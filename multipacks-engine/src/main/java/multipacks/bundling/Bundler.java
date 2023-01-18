@@ -17,12 +17,17 @@ package multipacks.bundling;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.FileTime;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 
 import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIdentifier;
@@ -31,6 +36,7 @@ import multipacks.repository.RepositoriesAccess;
 import multipacks.repository.Repository;
 import multipacks.repository.query.PackQuery;
 import multipacks.utils.Messages;
+import multipacks.versioning.Version;
 import multipacks.vfs.Vfs;
 
 /**
@@ -53,7 +59,7 @@ public class Bundler {
 				.setRepositoriesAccess(platform);
 	}
 
-	public Vfs bundle(Pack pack) {
+	private Vfs bundleWithoutFinish(Pack pack) {
 		// TODO: Return CompletableFuture instead
 		Vfs content = Vfs.createVirtualRoot();
 
@@ -76,7 +82,7 @@ public class Bundler {
 						}
 
 						Pack dep = repo.obtain(latest).get();
-						dep.applyAsDependency(content);
+						Vfs.copyRecursive(bundleWithoutFinish(dep), content);
 					} catch (ExecutionException | InterruptedException e) {
 						throw new RuntimeException(e);
 					}
@@ -88,10 +94,29 @@ public class Bundler {
 		return content;
 	}
 
-	public void bundleToStream(Pack pack, OutputStream stream) throws IOException {
+	public Vfs bundle(Pack pack, Version targetGameVersion) {
+		Vfs content = bundleWithoutFinish(pack);
+
+		Vfs packMcmeta = content.touch("pack.mcmeta");
+		try (OutputStream stream = packMcmeta.getOutputStream()) {
+			JsonObject json = pack.getIndex().buildPackMcmeta(targetGameVersion);
+			JsonWriter writer = new JsonWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
+			new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create().toJson(json, writer);
+			writer.flush();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		// TODO: Licenses
+		// TODO: pack.png
+
+		return content;
+	}
+
+	public void bundleToStream(Pack pack, Version targetGameVersion, OutputStream stream) throws IOException {
 		ZipOutputStream zip = new ZipOutputStream(stream, StandardCharsets.UTF_8);
 		FileTime bundleTime = FileTime.fromMillis(System.currentTimeMillis());
-		Vfs content = bundle(pack);
+		Vfs content = bundle(pack, targetGameVersion);
 		vfsAddZipEntry(content, bundleTime, zip);
 		zip.finish();
 	}
