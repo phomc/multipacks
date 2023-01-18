@@ -19,10 +19,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.FileTime;
+import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import multipacks.packs.Pack;
+import multipacks.packs.meta.PackIdentifier;
+import multipacks.platform.Platform;
+import multipacks.repository.RepositoriesAccess;
+import multipacks.repository.Repository;
+import multipacks.repository.query.PackQuery;
+import multipacks.utils.Messages;
 import multipacks.vfs.Vfs;
 
 /**
@@ -30,9 +38,53 @@ import multipacks.vfs.Vfs;
  *
  */
 public class Bundler {
+	public RepositoriesAccess repositoriesAccess;
+
+	public Bundler() {
+	}
+
+	public Bundler setRepositoriesAccess(RepositoriesAccess access) {
+		this.repositoriesAccess = access;
+		return this;
+	}
+
+	public Bundler fromPlatform(Platform platform) {
+		return this
+				.setRepositoriesAccess(platform);
+	}
+
 	public Vfs bundle(Pack pack) {
-		Vfs content = pack.createVfs(true);
-		// TODO: apply dependencies
+		// TODO: Return CompletableFuture instead
+		Vfs content = Vfs.createVirtualRoot();
+
+		if (pack.getIndex().dependencies.size() > 0) {
+			if (repositoriesAccess == null) throw new IllegalStateException("Repositories accessor is missing for this Bundler");
+
+			for (PackQuery depQuery : pack.getIndex().dependencies) {
+				for (Repository repo : repositoriesAccess.getRepositories()) {
+					try {
+						// TODO: improve dependencies resolution algorithm
+						// caching is needed.
+						Collection<PackIdentifier> ids = repo.search(depQuery).get();
+						if (ids.size() == 0) throw new RuntimeException(Messages.cantResolveDependency(depQuery)); // TODO
+
+						PackIdentifier latest = null;
+						for (PackIdentifier id : ids) {
+							if (latest == null || latest.packVersion.compareTo(id.packVersion) < 0) {
+								latest = id;
+							}
+						}
+
+						Pack dep = repo.obtain(latest).get();
+						dep.applyAsDependency(content);
+					} catch (ExecutionException | InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		}
+
+		pack.applyAsDependency(content);
 		return content;
 	}
 

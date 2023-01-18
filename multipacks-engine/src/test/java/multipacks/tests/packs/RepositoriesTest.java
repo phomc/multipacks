@@ -18,12 +18,17 @@ package multipacks.tests.packs;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
 
+import multipacks.bundling.Bundler;
 import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIdentifier;
 import multipacks.repository.LocalRepository;
+import multipacks.repository.RepositoriesAccess;
+import multipacks.repository.Repository;
 import multipacks.repository.query.PackQuery;
 import multipacks.versioning.Version;
 import multipacks.vfs.Vfs;
@@ -45,8 +50,8 @@ class RepositoriesTest {
 		// packB/
 		//   1.0.0/
 
-		assertEquals(3, repo.search(null).get().size());
-		assertEquals(3, repo.search(PackQuery.parse("version >= 1.0.0")).get().size());
+		assertEquals(4, repo.search(null).get().size());
+		assertEquals(4, repo.search(PackQuery.parse("version >= 1.0.0")).get().size());
 		assertEquals(1, repo.search(PackQuery.parse("version > 1.0.0")).get().size());
 		assertEquals(1, repo.search(PackQuery.parse("version >= 1.0.1")).get().size());
 		assertEquals(2, repo.search(PackQuery.parse("name 'packA'")).get().size());
@@ -83,6 +88,26 @@ class RepositoriesTest {
 		packA.applyAsDependency(content);
 		packB.applyAsDependency(content);
 
+		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));
+		assertNotNull(content.get(new multipacks.vfs.Path("assets/b.txt")));
+		assertNotNull(content.get(new multipacks.vfs.Path("data/b.txt")));
+	}
+
+	@Test
+	void testPacksBundler() throws Exception {
+		// TODO: Should we move this to PacksTest?
+		Path rootPath = Path.of(this.getClass().getClassLoader().getResource("testRepo").toURI());
+		LocalRepository repo = new LocalRepository(rootPath);
+
+		Pack master = repo.obtain(new PackIdentifier("master", new Version("1.0.0"))).get();
+		Bundler bundler = new Bundler().setRepositoriesAccess(new RepositoriesAccess() {
+			@Override
+			public Collection<Repository> getRepositories() {
+				return Arrays.asList(repo);
+			}
+		});
+
+		Vfs content = bundler.bundle(master);
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/b.txt")));
 		assertNotNull(content.get(new multipacks.vfs.Path("data/b.txt")));

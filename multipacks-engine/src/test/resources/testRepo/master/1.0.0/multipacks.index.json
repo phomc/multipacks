@@ -1,0 +1,10 @@
+{
+	"name": "master",
+	"packVersion": "1.0.0",
+	"author": "PhoMC",
+	"sourceGameVersion": "1.19.3",
+	"dependencies": [
+		"name 'packA'; version >= 1.0.0",
+		"name 'packB'; version >= 1.0.0"
+	]
+}
