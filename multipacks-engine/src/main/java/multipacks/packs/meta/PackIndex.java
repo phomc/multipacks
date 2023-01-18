@@ -32,16 +32,21 @@ import multipacks.versioning.Version;
  *
  */
 public class PackIndex extends PackInfo {
+	public static final String FIELD_DESCRIPTION = "description";
 	public static final String FIELD_DEPENDENCIES = "dependencies";
 
+	public String description;
 	public final List<PackQuery> dependencies = new ArrayList<>();
 
-	public PackIndex(String name, Version packVersion, String author, Version sourceGameVersion) {
+	public PackIndex(String name, Version packVersion, String author, Version sourceGameVersion, String description) {
 		super(name, packVersion, author, sourceGameVersion);
+		this.description = description;
 	}
 
 	public PackIndex(JsonObject json) {
 		super(json);
+
+		description = Selects.getChain(json.get(FIELD_DESCRIPTION), j -> j.getAsString(), null);
 		Selects.getChain(json.get(FIELD_DEPENDENCIES), j -> {
 			j.getAsJsonArray().forEach(e -> dependencies.add(PackQuery.parse(e.getAsString())));
 			return null;
@@ -51,6 +56,7 @@ public class PackIndex extends PackInfo {
 	@Override
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();
+		if (description != null && description.trim().length() > 0) json.addProperty(FIELD_DESCRIPTION, description);
 		if (dependencies.size() > 0) json.add(FIELD_DEPENDENCIES, queriesToJson());
 		return json;
 	}
