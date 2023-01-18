@@ -29,4 +29,7 @@ public class Messages {
 	public static String packNotFoundRepo(PackIdentifier id) {
 		return "Pack not found in repository: " + id.name + " version " + id.packVersion.toStringNoPrefix();
 	}
+
+	public static final String FILE_ISDIR = "Is a directory";
+	public static final String FILE_ISNOTDIR = "Is not a directory";
 }

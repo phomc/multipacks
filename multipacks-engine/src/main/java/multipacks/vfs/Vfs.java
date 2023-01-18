@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import multipacks.utils.Messages;
+
 /**
  * @author nahkd
  *
@@ -34,7 +36,7 @@ import java.util.List;
 public class Vfs {
 	private Vfs parent;
 	private String name;
-	private java.nio.file.Path nativePath;
+	protected java.nio.file.Path nativePath;
 	protected byte[] content;
 	private HashMap<String, Vfs> directoryContent;
 	private HashSet<String> removedChildren;
@@ -72,7 +74,7 @@ public class Vfs {
 	}
 
 	public Vfs[] listFiles() {
-		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
+		if (directoryContent == null) throw new IllegalArgumentException(Messages.FILE_ISNOTDIR);
 		List<Vfs> files = new ArrayList<>();
 
 		if (nativePath != null) {
@@ -108,7 +110,7 @@ public class Vfs {
 		if (name.equals(".")) return this;
 		if (name.equals("..")) return parent != null? parent : this;
 
-		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
+		if (directoryContent == null) throw new IllegalArgumentException(Messages.FILE_ISNOTDIR);
 
 		if (removedChildren.contains(name)) return null;
 		Vfs child = directoryContent.get(name);
@@ -157,7 +159,7 @@ public class Vfs {
 	}
 
 	public Vfs mkdir(String name) {
-		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
+		if (directoryContent == null) throw new IllegalArgumentException(Messages.FILE_ISNOTDIR);
 
 		Vfs file = get(name);
 		if (file != null && file.isDir()) return file;
@@ -169,7 +171,7 @@ public class Vfs {
 	}
 
 	public Vfs touch(String name) {
-		if (directoryContent == null) throw new IllegalArgumentException("This file is not a directory");
+		if (directoryContent == null) throw new IllegalArgumentException(Messages.FILE_ISNOTDIR);
 
 		Vfs file = get(name);
 		if (file != null && !file.isDir()) return file;
@@ -182,7 +184,7 @@ public class Vfs {
 	}
 
 	public InputStream getInputStream() {
-		if (directoryContent != null) throw new IllegalArgumentException("This file is a directory");
+		if (directoryContent != null) throw new IllegalArgumentException(Messages.FILE_ISDIR);
 		if (nativePath != null) {
 			try {
 				return Files.newInputStream(nativePath, StandardOpenOption.READ);
@@ -194,12 +196,42 @@ public class Vfs {
 	}
 
 	public OutputStream getOutputStream() {
-		if (directoryContent != null) throw new IllegalArgumentException("This file is a directory");
+		if (directoryContent != null) throw new IllegalArgumentException(Messages.FILE_ISDIR);
 		return new VfsOutputStream(this);
+	}
+
+	public byte[] getContent() {
+		if (content != null) return content;
+
+		try (InputStream input = getInputStream()) {
+			return input.readAllBytes();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public String toString() {
 		return "vfs:/" + getPathFromRoot() + (nativePath != null? " (physical)" : "");
+	}
+
+	public static void copyRecursive(Vfs from, Vfs to, boolean override) {
+		if (!to.isDir()) throw new IllegalArgumentException(Messages.FILE_ISNOTDIR);
+
+		for (Vfs fromFile : from.listFiles()) {
+			Vfs toFile = to.get(fromFile.name);
+			if (toFile != null) {
+				if (override) to.delete(fromFile.name);
+				else continue;
+			}
+
+			if (fromFile.isDir()) {
+				toFile = to.mkdir(fromFile.name);
+				copyRecursive(fromFile, toFile, override);
+			} else {
+				toFile = to.touch(fromFile.name);
+				toFile.content = fromFile.getContent();
+			}
+		}
 	}
 }

@@ -15,6 +15,9 @@
  */
 package multipacks.packs;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import multipacks.packs.meta.PackIndex;
 import multipacks.vfs.Vfs;
 
@@ -26,7 +29,7 @@ public interface Pack {
 	PackIndex getIndex();
 
 	/**
-	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS content.
+	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS contents.
 	 * @return Virtual file system.
 	 */
 	Vfs createVfsWithoutModifiers();
@@ -37,5 +40,20 @@ public interface Pack {
 
 		// TODO: implement modifiers here
 		return vfs;
+	}
+
+	/**
+	 * Apply contents from this pack (with modifiers) to output VFS.
+	 * @param outputVfs VFS that will be applied to.
+	 */
+	default void applyAsDependency(Vfs outputVfs) {
+		Vfs thisPack = createVfs(true);
+		List<Vfs> contentTypeDirs = Stream.of(thisPack.listFiles()).filter(v -> v.isDir()).toList();
+
+		for (Vfs contentTypeDir : contentTypeDirs) {
+			Vfs contentTypeDirOut = outputVfs.get(contentTypeDir.getName());
+			if (contentTypeDirOut == null) contentTypeDirOut = outputVfs.mkdir(contentTypeDir.getName());
+			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut, true);
+		}
 	}
 }
