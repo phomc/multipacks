@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.management;
+package multipacks.management.legacy;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +22,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import multipacks.packs.Pack;
-import multipacks.packs.PackIdentifier;
-import multipacks.packs.PackIndex;
+import multipacks.packs.legacy.Pack;
+import multipacks.packs.legacy.PackIdentifier;
+import multipacks.packs.legacy.PackIndex;
 import multipacks.utils.IOUtils;
 import multipacks.utils.iter.EmptyIterator;
 import multipacks.versioning.Version;

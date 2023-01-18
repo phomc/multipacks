@@ -49,6 +49,7 @@ public class VfsOutputStream extends OutputStream {
 
 	@Override
 	public void flush() throws IOException {
+		target.nativePath = null;
 		target.content = stream.toByteArray();
 	}
 

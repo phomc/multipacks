@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.packs;
+package multipacks.repository;
 
-public enum PackType {
-	/**
-	 * Standard pack type. This is the default one.
-	 */
-	STANDARD,
+import java.util.concurrent.CompletableFuture;
 
-	/**
-	 * Library pack type. Library packs will be passed through transformations chain first, then its
-	 * data will be applied to dependants.
-	 */
-	LIBRARY;
+import multipacks.packs.LocalPack;
+import multipacks.packs.meta.PackIdentifier;
+
+/**
+ * Authorized repositories allows you to upload or delete packs.
+ * @author nahkd
+ *
+ */
+public interface AuthorizedRepository extends Repository {
+	CompletableFuture<PackIdentifier> upload(LocalPack pack);
+	CompletableFuture<Void> delete(PackIdentifier id);
+
+	@Override
+	default CompletableFuture<AuthorizedRepository> login(String username, byte[] secret) {
+		return CompletableFuture.completedFuture(this);
+	}
 }

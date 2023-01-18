@@ -15,41 +15,45 @@
  */
 package multipacks.packs;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
+import java.util.stream.Stream;
 
-import multipacks.utils.IOUtils;
+import multipacks.packs.meta.PackIndex;
+import multipacks.vfs.Vfs;
 
-public class Pack {
-	private File packRoot;
-	private PackIndex index;
-	private PackIdentifier identifier;
+/**
+ * @author nahkd
+ *
+ */
+public interface Pack {
+	PackIndex getIndex();
 
-	public Pack(File packRoot) throws IOException {
-		this.packRoot = packRoot;
-		this.index = PackIndex.fromJson(IOUtils.jsonFromFile(new File(packRoot, "multipacks.json")).getAsJsonObject());
-		this.identifier = index.getIdentifier();
+	/**
+	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS contents.
+	 * @return Virtual file system.
+	 */
+	Vfs createVfsWithoutModifiers();
+
+	default Vfs createVfs(boolean applyModifiers) {
+		Vfs vfs = createVfsWithoutModifiers();
+		if (!applyModifiers) return vfs;
+
+		// TODO: implement modifiers here
+		return vfs;
 	}
 
 	/**
-	 * Construct a brand new pack without local root directory. Use this if you want to build a dynamic pack. Oh and
-	 * to actually build a dynamic pack, you'll have to extends {@link DynamicPack}. 
+	 * Apply contents from this pack (with modifiers) to output VFS.
+	 * @param outputVfs VFS that will be applied to.
 	 */
-	public Pack(PackIndex index) {
-		this.packRoot = null;
-		this.index = index;
-		this.identifier = index.getIdentifier();
-	}
+	default void applyAsDependency(Vfs outputVfs) {
+		Vfs thisPack = createVfs(true);
+		List<Vfs> contentTypeDirs = Stream.of(thisPack.listFiles()).filter(v -> v.isDir()).toList();
 
-	public PackIndex getIndex() {
-		return index;
-	}
-
-	public File getRoot() {
-		return packRoot;
-	}
-
-	public PackIdentifier getIdentifier() {
-		return identifier;
+		for (Vfs contentTypeDir : contentTypeDirs) {
+			Vfs contentTypeDirOut = outputVfs.get(contentTypeDir.getName());
+			if (contentTypeDirOut == null) contentTypeDirOut = outputVfs.mkdir(contentTypeDir.getName());
+			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut, true);
+		}
 	}
 }

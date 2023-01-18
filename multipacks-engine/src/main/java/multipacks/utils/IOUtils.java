@@ -19,9 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -31,6 +34,14 @@ import com.google.gson.stream.JsonWriter;
 public class IOUtils {
 	public static JsonElement jsonFromFile(File file) throws IOException {
 		FileInputStream in = new FileInputStream(file);
+		JsonParser parser = new JsonParser();
+		JsonElement json = parser.parse(new InputStreamReader(in));
+		in.close();
+		return json;
+	}
+
+	public static JsonElement jsonFromPath(Path path) throws IOException {
+		InputStream in = Files.newInputStream(path, StandardOpenOption.READ);
 		JsonParser parser = new JsonParser();
 		JsonElement json = parser.parse(new InputStreamReader(in));
 		in.close();
