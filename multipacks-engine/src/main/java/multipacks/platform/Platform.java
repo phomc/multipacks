@@ -13,29 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.packs;
+package multipacks.platform;
 
-import multipacks.packs.meta.PackIndex;
-import multipacks.vfs.Vfs;
+import multipacks.repository.RepositoriesAccess;
 
 /**
+ * Multipacks platform interface (some people may call this "Multipacks environment"). If you are creating your
+ * own platform, you have to implement this interface. Take a look at "Multipacks for Spigot" if you need an
+ * example.
  * @author nahkd
  *
  */
-public interface Pack {
-	PackIndex getIndex();
-
-	/**
-	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS contents.
-	 * @return Virtual file system.
-	 */
-	Vfs createVfsWithoutModifiers();
-
-	default Vfs createVfs(boolean applyModifiers) {
-		Vfs vfs = createVfsWithoutModifiers();
-		if (!applyModifiers) return vfs;
-
-		// TODO: implement modifiers here
-		return vfs;
-	}
+public interface Platform extends RepositoriesAccess {
 }

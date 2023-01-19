@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.repository.query.PackQuery;
 import multipacks.utils.Selects;
+import multipacks.versioning.GameVersions;
 import multipacks.versioning.Version;
 
 /**
@@ -32,16 +33,21 @@ import multipacks.versioning.Version;
  *
  */
 public class PackIndex extends PackInfo {
+	public static final String FIELD_DESCRIPTION = "description";
 	public static final String FIELD_DEPENDENCIES = "dependencies";
 
+	public String description;
 	public final List<PackQuery> dependencies = new ArrayList<>();
 
-	public PackIndex(String name, Version packVersion, String author, Version sourceGameVersion) {
+	public PackIndex(String name, Version packVersion, String author, Version sourceGameVersion, String description) {
 		super(name, packVersion, author, sourceGameVersion);
+		this.description = description;
 	}
 
 	public PackIndex(JsonObject json) {
 		super(json);
+
+		description = Selects.getChain(json.get(FIELD_DESCRIPTION), j -> j.getAsString(), null);
 		Selects.getChain(json.get(FIELD_DEPENDENCIES), j -> {
 			j.getAsJsonArray().forEach(e -> dependencies.add(PackQuery.parse(e.getAsString())));
 			return null;
@@ -51,6 +57,7 @@ public class PackIndex extends PackInfo {
 	@Override
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();
+		if (description != null && description.trim().length() > 0) json.addProperty(FIELD_DESCRIPTION, description);
 		if (dependencies.size() > 0) json.add(FIELD_DEPENDENCIES, queriesToJson());
 		return json;
 	}
@@ -59,5 +66,16 @@ public class PackIndex extends PackInfo {
 		JsonArray json = new JsonArray();
 		for (PackQuery query : dependencies) json.add(query.toString());
 		return json;
+	}
+
+	public JsonObject buildPackMcmeta(Version targetGameVersion) {
+		JsonObject root = new JsonObject();
+
+		JsonObject pack = new JsonObject();
+		pack.addProperty("pack_format", GameVersions.getPackFormat(targetGameVersion));
+		if (description != null && description.trim().length() > 0) pack.addProperty("description", description);
+		root.add("pack", pack);
+
+		return root;
 	}
 }

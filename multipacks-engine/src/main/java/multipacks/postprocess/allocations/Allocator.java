@@ -18,7 +18,7 @@ package multipacks.postprocess.allocations;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import multipacks.bundling.BundleResult;
+import multipacks.bundling.legacy.BundleResult;
 import multipacks.vfs.Path;
 import multipacks.vfs.legacy.VirtualFs;
 

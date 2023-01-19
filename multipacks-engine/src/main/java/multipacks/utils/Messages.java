@@ -16,6 +16,7 @@
 package multipacks.utils;
 
 import multipacks.packs.meta.PackIdentifier;
+import multipacks.repository.query.PackQuery;
 
 /**
  * @author nahkd
@@ -32,4 +33,8 @@ public class Messages {
 
 	public static final String FILE_ISDIR = "Is a directory";
 	public static final String FILE_ISNOTDIR = "Is not a directory";
+
+	public static String cantResolveDependency(PackQuery query) {
+		return "Failed to find dependency with query: " + query;
+	}
 }

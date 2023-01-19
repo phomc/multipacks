@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
-import multipacks.bundling.BundleResult;
+import multipacks.bundling.legacy.BundleResult;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractMPLogger;

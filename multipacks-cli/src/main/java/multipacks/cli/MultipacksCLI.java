@@ -37,10 +37,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
-import multipacks.bundling.BundleIgnore;
-import multipacks.bundling.BundleInclude;
-import multipacks.bundling.PackBundler;
-import multipacks.bundling.PackagingFailException;
+import multipacks.bundling.legacy.BundleIgnore;
+import multipacks.bundling.legacy.BundleInclude;
+import multipacks.bundling.legacy.PackBundler;
+import multipacks.bundling.legacy.PackagingFailException;
 import multipacks.management.legacy.LocalRepository;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.management.legacy.PacksUploadable;

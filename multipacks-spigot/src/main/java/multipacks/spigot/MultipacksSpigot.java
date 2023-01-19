@@ -37,10 +37,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import multipacks.bundling.BundleIgnore;
-import multipacks.bundling.BundleInclude;
-import multipacks.bundling.BundleResult;
-import multipacks.bundling.PackBundler;
+import multipacks.bundling.legacy.BundleIgnore;
+import multipacks.bundling.legacy.BundleInclude;
+import multipacks.bundling.legacy.BundleResult;
+import multipacks.bundling.legacy.PackBundler;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.Pack;
 import multipacks.plugins.MultipacksDefaultPlugin;

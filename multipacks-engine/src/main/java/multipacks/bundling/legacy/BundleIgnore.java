@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.bundling;
+package multipacks.bundling.legacy;
 
-public enum BundleInclude {
-	NONE,
-	RESOURCES,
-	LICENSES,
-	DATA;
+public enum BundleIgnore {
+	LICENSES;
 }

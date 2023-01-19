@@ -13,29 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.packs;
+package multipacks.bundling.legacy;
 
-import multipacks.packs.meta.PackIndex;
-import multipacks.vfs.Vfs;
-
-/**
- * @author nahkd
- *
- */
-public interface Pack {
-	PackIndex getIndex();
-
-	/**
-	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS contents.
-	 * @return Virtual file system.
-	 */
-	Vfs createVfsWithoutModifiers();
-
-	default Vfs createVfs(boolean applyModifiers) {
-		Vfs vfs = createVfsWithoutModifiers();
-		if (!applyModifiers) return vfs;
-
-		// TODO: implement modifiers here
-		return vfs;
-	}
+public enum BundleInclude {
+	NONE,
+	RESOURCES,
+	LICENSES,
+	DATA;
 }

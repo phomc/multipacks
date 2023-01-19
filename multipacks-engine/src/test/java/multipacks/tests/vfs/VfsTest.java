@@ -71,4 +71,19 @@ class VfsTest {
 		Vfs vfs = Vfs.createRoot(java.nio.file.Path.of(jar));
 		assertNotNull(vfs.get("multipacks.index.json"));
 	}
+
+	@Test
+	void testRecursiveCopy() throws Exception {
+		Vfs vfsA = Vfs.createVirtualRoot();
+		Vfs vfsADir = vfsA.mkdir("dir");
+		vfsADir.touch("a.txt");
+
+		Vfs vfsB = Vfs.createVirtualRoot();
+		Vfs vfsBDir = vfsA.mkdir("dir");
+		vfsBDir.touch("b.txt");
+
+		Vfs.copyRecursive(vfsA, vfsB);
+		assertNotNull(vfsA.get(new Path("dir/a.txt")));
+		assertNotNull(vfsA.get(new Path("dir/b.txt")));
+	}
 }
