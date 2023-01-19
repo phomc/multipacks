@@ -26,13 +26,13 @@ import org.bukkit.entity.Player;
 import com.google.common.io.Files;
 import com.google.gson.JsonObject;
 
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.logging.AbstractLogger;
 
 public class LocalPackServer implements PackServer {
 	private static final String FILE_NAME = "multipacks-spigot-generated.zip";
 	private File resourcesFile;
 
-	public LocalPackServer(AbstractMPLogger logger, JsonObject config) {
+	public LocalPackServer(AbstractLogger logger, JsonObject config) {
 		String osName = System.getProperty("os.name", "Unix").toLowerCase();
 		Map<String, String> env = System.getenv();
 

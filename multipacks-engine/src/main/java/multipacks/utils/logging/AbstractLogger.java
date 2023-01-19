@@ -15,7 +15,7 @@
  */
 package multipacks.utils.logging;
 
-public abstract class AbstractMPLogger {
+public abstract class AbstractLogger {
 	public abstract void info(Object... objs);
 	public abstract void warning(Object... objs);
 	public abstract void error(Object... objs);

@@ -25,7 +25,7 @@ import multipacks.bundling.legacy.PackagingFailException;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.logging.AbstractLogger;
 import multipacks.vfs.Path;
 import multipacks.vfs.legacy.VirtualFs;
 
@@ -43,7 +43,7 @@ public class CustomModelsPass extends PostProcessPass {
 	}
 
 	@Override
-	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
+	public void apply(VirtualFs fs, BundleResult result, AbstractLogger logger) throws IOException {
 		ModelDataAllocator allocator = result.getOrCreate(ModelDataAllocator.class, ModelDataAllocator::new);
 		boolean alreadyAdded = false;
 
