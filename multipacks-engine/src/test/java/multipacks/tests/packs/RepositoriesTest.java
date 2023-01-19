@@ -96,5 +96,6 @@ class RepositoriesTest {
 		assertNotNull(content.get(new multipacks.vfs.Path("license-packA")));
 		assertNotNull(content.get(new multipacks.vfs.Path("license-packB")));
 		assertNotNull(content.get(new multipacks.vfs.Path("license-master")));
+		assertNotNull(content.get(new multipacks.vfs.Path("pack.png")));
 	}
 }

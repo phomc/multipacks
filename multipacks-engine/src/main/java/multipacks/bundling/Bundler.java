@@ -71,7 +71,7 @@ public class Bundler {
 				.setRepositoriesAccess(platform);
 	}
 
-	private Vfs bundleWithoutFinish(Pack pack, Vfs licensesStore) {
+	private Vfs bundleWithoutFinish(Pack pack, Vfs licensesStore, Vfs packFinalOutput) {
 		// TODO: Return CompletableFuture instead
 		Vfs content = Vfs.createVirtualRoot();
 
@@ -94,7 +94,7 @@ public class Bundler {
 						}
 
 						Pack dep = repo.obtain(latest).get();
-						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore), content);
+						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore, null), content);
 					} catch (ExecutionException | InterruptedException e) {
 						throw new RuntimeException(e);
 					}
@@ -111,7 +111,7 @@ public class Bundler {
 			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut);
 		}
 
-		if (includeLicenses) {
+		if (includeLicenses && licensesStore != null) {
 			for (String licenseFileName : licenseFileNames) {
 				Vfs f = thisPack.get(licenseFileName);
 				if (f != null) {
@@ -125,14 +125,28 @@ public class Bundler {
 			}
 		}
 
+		if (packFinalOutput != null) {
+			Vfs packPng = thisPack.get("pack.png");
+			if (packPng != null) {
+				Vfs packPngTo = content.touch("pack.png");
+				try (OutputStream streamOut = packPngTo.getOutputStream(); InputStream streamIn = packPng.getInputStream()) {
+					streamIn.transferTo(streamOut);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+
 		return content;
 	}
 
 	public Vfs bundle(Pack pack, Version targetGameVersion) {
 		Vfs licenses = Vfs.createVirtualRoot();
-		Vfs content = bundleWithoutFinish(pack, licenses);
+		Vfs finalOutput = Vfs.createVirtualRoot();
+		Vfs content = bundleWithoutFinish(pack, licenses, finalOutput);
 
 		Vfs.copyRecursive(licenses, content);
+		Vfs.copyRecursive(finalOutput, content);
 
 		Vfs packMcmeta = content.touch("pack.mcmeta");
 		try (OutputStream stream = packMcmeta.getOutputStream()) {
@@ -143,8 +157,6 @@ public class Bundler {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-
-		// TODO: pack.png
 
 		return content;
 	}
