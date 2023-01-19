@@ -76,24 +76,6 @@ class RepositoriesTest {
 	}
 
 	@Test
-	void testPacksMixing() throws Exception {
-		// TODO: Should we move this to PacksTest?
-		Path rootPath = Path.of(this.getClass().getClassLoader().getResource("testRepo").toURI());
-		LocalRepository repo = new LocalRepository(rootPath);
-
-		Pack packA = repo.obtain(new PackIdentifier("packA", new Version("1.0.0"))).get();
-		Pack packB = repo.obtain(new PackIdentifier("packB", new Version("1.0.0"))).get();
-
-		Vfs content = Vfs.createVirtualRoot();
-		packA.applyAsDependency(content);
-		packB.applyAsDependency(content);
-
-		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));
-		assertNotNull(content.get(new multipacks.vfs.Path("assets/b.txt")));
-		assertNotNull(content.get(new multipacks.vfs.Path("data/b.txt")));
-	}
-
-	@Test
 	void testPacksBundler() throws Exception {
 		// TODO: Should we move this to PacksTest?
 		Path rootPath = Path.of(this.getClass().getClassLoader().getResource("testRepo").toURI());
@@ -111,5 +93,8 @@ class RepositoriesTest {
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));
 		assertNotNull(content.get(new multipacks.vfs.Path("assets/b.txt")));
 		assertNotNull(content.get(new multipacks.vfs.Path("data/b.txt")));
+		assertNotNull(content.get(new multipacks.vfs.Path("license-packA")));
+		assertNotNull(content.get(new multipacks.vfs.Path("license-packB")));
+		assertNotNull(content.get(new multipacks.vfs.Path("license-master")));
 	}
 }

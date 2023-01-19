@@ -16,12 +16,15 @@
 package multipacks.bundling;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.FileTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,6 +48,10 @@ import multipacks.vfs.Vfs;
  */
 public class Bundler {
 	public RepositoriesAccess repositoriesAccess;
+	public boolean includeLicenses = true;
+	public String[] licenseFileNames = new String[] {
+			"license", "licence", "license.txt", "licence.txt", "license.md", "licence.md"
+	};
 
 	public Bundler() {
 	}
@@ -54,12 +61,17 @@ public class Bundler {
 		return this;
 	}
 
+	public Bundler setIncludeLicenses(boolean includeLicenses) {
+		this.includeLicenses = includeLicenses;
+		return this;
+	}
+
 	public Bundler fromPlatform(Platform platform) {
 		return this
 				.setRepositoriesAccess(platform);
 	}
 
-	private Vfs bundleWithoutFinish(Pack pack) {
+	private Vfs bundleWithoutFinish(Pack pack, Vfs licensesStore) {
 		// TODO: Return CompletableFuture instead
 		Vfs content = Vfs.createVirtualRoot();
 
@@ -82,7 +94,7 @@ public class Bundler {
 						}
 
 						Pack dep = repo.obtain(latest).get();
-						Vfs.copyRecursive(bundleWithoutFinish(dep), content);
+						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore), content);
 					} catch (ExecutionException | InterruptedException e) {
 						throw new RuntimeException(e);
 					}
@@ -90,12 +102,37 @@ public class Bundler {
 			}
 		}
 
-		pack.applyAsDependency(content);
+		Vfs thisPack = pack.createVfs(true);
+		List<Vfs> contentTypeDirs = Stream.of(thisPack.listFiles()).filter(v -> v.isDir()).toList();
+
+		for (Vfs contentTypeDir : contentTypeDirs) {
+			Vfs contentTypeDirOut = content.get(contentTypeDir.getName());
+			if (contentTypeDirOut == null) contentTypeDirOut = content.mkdir(contentTypeDir.getName());
+			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut);
+		}
+
+		if (includeLicenses) {
+			for (String licenseFileName : licenseFileNames) {
+				Vfs f = thisPack.get(licenseFileName);
+				if (f != null) {
+					Vfs to = licensesStore.touch("license-" + pack.getIndex().name);
+					try (OutputStream streamOut = to.getOutputStream(); InputStream streamIn = f.getInputStream()) {
+						streamIn.transferTo(streamOut);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		}
+
 		return content;
 	}
 
 	public Vfs bundle(Pack pack, Version targetGameVersion) {
-		Vfs content = bundleWithoutFinish(pack);
+		Vfs licenses = Vfs.createVirtualRoot();
+		Vfs content = bundleWithoutFinish(pack, licenses);
+
+		Vfs.copyRecursive(licenses, content);
 
 		Vfs packMcmeta = content.touch("pack.mcmeta");
 		try (OutputStream stream = packMcmeta.getOutputStream()) {
@@ -107,7 +144,6 @@ public class Bundler {
 			throw new RuntimeException(e);
 		}
 
-		// TODO: Licenses
 		// TODO: pack.png
 
 		return content;
