@@ -23,6 +23,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import multipacks.modifier.builtin.glyphs.GlyphsModifier;
 import multipacks.packs.Pack;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
@@ -63,7 +64,6 @@ public abstract class Modifier {
 			ResourcePath id = new ResourcePath(Selects.nonNull(obj.get(FIELD_ID), Messages.missingFieldAny(FIELD_ID)).getAsString());
 			JsonElement config = obj.get(FIELD_CONFIG);
 
-			// Modifier modifier = access.createModifier(id);
 			Modifier modifier = null;
 			if (modifiersMap != null) modifier = modifiersMap.get(id);
 
@@ -74,5 +74,9 @@ public abstract class Modifier {
 
 			modifier.applyModifier(fromPack, contents, config, access);
 		}
+	}
+
+	public static void registerBuiltinModifiers(ModifiersAccess access) {
+		GlyphsModifier.registerTo(access);
 	}
 }

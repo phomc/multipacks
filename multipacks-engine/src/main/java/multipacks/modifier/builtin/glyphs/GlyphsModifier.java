@@ -33,6 +33,7 @@ import com.google.gson.JsonSyntaxException;
 import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
 import multipacks.packs.Pack;
+import multipacks.utils.Constants;
 import multipacks.utils.Holder;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
@@ -46,6 +47,8 @@ import multipacks.vfs.Vfs;
  *
  */
 public class GlyphsModifier extends Modifier {
+	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/glyphs");
+
 	public static final String ERROR_OUT_OF_SPACES = "Out of spaces for next character";
 
 	public static final String FIELD_INCLUDE = "include";
@@ -142,7 +145,7 @@ public class GlyphsModifier extends Modifier {
 	}
 
 	public static void registerTo(ModifiersAccess access) {
-		access.registerModifier(new ResourcePath("multipacks", "builtin/glyphs"), GlyphsModifier::new, GlyphsModifier::deserializeModifier);
+		access.registerModifier(ID, GlyphsModifier::new, GlyphsModifier::deserializeModifier);
 	}
 
 	private void addGlyphsFor(Vfs root, Vfs scoped, Vfs configFile, List<GlyphsAllocation> allocations, JsonElement config) {
