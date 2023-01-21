@@ -13,14 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.utils;
+package multipacks.modifier.builtin.models;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import multipacks.utils.ResourcePath;
 
 /**
- * A bunch of constants inside a class.
  * @author nahkd
  *
  */
-public class Constants {
-	public static final String SYSTEM_NAMESPACE = "multipacks";
-	public static final String GAME_NAMESPACE = "minecraft";
+public class ItemModels {
+	public final ResourcePath itemId;
+	public final Map<ResourcePath, Model> models = new HashMap<>();
+
+	protected int currentIdx = 1;
+
+	public ItemModels(ResourcePath itemId) {
+		this.itemId = itemId;
+	}
 }

@@ -220,9 +220,10 @@ public class GlyphsModifier extends Modifier {
 					fontPtr.value.spaceWidths.put(ch, width);
 				} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_BITMAP, FIELD_SPACE));
 
-				if (configFile != null) configFile.getParent().delete(configFile.getName());
 			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ALLOCATE, FIELD_ID));
 		}
+
+		if (configFile != null) configFile.getParent().delete(configFile.getName());
 	}
 
 	private char findNextSuitableChar(List<GlyphsAllocation> allocations, Holder<FontInfo> fontPtr) {

@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -169,8 +168,8 @@ public class Bundler {
 		Vfs.copyRecursive(finalOutput, content);
 
 		BundleResult result = new BundleResult(content);
-		result.modifiers = new ArrayList<>(modifiersMap.values());
-		for (Modifier modifier : result.modifiers) modifier.finalizeModifier(content, modifiers);
+		result.modifiers = modifiersMap;
+		for (Modifier modifier : modifiersMap.values()) modifier.finalizeModifier(content, modifiers);
 
 		Vfs packMcmeta = content.touch("pack.mcmeta");
 		try (OutputStream stream = packMcmeta.getOutputStream()) {

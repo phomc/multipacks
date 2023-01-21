@@ -23,6 +23,7 @@ import multipacks.bundling.BundleResult;
 import multipacks.bundling.Bundler;
 import multipacks.modifier.Modifier;
 import multipacks.modifier.builtin.glyphs.GlyphsModifier;
+import multipacks.modifier.builtin.models.ModelsModifier;
 import multipacks.packs.Pack;
 import multipacks.tests.TestPlatform;
 import multipacks.tests.TestUtils;
@@ -34,16 +35,30 @@ import multipacks.versioning.Version;
  *
  */
 class ModifiersTest {
-	@Test
-	void testGlyphsModifier() {
+	BundleResult obtainBundle() {
 		Pack pack = TestUtils.getSamplePack();
 		Bundler bundler = new Bundler().fromPlatform(new TestPlatform());
-		BundleResult result = bundler.bundle(pack, new Version("1.19.3"));
+		return bundler.bundle(pack, new Version("1.19.3"));
+	}
 
+	@Test
+	void testGlyphsModifier() {
+		BundleResult result = obtainBundle();
 		Modifier mod = result.getModifiers().get(GlyphsModifier.ID);
+
 		if (mod instanceof GlyphsModifier gmod) {
 			assertNotNull(gmod.glyphs.get(new ResourcePath("sample", "my_glyph")));
 			assertNotNull(gmod.glyphs.get(new ResourcePath("sample", "sample_glyph")));
 		} else fail("Not an instance of GlyphsModifier");
+	}
+
+	@Test
+	void testModelsModifier() {
+		BundleResult result = obtainBundle();
+		Modifier mod = result.getModifiers().get(ModelsModifier.ID);
+
+		if (mod instanceof ModelsModifier mmod) {
+			assertNotNull(mmod.models.get(new ResourcePath("sample", "my_cool_item")));
+		} else fail("Not an instance of ModelsModifier");
 	}
 }

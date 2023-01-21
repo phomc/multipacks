@@ -20,11 +20,12 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.attribute.FileTime;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import multipacks.modifier.Modifier;
+import multipacks.utils.ResourcePath;
 import multipacks.vfs.Vfs;
 
 /**
@@ -33,14 +34,14 @@ import multipacks.vfs.Vfs;
  */
 public class BundleResult {
 	public final Vfs contents;
-	protected List<Modifier> modifiers;
+	protected Map<ResourcePath, Modifier> modifiers;
 
 	public BundleResult(Vfs contents) {
 		this.contents = contents;
 	}
 
-	public List<Modifier> getModifiers() {
-		return Collections.unmodifiableList(modifiers);
+	public Map<ResourcePath, Modifier> getModifiers() {
+		return Collections.unmodifiableMap(modifiers);
 	}
 
 	public void writeZipData(OutputStream stream) throws IOException {

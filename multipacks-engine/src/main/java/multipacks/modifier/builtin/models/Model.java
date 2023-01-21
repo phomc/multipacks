@@ -13,14 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.utils;
+package multipacks.modifier.builtin.models;
 
 /**
- * A bunch of constants inside a class.
+ * Represent a model that's attached to an item. You can obtain the item with custom model by giving yourself
+ * an item with id = {@link ItemModels#itemId} and {@code CustomModelData} = {@link #modelId}.
  * @author nahkd
  *
  */
-public class Constants {
-	public static final String SYSTEM_NAMESPACE = "multipacks";
-	public static final String GAME_NAMESPACE = "minecraft";
+public class Model {
+	public final ItemModels item;
+	public final int modelId;
+
+	public Model(ItemModels item, int modelId) {
+		this.item = item;
+		this.modelId = modelId;
+	}
+
+	@Override
+	public String toString() {
+		return item.itemId + " -> #" + modelId;
+	}
 }
