@@ -15,6 +15,8 @@
  */
 package multipacks.modifier.builtin.glyphs;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,10 +34,10 @@ import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
 import multipacks.packs.Pack;
 import multipacks.utils.Holder;
-import multipacks.utils.IOUtils;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
+import multipacks.utils.io.IOUtils;
 import multipacks.vfs.Path;
 import multipacks.vfs.Vfs;
 
@@ -95,7 +97,52 @@ public class GlyphsModifier extends Modifier {
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to write JSON data to " + fontFile, e);
 			}
+
+			font.providers = null;
+			font.spaceWidths = null;
 		}
+	}
+
+	@Override
+	public void serializeModifier(DataOutput output, ModifiersAccess access) throws IOException {
+		for (Glyph g : glyphs.values()) {
+			output.writeUTF(g.glyphId.toString());
+			output.writeUTF(g.font.id.toString());
+			output.writeChar(g.assigned);
+		}
+
+		output.writeUTF(""); // 0-length string: End of List
+	}
+
+	public static GlyphsModifier deserializeModifier(DataInput input) throws IOException {
+		String glyphIdStr;
+		GlyphsModifier modifier = new GlyphsModifier();
+
+		while ((glyphIdStr = input.readUTF()).length() > 0) {
+			ResourcePath glyphId = new ResourcePath(glyphIdStr);
+			ResourcePath fontId = new ResourcePath(input.readUTF());
+			char assigned = input.readChar();
+
+			FontInfo font = modifier.fonts.get(fontId);
+
+			if (font == null) {
+				modifier.fonts.put(fontId, font = new FontInfo(fontId));
+				font.providers = null;
+				font.spaceWidths = null;
+			}
+
+			Glyph g = new Glyph(glyphId, font, assigned);
+
+			font.glyphs.put(fontId, g);
+			font.assignedGlyphs.put(assigned, g);
+			modifier.glyphs.put(glyphId, g);
+		}
+
+		return modifier;
+	}
+
+	public static void registerTo(ModifiersAccess access) {
+		access.registerModifier(new ResourcePath("multipacks", "builtin/glyphs"), GlyphsModifier::new, GlyphsModifier::deserializeModifier);
 	}
 
 	private void addGlyphsFor(Vfs root, Vfs scoped, Vfs configFile, List<GlyphsAllocation> allocations, JsonElement config) {

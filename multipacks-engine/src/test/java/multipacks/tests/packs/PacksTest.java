@@ -17,8 +17,10 @@ package multipacks.tests.packs;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.DataInput;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -38,6 +40,7 @@ import multipacks.modifier.builtin.glyphs.GlyphsModifier;
 import multipacks.packs.LocalPack;
 import multipacks.packs.meta.PackIndex;
 import multipacks.utils.ResourcePath;
+import multipacks.utils.io.Deserializer;
 
 /**
  * @author nahkd
@@ -67,7 +70,7 @@ class PacksTest {
 		Bundler bundler = new Bundler()
 				.setModifiersAccess(new ModifiersAccess() {
 					@Override
-					public void registerModifier(ResourcePath id, Supplier<Modifier> supplier) {
+					public <T extends Modifier> void registerModifier(ResourcePath id, Supplier<T> supplier, Deserializer<T> deserializer) {
 					}
 
 					@Override
@@ -79,6 +82,11 @@ class PacksTest {
 					public Modifier createModifier(ResourcePath id) {
 						if (id.equals(new ResourcePath("multipacks:builtin/glyphs"))) return new GlyphsModifier();
 						return null;
+					}
+
+					@Override
+					public Modifier deserializeModifier(ResourcePath id, DataInput input) throws IOException {
+						return createModifier(id);
 					}
 				});
 		OutputStream stream = new FileOutputStream(new File("testartifact_PacksTest_001.zip"));

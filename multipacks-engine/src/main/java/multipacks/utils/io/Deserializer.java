@@ -13,27 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier;
+package multipacks.utils.io;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.List;
-import java.util.function.Supplier;
-
-import multipacks.utils.ResourcePath;
-import multipacks.utils.io.Deserializer;
 
 /**
  * @author nahkd
  *
  */
-public interface ModifiersAccess {
-	Modifier createModifier(ResourcePath id);
-	Modifier deserializeModifier(ResourcePath id, DataInput input) throws IOException;
-	<T extends Modifier> void registerModifier(ResourcePath id, Supplier<T> supplier, Deserializer<T> deserializer);
-	List<ResourcePath> getRegisteredModifiers();
-
-	default void registerModifier(ResourcePath id, Supplier<Modifier> supplier) {
-		registerModifier(id, supplier, input -> supplier.get());
-	}
+@FunctionalInterface
+public interface Deserializer<T> {
+	T deserialize(DataInput input) throws IOException;
 }

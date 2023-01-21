@@ -48,10 +48,10 @@ import multipacks.plugins.MultipacksPlugin;
 import multipacks.spigot.commands.MainCommand;
 import multipacks.spigot.serving.LocalPackServer;
 import multipacks.spigot.serving.PackServer;
-import multipacks.utils.IOUtils;
 import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
+import multipacks.utils.io.IOUtils;
 import multipacks.utils.logging.AbstractLogger;
 
 /**

@@ -18,7 +18,7 @@ package multipacks.packs.legacy;
 import java.io.File;
 import java.io.IOException;
 
-import multipacks.utils.IOUtils;
+import multipacks.utils.io.IOUtils;
 
 public class Pack {
 	private File packRoot;

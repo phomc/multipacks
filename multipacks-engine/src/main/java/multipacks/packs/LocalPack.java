@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import com.google.gson.JsonArray;
 
 import multipacks.packs.meta.PackIndex;
-import multipacks.utils.IOUtils;
+import multipacks.utils.io.IOUtils;
 import multipacks.vfs.Vfs;
 
 /**

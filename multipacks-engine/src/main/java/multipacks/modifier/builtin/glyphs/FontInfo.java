@@ -34,8 +34,8 @@ public class FontInfo {
 	public final HashMap<Character, Glyph> assignedGlyphs = new HashMap<>();
 
 	// File output
-	public JsonArray providers = new JsonArray();
-	public HashMap<Character, Integer> spaceWidths = new HashMap<>();
+	protected JsonArray providers = new JsonArray();
+	protected HashMap<Character, Integer> spaceWidths = new HashMap<>();
 
 	public FontInfo(ResourcePath id) {
 		this.id = id;

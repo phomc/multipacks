@@ -15,6 +15,8 @@
  */
 package multipacks.modifier;
 
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
@@ -45,6 +47,15 @@ public abstract class Modifier {
 	public abstract void applyModifier(Pack fromPack, Vfs contents, JsonElement config, ModifiersAccess access);
 
 	public abstract void finalizeModifier(Vfs contents, ModifiersAccess access);
+
+	/**
+	 * Serialize this modifier.
+	 * @param output Output data stream, which you can write modifier outputs there.
+	 * @param access Interface for accessing registered modifiers.
+	 */
+	public void serializeModifier(DataOutput output, ModifiersAccess access) throws IOException {
+		// NO-OP
+	}
 
 	public static void applyModifiers(Pack fromPack, Vfs contents, JsonArray list, ModifiersAccess access, Map<ResourcePath, Modifier> modifiersMap) {
 		for (JsonElement e : list) {
