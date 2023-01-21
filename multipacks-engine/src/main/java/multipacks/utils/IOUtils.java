@@ -17,10 +17,13 @@ package multipacks.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,29 +34,51 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 
+import multipacks.vfs.Vfs;
+
 public class IOUtils {
-	public static JsonElement jsonFromFile(File file) throws IOException {
-		FileInputStream in = new FileInputStream(file);
+	public static JsonElement jsonFromStream(InputStream stream) throws IOException {
 		JsonParser parser = new JsonParser();
-		JsonElement json = parser.parse(new InputStreamReader(in));
-		in.close();
+		JsonElement json = parser.parse(new InputStreamReader(stream));
 		return json;
+	}
+
+	public static JsonElement jsonFromFile(File file) throws IOException {
+		try (FileInputStream in = new FileInputStream(file)) {
+			return jsonFromStream(in);
+		}
 	}
 
 	public static JsonElement jsonFromPath(Path path) throws IOException {
-		InputStream in = Files.newInputStream(path, StandardOpenOption.READ);
-		JsonParser parser = new JsonParser();
-		JsonElement json = parser.parse(new InputStreamReader(in));
-		in.close();
-		return json;
+		try (InputStream in = Files.newInputStream(path, StandardOpenOption.READ)) {
+			return jsonFromStream(in);
+		}
+	}
+
+	public static JsonElement jsonFromVfs(Vfs file) throws IOException {
+		try (InputStream in = file.getInputStream()) {
+			return jsonFromStream(in);
+		}
+	}
+
+	public static void jsonToStream(JsonElement json, OutputStream stream) throws IOException {
+		OutputStreamWriter sw = new OutputStreamWriter(stream);
+		JsonWriter writer = new JsonWriter(sw);
+		writer.setIndent("    ");
+		new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(json, writer);
+		writer.flush();
 	}
 
 	public static void jsonToFile(JsonElement json, File file) throws IOException {
-		FileWriter fw = new FileWriter(file);
-		JsonWriter writer = new JsonWriter(fw);
-		writer.setIndent("    ");
-		new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(json, writer);
-		writer.close();
+		try (FileOutputStream out = new FileOutputStream(file)) {
+			jsonToStream(json, out);
+		}
+	}
+
+	public static void jsonToVfs(JsonElement json, Vfs file) throws IOException {
+		try (OutputStream out = file.getOutputStream()) {
+			jsonToStream(json, out);
+		}
 	}
 
 	public static void copyRecursive(File from, File to, CopyOption... options) throws IOException {

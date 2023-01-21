@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.google.gson.JsonArray;
+
 import multipacks.packs.meta.PackIndex;
 import multipacks.utils.IOUtils;
 import multipacks.vfs.Vfs;
@@ -29,11 +31,16 @@ import multipacks.vfs.Vfs;
  *
  */
 public class LocalPack implements Pack {
+	public static final String ERROR_UNLOADED = "This local pack is not loaded yet! Use LocalPack#loadFromStorage() to load.";
+
 	public static final String FILE_INDEX = "multipacks.index.json";
 	public static final String FILE_INDEX_LEGACY = "multipacks.json";
 
+	public static final String FILE_MODIFIERS = "multipacks.modifiers.json";
+
 	public final Path packRoot;
 	private PackIndex index;
+	private JsonArray modifiers;
 
 	public LocalPack(Path packRoot) {
 		this.packRoot = packRoot;
@@ -49,16 +56,27 @@ public class LocalPack implements Pack {
 		}
 
 		index = new PackIndex(IOUtils.jsonFromPath(indexFile).getAsJsonObject());
+		if (Files.exists(packRoot.resolve(FILE_MODIFIERS))) modifiers = IOUtils.jsonFromPath(packRoot.resolve(FILE_MODIFIERS)).getAsJsonArray();
+	}
+
+	private void ensureLoaded() {
+		if (index == null) throw new IllegalStateException(ERROR_UNLOADED);
 	}
 
 	@Override
 	public PackIndex getIndex() {
-		if (index == null) throw new IllegalStateException("This local pack is not loaded yet! Use LocalPack#loadFromStorage() to load.");
+		ensureLoaded();
 		return index;
 	}
 
 	@Override
-	public Vfs createVfsWithoutModifiers() {
+	public JsonArray getModifiersConfig() {
+		ensureLoaded();
+		return modifiers;
+	}
+
+	@Override
+	public Vfs createVfs() {
 		Vfs vfs = Vfs.createRoot(packRoot);
 		// TODO apply modifiers
 		return vfs;

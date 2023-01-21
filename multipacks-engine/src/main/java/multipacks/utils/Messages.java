@@ -23,8 +23,16 @@ import multipacks.repository.query.PackQuery;
  *
  */
 public class Messages {
-	public static String missingField(String fieldName) {
-		return "Missing '" + fieldName + "' field";
+	public static String missingFieldAny(String... fieldName) {
+		String msg = "Missing '" + fieldName[0] + "' ";
+		for (int i = 1; i < fieldName.length; i++) msg += "or '" + fieldName[i] + "' ";
+		return msg + "field";
+	}
+
+	public static String missingFieldAll(String... fieldName) {
+		String msg = "Missing '" + fieldName[0] + "' ";
+		for (int i = 1; i < fieldName.length; i++) msg += "and '" + fieldName[i] + "' ";
+		return msg + "field" + (fieldName.length != 1? "s" : "");
 	}
 
 	public static String packNotFoundRepo(PackIdentifier id) {

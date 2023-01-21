@@ -39,8 +39,8 @@ public class PackIdentifier {
 	}
 
 	public PackIdentifier(JsonObject json) {
-		this.name = Selects.nonNull(json.get(FIELD_NAME), Messages.missingField(FIELD_NAME)).getAsString();
-		this.packVersion = new Version(Selects.nonNull(json.get(FIELD_PACK_VERSION), Messages.missingField(FIELD_PACK_VERSION)).getAsString());
+		this.name = Selects.nonNull(json.get(FIELD_NAME), Messages.missingFieldAny(FIELD_NAME)).getAsString();
+		this.packVersion = new Version(Selects.nonNull(json.get(FIELD_PACK_VERSION), Messages.missingFieldAny(FIELD_PACK_VERSION)).getAsString());
 	}
 
 	public JsonObject toJson() {

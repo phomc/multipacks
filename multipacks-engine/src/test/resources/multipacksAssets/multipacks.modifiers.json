@@ -1,0 +1,17 @@
+[
+    {
+        "type": "multipacks:builtin/glyphs",
+        "config": [
+            {
+                "allocate": [
+                    {"font": "sample:my_font", "start": "\u0000", "end": "\uFFFF"}
+                ]
+            },
+            {
+                "id": "sample:my_glyph",
+                "space": 69
+            },
+            {"include": "assets/multipacks/font/glyphs.json"}
+        ]
+    }
+]

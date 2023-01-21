@@ -15,22 +15,17 @@
  */
 package multipacks.modifier;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.util.List;
+import java.util.function.Supplier;
 
-public interface ModifierOutputSerializer<T> {
-	void serialize(T obj, DataOutput stream) throws IOException;
-	T deserialize(DataInput stream) throws IOException;
+import multipacks.utils.ResourcePath;
 
-	static ModifierOutputSerializer<Void> VOID = new ModifierOutputSerializer<Void>() {
-		@Override
-		public void serialize(Void obj, DataOutput stream) throws IOException {
-		}
-
-		@Override
-		public Void deserialize(DataInput stream) throws IOException {
-			return null;
-		}
-	};
+/**
+ * @author nahkd
+ *
+ */
+public interface ModifiersAccess {
+	Modifier createModifier(ResourcePath id);
+	void registerModifier(ResourcePath id, Supplier<Modifier> supplier);
+	List<ResourcePath> getRegisteredModifiers();
 }

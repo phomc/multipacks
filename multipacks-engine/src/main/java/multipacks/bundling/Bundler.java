@@ -20,18 +20,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 
+import multipacks.modifier.Modifier;
+import multipacks.modifier.ModifiersAccess;
 import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIdentifier;
 import multipacks.platform.Platform;
@@ -39,6 +41,7 @@ import multipacks.repository.RepositoriesAccess;
 import multipacks.repository.Repository;
 import multipacks.repository.query.PackQuery;
 import multipacks.utils.Messages;
+import multipacks.utils.ResourcePath;
 import multipacks.versioning.Version;
 import multipacks.vfs.Vfs;
 
@@ -47,7 +50,8 @@ import multipacks.vfs.Vfs;
  *
  */
 public class Bundler {
-	public RepositoriesAccess repositoriesAccess;
+	public RepositoriesAccess repositories;
+	public ModifiersAccess modifiers;
 	public boolean includeLicenses = true;
 	public String[] licenseFileNames = new String[] {
 			"license", "licence", "license.txt", "licence.txt", "license.md", "licence.md"
@@ -57,7 +61,12 @@ public class Bundler {
 	}
 
 	public Bundler setRepositoriesAccess(RepositoriesAccess access) {
-		this.repositoriesAccess = access;
+		this.repositories = access;
+		return this;
+	}
+
+	public Bundler setModifiersAccess(ModifiersAccess access) {
+		this.modifiers = access;
 		return this;
 	}
 
@@ -68,18 +77,19 @@ public class Bundler {
 
 	public Bundler fromPlatform(Platform platform) {
 		return this
-				.setRepositoriesAccess(platform);
+				.setRepositoriesAccess(platform)
+				.setModifiersAccess(platform);
 	}
 
-	private Vfs bundleWithoutFinish(Pack pack, Vfs licensesStore, Vfs packFinalOutput) {
+	private Vfs bundleWithoutFinish(Pack pack, Vfs licensesStore, Vfs packFinalOutput, Map<ResourcePath, Modifier> modifiersMap) {
 		// TODO: Return CompletableFuture instead
 		Vfs content = Vfs.createVirtualRoot();
 
 		if (pack.getIndex().dependencies.size() > 0) {
-			if (repositoriesAccess == null) throw new IllegalStateException("Repositories accessor is missing for this Bundler");
+			if (repositories == null) throw new NullPointerException("Repositories accessor is missing for this Bundler");
 
 			for (PackQuery depQuery : pack.getIndex().dependencies) {
-				for (Repository repo : repositoriesAccess.getRepositories()) {
+				for (Repository repo : repositories.getRepositories()) {
 					try {
 						// TODO: improve dependencies resolution algorithm
 						// caching is needed.
@@ -94,7 +104,7 @@ public class Bundler {
 						}
 
 						Pack dep = repo.obtain(latest).get();
-						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore, null), content);
+						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore, null, modifiersMap), content);
 					} catch (ExecutionException | InterruptedException e) {
 						throw new RuntimeException(e);
 					}
@@ -102,7 +112,7 @@ public class Bundler {
 			}
 		}
 
-		Vfs thisPack = pack.createVfs(true);
+		Vfs thisPack = pack.createVfs();
 		List<Vfs> contentTypeDirs = Stream.of(thisPack.listFiles()).filter(v -> v.isDir()).toList();
 
 		for (Vfs contentTypeDir : contentTypeDirs) {
@@ -111,6 +121,14 @@ public class Bundler {
 			Vfs.copyRecursive(contentTypeDir, contentTypeDirOut);
 		}
 
+		// TODO: Modifiers
+		JsonArray modifiersConfig = pack.getModifiersConfig();
+		if (modifiersConfig != null) {
+			if (modifiers == null) throw new NullPointerException("Modifiers accessor is missing for this Bundler");
+			Modifier.applyModifiers(pack, content, modifiersConfig, modifiers, modifiersMap);
+		}
+
+		// Licenses & pack.png
 		if (includeLicenses && licensesStore != null) {
 			for (String licenseFileName : licenseFileNames) {
 				Vfs f = thisPack.get(licenseFileName);
@@ -128,7 +146,7 @@ public class Bundler {
 		if (packFinalOutput != null) {
 			Vfs packPng = thisPack.get("pack.png");
 			if (packPng != null) {
-				Vfs packPngTo = content.touch("pack.png");
+				Vfs packPngTo = packFinalOutput.touch("pack.png");
 				try (OutputStream streamOut = packPngTo.getOutputStream(); InputStream streamIn = packPng.getInputStream()) {
 					streamIn.transferTo(streamOut);
 				} catch (IOException e) {
@@ -140,13 +158,19 @@ public class Bundler {
 		return content;
 	}
 
-	public Vfs bundle(Pack pack, Version targetGameVersion) {
+	public BundleResult bundle(Pack pack, Version targetGameVersion) {
+		HashMap<ResourcePath, Modifier> modifiersMap = new HashMap<>();
+
 		Vfs licenses = Vfs.createVirtualRoot();
 		Vfs finalOutput = Vfs.createVirtualRoot();
-		Vfs content = bundleWithoutFinish(pack, licenses, finalOutput);
+		Vfs content = bundleWithoutFinish(pack, licenses, finalOutput, modifiersMap);
 
 		Vfs.copyRecursive(licenses, content);
 		Vfs.copyRecursive(finalOutput, content);
+
+		BundleResult result = new BundleResult(content);
+		result.modifiers = new ArrayList<>(modifiersMap.values());
+		for (Modifier modifier : result.modifiers) modifier.finalizeModifier(content, modifiers);
 
 		Vfs packMcmeta = content.touch("pack.mcmeta");
 		try (OutputStream stream = packMcmeta.getOutputStream()) {
@@ -158,27 +182,6 @@ public class Bundler {
 			throw new RuntimeException(e);
 		}
 
-		return content;
-	}
-
-	public void bundleToStream(Pack pack, Version targetGameVersion, OutputStream stream) throws IOException {
-		ZipOutputStream zip = new ZipOutputStream(stream, StandardCharsets.UTF_8);
-		FileTime bundleTime = FileTime.fromMillis(System.currentTimeMillis());
-		Vfs content = bundle(pack, targetGameVersion);
-		vfsAddZipEntry(content, bundleTime, zip);
-		zip.finish();
-	}
-
-	private void vfsAddZipEntry(Vfs file, FileTime bundleTime, ZipOutputStream zip) throws IOException {
-		if (file.isDir()) {
-			for (Vfs child : file.listFiles()) vfsAddZipEntry(child, bundleTime, zip);
-		} else {
-			ZipEntry entry = new ZipEntry(file.getPathFromRoot().toString())
-					.setCreationTime(bundleTime)
-					.setLastModifiedTime(bundleTime);
-			zip.putNextEntry(entry);
-			zip.write(file.getContent());
-			zip.closeEntry();
-		}
+		return result;
 	}
 }

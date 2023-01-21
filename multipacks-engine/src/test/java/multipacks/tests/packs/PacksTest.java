@@ -25,12 +25,19 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import multipacks.bundling.Bundler;
+import multipacks.modifier.Modifier;
+import multipacks.modifier.ModifiersAccess;
+import multipacks.modifier.builtin.glyphs.GlyphsModifier;
 import multipacks.packs.LocalPack;
 import multipacks.packs.meta.PackIndex;
+import multipacks.utils.ResourcePath;
 
 /**
  * @author nahkd
@@ -48,7 +55,7 @@ class PacksTest {
 		assertEquals("sample-pack", index.name);
 		assertEquals("PhoMC", index.author);
 
-		assertNotNull(pack.createVfsWithoutModifiers().get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
+		assertNotNull(pack.createVfs().get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
 	}
 
 	@Test
@@ -57,9 +64,25 @@ class PacksTest {
 		LocalPack pack = new LocalPack(rootPath);
 		pack.loadFromStorage();
 
-		Bundler bundler = new Bundler();
+		Bundler bundler = new Bundler()
+				.setModifiersAccess(new ModifiersAccess() {
+					@Override
+					public void registerModifier(ResourcePath id, Supplier<Modifier> supplier) {
+					}
+
+					@Override
+					public List<ResourcePath> getRegisteredModifiers() {
+						return Arrays.asList(new ResourcePath("multipacks:builtin/glyphs"));
+					}
+
+					@Override
+					public Modifier createModifier(ResourcePath id) {
+						if (id.equals(new ResourcePath("multipacks:builtin/glyphs"))) return new GlyphsModifier();
+						return null;
+					}
+				});
 		OutputStream stream = new FileOutputStream(new File("testartifact_PacksTest_001.zip"));
-		bundler.bundleToStream(pack, pack.getIndex().sourceGameVersion, stream);
+		bundler.bundle(pack, pack.getIndex().sourceGameVersion).writeZipData(stream);
 
 		FileSystem fs = FileSystems.newFileSystem(Paths.get("testartifact_PacksTest_001.zip"));
 		assertTrue(Files.exists(fs.getPath("assets/multipacks/models/sample_model.json")));

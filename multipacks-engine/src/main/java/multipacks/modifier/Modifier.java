@@ -15,22 +15,53 @@
  */
 package multipacks.modifier;
 
+import java.util.Map;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import multipacks.packs.Pack;
-import multipacks.platform.Platform;
+import multipacks.utils.Messages;
+import multipacks.utils.ResourcePath;
+import multipacks.utils.Selects;
 import multipacks.vfs.Vfs;
 
 /**
  * @author nahkd
  *
  */
-public interface Modifier<T> {
+public abstract class Modifier {
+	public static final String FIELD_ID = "type";
+	public static final String FIELD_CONFIG = "config";
+
 	/**
 	 * Apply this modifier to VFS.
 	 * @param fromPack Pack that configured this modifier.
 	 * @param contents Input and output contents.
-	 * @param platform Platform (mainly for logging).
-	 * @return Modifier output. Use type {@link Void} and return {@code null} if this modifier doesn't return
-	 * anything for future.
+	 * @param config Modifier configuration.
+	 * @param access Interface for accessing registered modifiers.
 	 */
-	T applyModifier(Pack fromPack, Vfs contents, Platform platform);
+	public abstract void applyModifier(Pack fromPack, Vfs contents, JsonElement config, ModifiersAccess access);
+
+	public abstract void finalizeModifier(Vfs contents, ModifiersAccess access);
+
+	public static void applyModifiers(Pack fromPack, Vfs contents, JsonArray list, ModifiersAccess access, Map<ResourcePath, Modifier> modifiersMap) {
+		for (JsonElement e : list) {
+			JsonObject obj = e.getAsJsonObject();
+			ResourcePath id = new ResourcePath(Selects.nonNull(obj.get(FIELD_ID), Messages.missingFieldAny(FIELD_ID)).getAsString());
+			JsonElement config = obj.get(FIELD_CONFIG);
+
+			// Modifier modifier = access.createModifier(id);
+			Modifier modifier = null;
+			if (modifiersMap != null) modifier = modifiersMap.get(id);
+
+			if (modifier == null) {
+				modifier = access.createModifier(id);
+				if (modifiersMap != null) modifiersMap.put(id, modifier);
+			}
+
+			modifier.applyModifier(fromPack, contents, config, access);
+		}
+	}
 }
