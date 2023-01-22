@@ -27,7 +27,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.google.gson.JsonObject;
 
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.spigot.MultipacksSpigot;
 import multipacks.utils.PlatformAPI;
 

@@ -41,7 +41,7 @@ import multipacks.bundling.legacy.BundleIgnore;
 import multipacks.bundling.legacy.BundleInclude;
 import multipacks.bundling.legacy.BundleResult;
 import multipacks.bundling.legacy.PackBundler;
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.Pack;
 import multipacks.plugins.legacy.MultipacksDefaultPlugin;

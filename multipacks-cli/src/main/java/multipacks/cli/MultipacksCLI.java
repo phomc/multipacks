@@ -41,7 +41,7 @@ import multipacks.bundling.legacy.BundleIgnore;
 import multipacks.bundling.legacy.BundleInclude;
 import multipacks.bundling.legacy.PackBundler;
 import multipacks.bundling.legacy.PackagingFailException;
-import multipacks.logging.SystemLogger;
+import multipacks.logging.legacy.SystemLogger;
 import multipacks.management.legacy.LocalRepository;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.management.legacy.PacksUploadable;

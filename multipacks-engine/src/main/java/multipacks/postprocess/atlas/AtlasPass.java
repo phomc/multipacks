@@ -27,7 +27,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.legacy.BundleResult;
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.vfs.Path;

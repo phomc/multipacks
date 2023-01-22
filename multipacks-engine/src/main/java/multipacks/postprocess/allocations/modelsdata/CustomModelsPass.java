@@ -22,7 +22,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.bundling.legacy.BundleResult;
 import multipacks.bundling.legacy.PackagingFailException;
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;

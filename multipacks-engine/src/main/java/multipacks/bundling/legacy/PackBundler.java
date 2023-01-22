@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.DynamicPack;
 import multipacks.packs.legacy.Pack;

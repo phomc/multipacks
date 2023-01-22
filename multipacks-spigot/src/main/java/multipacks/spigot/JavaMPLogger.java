@@ -18,7 +18,7 @@ package multipacks.spigot;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 
 class JavaMPLogger extends AbstractLogger {
 	private Logger logger;

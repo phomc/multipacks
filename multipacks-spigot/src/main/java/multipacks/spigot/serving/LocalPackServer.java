@@ -26,7 +26,7 @@ import org.bukkit.entity.Player;
 import com.google.common.io.Files;
 import com.google.gson.JsonObject;
 
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.legacy.AbstractLogger;
 
 public class LocalPackServer implements PackServer {
 	private static final String FILE_NAME = "multipacks-spigot-generated.zip";
