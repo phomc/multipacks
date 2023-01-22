@@ -109,7 +109,7 @@ public class LocalRepository implements AuthorizedRepository {
 			if (Files.notExists(packDestDir)) {
 				Files.createDirectories(packDestDir);
 			} else if (Files.exists(packDestDir.resolve("multipacks.index.json"))) {
-				return CompletableFuture.failedFuture(new RuntimeException("Pack already exists in repository: " + pack.getIndex().name + " version " + pack.getIndex().packVersion));
+				return CompletableFuture.failedFuture(new RuntimeException(Messages.packFoundRepo(pack.getIndex())));
 			}
 
 			Files.walkFileTree(pack.packRoot, new SimpleFileVisitor<Path>() {
@@ -133,7 +133,21 @@ public class LocalRepository implements AuthorizedRepository {
 
 	@Override
 	public CompletableFuture<Void> delete(PackIdentifier id) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Path packDestDir = repositoryRoot.resolve(id.name + "/" + id.packVersion.toString());
+			if (Files.notExists(packDestDir)) return CompletableFuture.failedFuture(new IllegalArgumentException(Messages.packNotFoundRepo(id)));
+			deleteRecursively(packDestDir);
+			return CompletableFuture.completedFuture(null);
+		} catch (IOException e) {
+			return CompletableFuture.failedFuture(e);
+		}
+	}
+
+	private void deleteRecursively(Path p) throws IOException {
+		if (Files.isDirectory(p)) {
+			for (Path child : Files.list(p).toList()) deleteRecursively(child);
+		}
+
+		Files.delete(p);
 	}
 }

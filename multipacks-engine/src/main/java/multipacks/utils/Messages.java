@@ -39,6 +39,10 @@ public class Messages {
 		return "Pack not found in repository: " + id.name + " version " + id.packVersion.toStringNoPrefix();
 	}
 
+	public static String packFoundRepo(PackIdentifier id) {
+		return "Pack is already exists in repository: " + id.name + " version " + id.packVersion.toStringNoPrefix();
+	}
+
 	public static final String FILE_ISDIR = "Is a directory";
 	public static final String FILE_ISNOTDIR = "Is not a directory";
 

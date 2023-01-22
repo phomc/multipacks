@@ -103,11 +103,15 @@ class RepositoriesTest {
 	}
 
 	@Test
-	void testRepositoryUpload() throws Exception {
+	void testRepositoryUploadAndDelete() throws Exception {
 		LocalPack pack = TestUtils.getSamplePack();
 		LocalRepository repo = new LocalRepository(new File("test_repository").toPath());
-		repo.upload(pack).get();
+		PackIdentifier id = repo.upload(pack).get();
 		assertTrue(new File("test_repository/sample-pack/1.0.0/multipacks.index.json").exists());
+
+		repo.delete(id).get();
+		assertFalse(new File("test_repository/sample-pack/1.0.0/multipacks.index.json").exists());
+
 		deleteRecursively(new File("test_repository"));
 	}
 
