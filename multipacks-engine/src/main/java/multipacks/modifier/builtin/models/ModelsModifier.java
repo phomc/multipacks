@@ -26,22 +26,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
+import multipacks.modifier.builtin.BuiltinModifierBase;
 import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 import multipacks.utils.io.IOUtils;
-import multipacks.vfs.Path;
 import multipacks.vfs.Vfs;
 
 /**
  * @author nahkd
  *
  */
-public class ModelsModifier extends Modifier {
+public class ModelsModifier extends BuiltinModifierBase<Void> {
 	public static final String ERROR_MISSING_MODEL_A = "Missing model JSON for ";
 
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/models");
@@ -55,11 +54,6 @@ public class ModelsModifier extends Modifier {
 
 	public final Map<ResourcePath, ItemModels> items = new HashMap<>();
 	public final Map<ResourcePath, Model> models = new HashMap<>();
-
-	@Override
-	public void applyModifier(Pack fromPack, Vfs contents, JsonElement config, ModifiersAccess access) {
-		addModelsFor(contents, contents, null, config);
-	}
 
 	@Override
 	public void finalizeModifier(Vfs contents, ModifiersAccess access) {
@@ -98,23 +92,12 @@ public class ModelsModifier extends Modifier {
 		access.registerModifier(ID, ModelsModifier::new, ModelsModifier::deserializeModifier);
 	}
 
-	private void addModelsFor(Vfs root, Vfs scoped, Vfs configFile, JsonElement config) {
-		if (config.isJsonArray()) {
-			JsonArray arr = config.getAsJsonArray();
-			for (JsonElement e : arr) addModelsFor(root, scoped, configFile, e);
-		} else if (config.isJsonObject()) {
+	@Override
+	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, Void data, ModifiersAccess access) {
+		if (config.isJsonObject()) {
 			JsonObject obj = config.getAsJsonObject();
-			if (obj.has(FIELD_INCLUDE)) {
-				Path includePath = new Path(Selects.nonNull(obj.get(FIELD_INCLUDE), Messages.missingFieldAny(FIELD_INCLUDE)).getAsString());
-				Vfs file = scoped.get(includePath);
 
-				try {
-					JsonElement includeConfig = IOUtils.jsonFromVfs(file);
-					addModelsFor(root, file.get(".."), file, includeConfig);
-				} catch (IOException e) {
-					throw new RuntimeException("Failed to obtain JSON data for " + file, e);
-				}
-			} else if (obj.has(FIELD_ID)) {
+			if (obj.has(FIELD_ID)) {
 				ResourcePath id = new ResourcePath(obj.get(FIELD_ID).getAsString());
 				ResourcePath modelId = new ResourcePath(Selects.nonNull(obj.get(FIELD_MODEL), Messages.missingFieldAny(FIELD_MODEL)).getAsString());
 				ResourcePath itemId = new ResourcePath(Selects.nonNull(obj.get(FIELD_ITEM), Messages.missingFieldAny(FIELD_ITEM)).getAsString());
@@ -151,7 +134,10 @@ public class ModelsModifier extends Modifier {
 				models.put(id, model);
 			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ID));
 		}
+	}
 
-		if (configFile != null) configFile.getParent().delete(configFile.getName());
+	@Override
+	protected Void createLocalData() {
+		return null;
 	}
 }

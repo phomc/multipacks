@@ -30,8 +30,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
-import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
+import multipacks.modifier.builtin.BuiltinModifierBase;
 import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Holder;
@@ -46,12 +46,11 @@ import multipacks.vfs.Vfs;
  * @author nahkd
  *
  */
-public class GlyphsModifier extends Modifier {
+public class GlyphsModifier extends BuiltinModifierBase<List<GlyphsAllocation>> {
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/glyphs");
 
 	public static final String ERROR_OUT_OF_SPACES = "Out of spaces for next character";
 
-	public static final String FIELD_INCLUDE = "include";
 	public static final String FIELD_ALLOCATE = "allocate";
 	public static final String FIELD_ID = "id";
 
@@ -63,14 +62,6 @@ public class GlyphsModifier extends Modifier {
 
 	public final HashMap<ResourcePath, FontInfo> fonts = new HashMap<>();
 	public final HashMap<ResourcePath, Glyph> glyphs = new HashMap<>();
-
-	@Override
-	public void applyModifier(Pack fromPack, Vfs contents, JsonElement config, ModifiersAccess access) {
-		if (config == null) return; // TODO: warn missing configuration
-
-		// Providers: bitmap, space
-		addGlyphsFor(contents, contents, null, new ArrayList<>(), config);
-	}
 
 	@Override
 	public void finalizeModifier(Vfs contents, ModifiersAccess access) {
@@ -148,23 +139,12 @@ public class GlyphsModifier extends Modifier {
 		access.registerModifier(ID, GlyphsModifier::new, GlyphsModifier::deserializeModifier);
 	}
 
-	private void addGlyphsFor(Vfs root, Vfs scoped, Vfs configFile, List<GlyphsAllocation> allocations, JsonElement config) {
-		if (config.isJsonArray()) {
-			JsonArray arr = config.getAsJsonArray();
-			for (JsonElement e : arr) addGlyphsFor(root, scoped, configFile, allocations, e);
-		} else if (config.isJsonObject()) {
+	@Override
+	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, List<GlyphsAllocation> allocations, ModifiersAccess access) {
+		if (config.isJsonObject()) {
 			JsonObject obj = config.getAsJsonObject();
-			if (obj.has(FIELD_INCLUDE)) {
-				Path includePath = new Path(Selects.nonNull(obj.get(FIELD_INCLUDE), Messages.missingFieldAny(FIELD_INCLUDE)).getAsString());
-				Vfs file = scoped.get(includePath);
 
-				try {
-					JsonElement includeConfig = IOUtils.jsonFromVfs(file);
-					addGlyphsFor(root, file.get(".."), file, allocations, includeConfig);
-				} catch (IOException e) {
-					throw new RuntimeException("Failed to obtain JSON data for " + file, e);
-				}
-			} else if (obj.has(FIELD_ALLOCATE)) {
+			if (obj.has(FIELD_ALLOCATE)) {
 				JsonArray arr = obj.get(FIELD_ALLOCATE).getAsJsonArray();
 
 				for (JsonElement e : arr) {
@@ -222,8 +202,11 @@ public class GlyphsModifier extends Modifier {
 
 			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ALLOCATE, FIELD_ID));
 		}
+	}
 
-		if (configFile != null) configFile.getParent().delete(configFile.getName());
+	@Override
+	protected List<GlyphsAllocation> createLocalData() {
+		return new ArrayList<>();
 	}
 
 	private char findNextSuitableChar(List<GlyphsAllocation> allocations, Holder<FontInfo> fontPtr) {
