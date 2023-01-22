@@ -27,9 +27,10 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import multipacks.logging.Logger;
-import multipacks.logging.legacy.AbstractLogger;
+import multipacks.logging.SimpleLogger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
+import multipacks.plugins.InternalSystemPlugin;
 import multipacks.repository.LocalRepository;
 import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
@@ -54,7 +55,7 @@ public class TestPlatform implements Platform {
 	}
 
 	public TestPlatform() {
-		Modifier.registerBuiltinModifiers(this);
+		new InternalSystemPlugin().onInit(this);
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class TestPlatform implements Platform {
 
 	@Override
 	public Logger getLogger() {
-		return null;
+		return new SimpleLogger();
 	}
 
 	@Override
