@@ -19,6 +19,10 @@ package multipacks.logging;
  * @author nahkd
  *
  */
-public interface LoggerAccess {
-	Logger getLogger();
+public enum LoggingLevel {
+	DEBUG,
+	INFO,
+	WARNING,
+	ERROR,
+	CRITICAL;
 }

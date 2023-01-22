@@ -26,7 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-import multipacks.logging.AbstractLogger;
+import multipacks.logging.Logger;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
 import multipacks.repository.LocalRepository;
@@ -62,8 +63,7 @@ public class TestPlatform implements Platform {
 	}
 
 	@Override
-	public AbstractLogger getLogger() {
-		// TODO Auto-generated method stub
+	public Logger getLogger() {
 		return null;
 	}
 
