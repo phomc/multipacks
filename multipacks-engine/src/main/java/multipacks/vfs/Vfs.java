@@ -183,6 +183,19 @@ public class Vfs {
 		return file;
 	}
 
+	public Vfs touch(Path path) {
+		String[] segments = path.getSegments();
+		Vfs current = this;
+
+		for (int i = 0; i < segments.length - 1; i++) {
+			if (segments[i].equals(".")) continue;
+			if (segments[i].equals("..")) current = current.getParent();
+			else current = current.mkdir(segments[i]);
+		}
+
+		return current.touch(segments[segments.length - 1]);
+	}
+
 	public InputStream getInputStream() {
 		if (directoryContent != null) throw new IllegalArgumentException(Messages.FILE_ISDIR);
 		if (nativePath != null) {

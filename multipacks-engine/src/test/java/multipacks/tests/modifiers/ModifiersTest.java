@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import multipacks.bundling.BundleResult;
 import multipacks.bundling.Bundler;
 import multipacks.modifier.Modifier;
+import multipacks.modifier.builtin.atlases.AtlasesModifier;
 import multipacks.modifier.builtin.glyphs.GlyphsModifier;
 import multipacks.modifier.builtin.models.ModelsModifier;
 import multipacks.packs.Pack;
@@ -29,6 +30,8 @@ import multipacks.tests.TestPlatform;
 import multipacks.tests.TestUtils;
 import multipacks.utils.ResourcePath;
 import multipacks.versioning.Version;
+import multipacks.vfs.Path;
+import multipacks.vfs.Vfs;
 
 /**
  * @author nahkd
@@ -60,5 +63,21 @@ class ModifiersTest {
 		if (mod instanceof ModelsModifier mmod) {
 			assertNotNull(mmod.models.get(new ResourcePath("sample", "my_cool_item")));
 		} else fail("Not an instance of ModelsModifier");
+	}
+
+	@Test
+	void testAtlasesModifier() {
+		BundleResult result = obtainBundle();
+		Modifier mod = result.getModifiers().get(AtlasesModifier.ID);
+
+		if (mod instanceof AtlasesModifier) {
+			Vfs content = result.contents;
+			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_up.png")));
+			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_down.png")));
+			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_north.png")));
+			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_east.png")));
+			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_south.png")));
+			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_west.png")));
+		} else fail("Not an instance of AtlasesModifier");
 	}
 }

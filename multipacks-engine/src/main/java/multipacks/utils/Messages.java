@@ -45,4 +45,12 @@ public class Messages {
 	public static String cantResolveDependency(PackQuery query) {
 		return "Failed to find dependency with query: " + query;
 	}
+
+	public static String missingFile(Object fileHandle) {
+		return "File not found: " + fileHandle;
+	}
+
+	public static String missingFile(Object fileHandle, Object scope) {
+		return "File not found: " + fileHandle + " (scope = " + scope + ")";
+	}
 }

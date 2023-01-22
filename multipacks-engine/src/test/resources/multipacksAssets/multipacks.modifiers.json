@@ -23,5 +23,14 @@
 				"item": "minecraft:barrier"
 			}
 		]
+	},
+	{
+		"type": "multipacks:builtin/atlases",
+		"config": [
+			{
+				"file": "assets/multipacks/textures/sample_atlas.png",
+				"template": {"include": "assets/multipacks/textures/atlas_template.json"}
+			}
+		]
 	}
 ]
