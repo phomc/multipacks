@@ -1,0 +1,36 @@
+[
+	{
+		"type": "multipacks:builtin/glyphs",
+		"config": [
+			{
+				"allocate": [
+					{"font": "sample:my_font", "start": "\u0000", "end": "\uFFFF"}
+				]
+			},
+			{
+				"id": "sample:my_glyph",
+				"space": 69
+			},
+			{"include": "assets/multipacks/font/glyphs.json"}
+		]
+	},
+	{
+		"type": "multipacks:builtin/models",
+		"config": [
+			{
+				"id": "sample:my_cool_item",
+				"model": "multipacks:sample_model",
+				"item": "minecraft:barrier"
+			}
+		]
+	},
+	{
+		"type": "multipacks:builtin/atlases",
+		"config": [
+			{
+				"file": "assets/multipacks/textures/sample_atlas.png",
+				"template": {"include": "assets/multipacks/textures/atlas_template.json"}
+			}
+		]
+	}
+]

@@ -37,7 +37,7 @@ import multipacks.packs.legacy.PackIndex;
 import multipacks.plugins.MultipacksPlugin;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.logging.AbstractLogger;
 import multipacks.vfs.Path;
 import multipacks.vfs.legacy.VirtualFs;
 
@@ -45,9 +45,9 @@ public class PackBundler {
 	public final List<PacksRepository> repositories = new ArrayList<>();
 	public final List<BundleIgnore> bundlingIgnores = new ArrayList<>();
 	public boolean ignoreResolveFail = false;
-	public AbstractMPLogger logger;
+	public AbstractLogger logger;
 
-	public PackBundler(AbstractMPLogger logger) {
+	public PackBundler(AbstractLogger logger) {
 		this.logger = logger;
 	}
 

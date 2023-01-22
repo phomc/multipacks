@@ -23,14 +23,14 @@ import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import org.junit.jupiter.api.Test;
 
 import multipacks.bundling.Bundler;
-import multipacks.packs.LocalPack;
+import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIndex;
+import multipacks.tests.TestPlatform;
+import multipacks.tests.TestUtils;
 
 /**
  * @author nahkd
@@ -39,27 +39,22 @@ import multipacks.packs.meta.PackIndex;
 class PacksTest {
 	@Test
 	void testPacksFromJar() throws Exception {
-		Path rootPath = Path.of(this.getClass().getClassLoader().getResource("multipacksAssets").toURI());
-
-		LocalPack pack = new LocalPack(rootPath);
-		pack.loadFromStorage();
+		Pack pack = TestUtils.getSamplePack();
 
 		PackIndex index = pack.getIndex();
 		assertEquals("sample-pack", index.name);
 		assertEquals("PhoMC", index.author);
 
-		assertNotNull(pack.createVfsWithoutModifiers().get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
+		assertNotNull(pack.createVfs().get(new multipacks.vfs.Path("assets/multipacks/models/sample_model.json")));
 	}
 
 	@Test
 	void testPackBundling() throws Exception {
-		Path rootPath = Path.of(this.getClass().getClassLoader().getResource("multipacksAssets").toURI());
-		LocalPack pack = new LocalPack(rootPath);
-		pack.loadFromStorage();
+		Pack pack = TestUtils.getSamplePack();
 
-		Bundler bundler = new Bundler();
+		Bundler bundler = new Bundler().fromPlatform(new TestPlatform());
 		OutputStream stream = new FileOutputStream(new File("testartifact_PacksTest_001.zip"));
-		bundler.bundleToStream(pack, pack.getIndex().sourceGameVersion, stream);
+		bundler.bundle(pack, pack.getIndex().sourceGameVersion).writeZipData(stream);
 
 		FileSystem fs = FileSystems.newFileSystem(Paths.get("testartifact_PacksTest_001.zip"));
 		assertTrue(Files.exists(fs.getPath("assets/multipacks/models/sample_model.json")));

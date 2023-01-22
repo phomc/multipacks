@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import multipacks.packs.legacy.Pack;
 import multipacks.packs.legacy.PackIdentifier;
 import multipacks.packs.legacy.PackIndex;
-import multipacks.utils.IOUtils;
+import multipacks.utils.io.IOUtils;
 import multipacks.utils.iter.EmptyIterator;
 import multipacks.versioning.Version;
 

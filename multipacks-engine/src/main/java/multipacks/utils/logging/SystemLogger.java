@@ -18,7 +18,7 @@ package multipacks.utils.logging;
 import java.io.PrintStream;
 import java.util.stream.Stream;
 
-public class SystemLogger extends AbstractMPLogger {
+public class SystemLogger extends AbstractLogger {
 	private void log(PrintStream printer, Object... objs) {
 		printer.println(String.join("", Stream.of(objs).map(v -> v.toString()).toArray(String[]::new)));
 	}

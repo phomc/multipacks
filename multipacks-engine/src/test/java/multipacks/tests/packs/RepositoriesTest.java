@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
 
+import multipacks.bundling.BundleResult;
 import multipacks.bundling.Bundler;
 import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIdentifier;
@@ -31,7 +32,6 @@ import multipacks.repository.RepositoriesAccess;
 import multipacks.repository.Repository;
 import multipacks.repository.query.PackQuery;
 import multipacks.versioning.Version;
-import multipacks.vfs.Vfs;
 
 /**
  * @author nahkd
@@ -89,13 +89,13 @@ class RepositoriesTest {
 			}
 		});
 
-		Vfs content = bundler.bundle(master, master.getIndex().sourceGameVersion);
-		assertNotNull(content.get(new multipacks.vfs.Path("assets/a.txt")));
-		assertNotNull(content.get(new multipacks.vfs.Path("assets/b.txt")));
-		assertNotNull(content.get(new multipacks.vfs.Path("data/b.txt")));
-		assertNotNull(content.get(new multipacks.vfs.Path("license-packA")));
-		assertNotNull(content.get(new multipacks.vfs.Path("license-packB")));
-		assertNotNull(content.get(new multipacks.vfs.Path("license-master")));
-		assertNotNull(content.get(new multipacks.vfs.Path("pack.png")));
+		BundleResult result = bundler.bundle(master, master.getIndex().sourceGameVersion);
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("assets/a.txt")));
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("assets/b.txt")));
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("data/b.txt")));
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("license-packA")));
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("license-packB")));
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("license-master")));
+		assertNotNull(result.contents.get(new multipacks.vfs.Path("pack.png")));
 	}
 }

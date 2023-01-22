@@ -48,11 +48,11 @@ import multipacks.plugins.MultipacksPlugin;
 import multipacks.spigot.commands.MainCommand;
 import multipacks.spigot.serving.LocalPackServer;
 import multipacks.spigot.serving.PackServer;
-import multipacks.utils.IOUtils;
 import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.io.IOUtils;
+import multipacks.utils.logging.AbstractLogger;
 
 /**
  * The entry point for accessing Multipacks API for Spigot. Contains some methods for converting between Multipacks
@@ -188,7 +188,7 @@ public class MultipacksSpigot extends JavaPlugin {
 					if (servingConfig.has("enabled") && servingConfig.get("enabled").getAsBoolean()) {
 						logger.info("Master pack serving is enabled");
 						String builderName = Selects.getChain(servingConfig.get("servingType"), j -> j.getAsString(), "local");
-						BiFunction<AbstractMPLogger, JsonObject, PackServer> builder = PackServer.BUILDERS.get(builderName);
+						BiFunction<AbstractLogger, JsonObject, PackServer> builder = PackServer.BUILDERS.get(builderName);
 						if (builder == null) {
 							builder = LocalPackServer::new;
 							logger.warning("Unknown pack server: " + builderName);

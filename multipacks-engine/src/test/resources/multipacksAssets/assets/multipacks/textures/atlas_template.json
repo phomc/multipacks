@@ -1,0 +1,11 @@
+{
+	"scale": 1,
+	"parts": [
+		{"storeAt": ".", "name": "${basename}_up.png", "region": {"from": [0, 0], "to": [16, 16]}},
+		{"storeAt": ".", "name": "${basename}_north.png", "region": {"from": [0, 16], "to": [16, 32]}},
+		{"storeAt": ".", "name": "${basename}_east.png", "region": {"from": [16, 16], "to": [32, 32]}},
+		{"storeAt": ".", "name": "${basename}_south.png", "region": {"from": [32, 16], "to": [48, 32]}},
+		{"storeAt": ".", "name": "${basename}_west.png", "region": {"from": [48, 16], "to": [64, 32]}},
+		{"storeAt": ".", "name": "${basename}_down.png", "region": {"from": [0, 32], "to": [16, 48]}}
+	]
+}

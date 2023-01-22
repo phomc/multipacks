@@ -15,6 +15,8 @@
  */
 package multipacks.packs;
 
+import com.google.gson.JsonArray;
+
 import multipacks.packs.meta.PackIndex;
 import multipacks.vfs.Vfs;
 
@@ -24,18 +26,6 @@ import multipacks.vfs.Vfs;
  */
 public interface Pack {
 	PackIndex getIndex();
-
-	/**
-	 * Create virtual file system with pack contents. Modifiers will not be applied to VFS contents.
-	 * @return Virtual file system.
-	 */
-	Vfs createVfsWithoutModifiers();
-
-	default Vfs createVfs(boolean applyModifiers) {
-		Vfs vfs = createVfsWithoutModifiers();
-		if (!applyModifiers) return vfs;
-
-		// TODO: implement modifiers here
-		return vfs;
-	}
+	JsonArray getModifiersConfig();
+	Vfs createVfs();
 }

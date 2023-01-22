@@ -15,7 +15,9 @@
  */
 package multipacks.platform;
 
+import multipacks.modifier.ModifiersAccess;
 import multipacks.repository.RepositoriesAccess;
+import multipacks.utils.logging.LoggerAccess;
 
 /**
  * Multipacks platform interface (some people may call this "Multipacks environment"). If you are creating your
@@ -24,5 +26,5 @@ import multipacks.repository.RepositoriesAccess;
  * @author nahkd
  *
  */
-public interface Platform extends RepositoriesAccess {
+public interface Platform extends RepositoriesAccess, LoggerAccess, ModifiersAccess {
 }

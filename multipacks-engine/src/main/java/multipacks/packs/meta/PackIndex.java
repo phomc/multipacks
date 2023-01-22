@@ -73,7 +73,7 @@ public class PackIndex extends PackInfo {
 
 		JsonObject pack = new JsonObject();
 		pack.addProperty("pack_format", GameVersions.getPackFormat(targetGameVersion));
-		if (description != null && description.trim().length() > 0) pack.addProperty("description", description);
+		pack.addProperty("description", description != null? description : "Generated using PhoMC Multipacks");
 		root.add("pack", pack);
 
 		return root;

@@ -23,7 +23,7 @@ import com.google.gson.JsonObject;
 import multipacks.bundling.legacy.BundleResult;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.logging.AbstractLogger;
 import multipacks.vfs.Path;
 import multipacks.vfs.legacy.VirtualFs;
 
@@ -39,7 +39,7 @@ public class IncludePass extends PostProcessPass {
 	}
 
 	@Override
-	public void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
+	public void apply(VirtualFs fs, BundleResult result, AbstractLogger logger) throws IOException {
 		JsonElement json = fs.readJson(file);
 		PostProcessPass.apply(json, fs, result, logger);
 	}

@@ -26,7 +26,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.bundling.legacy.BundleResult;
 import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.logging.AbstractLogger;
 import multipacks.vfs.legacy.VirtualFs;
 
 /**
@@ -36,7 +36,7 @@ import multipacks.vfs.legacy.VirtualFs;
  *
  */
 public abstract class PostProcessPass {
-	public abstract void apply(VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException;
+	public abstract void apply(VirtualFs fs, BundleResult result, AbstractLogger logger) throws IOException;
 
 	public static final HashMap<String, Function<JsonObject, PostProcessPass>> REGISTRY = new HashMap<>();
 
@@ -47,7 +47,7 @@ public abstract class PostProcessPass {
 		return ctor.apply(json);
 	}
 
-	public static void apply(JsonElement json, VirtualFs fs, BundleResult result, AbstractMPLogger logger) throws IOException {
+	public static void apply(JsonElement json, VirtualFs fs, BundleResult result, AbstractLogger logger) throws IOException {
 		Iterable<JsonElement> iterable;
 		if (json instanceof JsonArray arr) iterable = arr;
 		else iterable = Arrays.asList(json);

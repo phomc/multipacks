@@ -29,7 +29,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.spigot.MultipacksSpigot;
 import multipacks.utils.PlatformAPI;
-import multipacks.utils.logging.AbstractMPLogger;
+import multipacks.utils.logging.AbstractLogger;
 
 /**
  * It's not the kind of HTTP or TCP server, but instead an interface for servers to serves the pack to
@@ -66,5 +66,5 @@ public interface PackServer {
 		}
 	}
 
-	static HashMap<String, BiFunction<AbstractMPLogger, JsonObject, PackServer>> BUILDERS = new HashMap<>();
+	static HashMap<String, BiFunction<AbstractLogger, JsonObject, PackServer>> BUILDERS = new HashMap<>();
 }
