@@ -17,8 +17,12 @@ package multipacks.repository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -99,8 +103,32 @@ public class LocalRepository implements AuthorizedRepository {
 
 	@Override
 	public CompletableFuture<PackIdentifier> upload(LocalPack pack) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Path packDestDir = repositoryRoot.resolve(pack.getIndex().name + "/" + pack.getIndex().packVersion.toString());
+
+			if (Files.notExists(packDestDir)) {
+				Files.createDirectories(packDestDir);
+			} else if (Files.exists(packDestDir.resolve("multipacks.index.json"))) {
+				return CompletableFuture.failedFuture(new RuntimeException("Pack already exists in repository: " + pack.getIndex().name + " version " + pack.getIndex().packVersion));
+			}
+
+			Files.walkFileTree(pack.packRoot, new SimpleFileVisitor<Path>() {
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					Files.createDirectories(packDestDir.resolve(pack.packRoot.relativize(dir).toString()));
+					return FileVisitResult.CONTINUE;
+				};
+
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.copy(file, packDestDir.resolve(pack.packRoot.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+					return FileVisitResult.CONTINUE;
+				}
+			});
+
+			return CompletableFuture.completedFuture(new PackIdentifier(pack.getIndex().name, pack.getIndex().packVersion));
+		} catch (IOException e) {
+			return CompletableFuture.failedFuture(e);
+		}
 	}
 
 	@Override

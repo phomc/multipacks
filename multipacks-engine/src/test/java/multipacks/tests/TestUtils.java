@@ -20,14 +20,13 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import multipacks.packs.LocalPack;
-import multipacks.packs.Pack;
 
 /**
  * @author nahkd
  *
  */
 public class TestUtils {
-	public static Pack getSamplePack() {
+	public static LocalPack getSamplePack() {
 		try {
 			Path rootPath = Path.of(TestUtils.class.getClassLoader().getResource("multipacksAssets").toURI());
 			LocalPack pack = new LocalPack(rootPath);
