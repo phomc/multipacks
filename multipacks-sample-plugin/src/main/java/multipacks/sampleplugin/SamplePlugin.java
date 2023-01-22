@@ -15,7 +15,7 @@
  */
 package multipacks.sampleplugin;
 
-import multipacks.plugins.MultipacksPlugin;
+import multipacks.plugins.legacy.MultipacksPlugin;
 
 public class SamplePlugin implements MultipacksPlugin {
 	@Override

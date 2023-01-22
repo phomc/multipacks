@@ -28,7 +28,7 @@ import org.bukkit.command.TabCompleter;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.management.legacy.PacksUploadable;
 import multipacks.packs.legacy.Pack;
-import multipacks.plugins.MultipacksPlugin;
+import multipacks.plugins.legacy.MultipacksPlugin;
 import multipacks.spigot.MultipacksSpigot;
 import multipacks.utils.Selects;
 

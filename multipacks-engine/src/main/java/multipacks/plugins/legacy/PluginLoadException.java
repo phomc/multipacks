@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.plugins;
+package multipacks.plugins.legacy;
 
 public class PluginLoadException extends RuntimeException {
 	private static final long serialVersionUID = -818588508988080084L;

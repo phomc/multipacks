@@ -34,7 +34,7 @@ import multipacks.packs.legacy.DynamicPack;
 import multipacks.packs.legacy.Pack;
 import multipacks.packs.legacy.PackIdentifier;
 import multipacks.packs.legacy.PackIndex;
-import multipacks.plugins.MultipacksPlugin;
+import multipacks.plugins.legacy.MultipacksPlugin;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 import multipacks.utils.logging.AbstractLogger;
