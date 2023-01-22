@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
+import multipacks.logging.AbstractLogger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
 import multipacks.repository.LocalRepository;
@@ -33,7 +34,6 @@ import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 import multipacks.utils.io.Deserializer;
-import multipacks.utils.logging.AbstractLogger;
 
 /**
  * @author nahkd

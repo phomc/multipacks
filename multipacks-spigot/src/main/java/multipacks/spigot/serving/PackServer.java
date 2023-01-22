@@ -27,9 +27,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.google.gson.JsonObject;
 
+import multipacks.logging.AbstractLogger;
 import multipacks.spigot.MultipacksSpigot;
 import multipacks.utils.PlatformAPI;
-import multipacks.utils.logging.AbstractLogger;
 
 /**
  * It's not the kind of HTTP or TCP server, but instead an interface for servers to serves the pack to

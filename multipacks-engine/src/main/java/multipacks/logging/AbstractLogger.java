@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.utils.logging;
+package multipacks.logging;
 
 public abstract class AbstractLogger {
 	public abstract void info(Object... objs);
