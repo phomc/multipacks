@@ -16,6 +16,7 @@
 package multipacks.repository;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -43,6 +44,15 @@ public class LocalRepository implements AuthorizedRepository {
 
 	public LocalRepository(Path repositoryRoot) {
 		this.repositoryRoot = repositoryRoot;
+	}
+
+	public static LocalRepository fromClassLoader(ClassLoader clsLoader, String pathToRepo) {
+		try {
+			return new LocalRepository(Path.of(clsLoader.getResource(pathToRepo).toURI()));
+		} catch (URISyntaxException e) {
+			// It SHOULD NOT throw URISyntaxException
+			throw new RuntimeException(Messages.INTERNAL_ERROR, e);
+		}
 	}
 
 	@Override

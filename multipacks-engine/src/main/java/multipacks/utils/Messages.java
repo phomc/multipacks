@@ -53,4 +53,6 @@ public class Messages {
 	public static String missingFile(Object fileHandle, Object scope) {
 		return "File not found: " + fileHandle + " (scope = " + scope + ")";
 	}
+
+	public static final String INTERNAL_ERROR = "An internal error occured. Please report this stacktrace to " + Constants.URL_ISSUES_TRACKER;
 }
