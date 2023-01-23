@@ -127,7 +127,7 @@ public abstract class Command {
 	public void execute(Parameters params) throws CommandException {
 		build();
 
-		if (allowHelp && (params.getCurrent().equals("-h") || params.getCurrent().equals("-?") || params.getCurrent().equals("--help"))) {
+		if (allowHelp && !params.endOfParams() && (params.getCurrent().equals("-h") || params.getCurrent().equals("-?") || params.getCurrent().equals("--help"))) {
 			printHelp(System.out);
 			return;
 		}

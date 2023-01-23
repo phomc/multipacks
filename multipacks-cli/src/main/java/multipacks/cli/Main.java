@@ -22,15 +22,26 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import multipacks.cli.commands.MultipacksCommand;
+import multipacks.logging.LoggingLevel;
 import multipacks.logging.LoggingStage;
 import multipacks.logging.SimpleLogger;
 import multipacks.platform.PlatformConfig;
+import multipacks.plugins.InternalSystemPlugin;
+import multipacks.utils.Constants;
+import multipacks.utils.ResourcePath;
 import multipacks.utils.io.IOUtils;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
 		SystemEnum currentSystem = SystemEnum.getPlatform();
+
 		SimpleLogger logger = new SimpleLogger();
+
+		if (System.getenv("MULTIPACKS_DEBUG") != null && System.getenv("MULTIPACKS_DEBUG").equalsIgnoreCase("true")) {
+			logger.debug("Debug logging level is enabled");
+		} else {
+			logger.toggleLoggingLevel(LoggingLevel.DEBUG, false);
+		}
 
 		if (currentSystem == SystemEnum.UNKNOWN) {
 			System.err.println("Unsupported platform: " + System.getProperty("os.name"));
@@ -64,6 +75,11 @@ public class Main {
 			}
 		}
 
-		new MultipacksCommand().execute(args);
+		CLIPlatform platform = new CLIPlatform(logger);
+
+		// TODO: Load JAR plugins
+		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
+
+		new MultipacksCommand(platform).execute(args);
 	}
 }

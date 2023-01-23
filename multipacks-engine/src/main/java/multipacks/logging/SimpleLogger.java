@@ -26,10 +26,24 @@ import java.util.regex.Pattern;
 public class SimpleLogger implements Logger {
 	public static final Pattern PATTERN = Pattern.compile("\\{\\}");
 
+	private boolean[] enabledLoggingLevels;
+
+	public SimpleLogger() {
+		enabledLoggingLevels = new boolean[LoggingLevel.values().length];
+		for (int i = 0; i < enabledLoggingLevels.length; i++) enabledLoggingLevels[i] = true;
+	}
+
 	@Override
 	public void log(LoggingLevel level, String message, Object... objs) {
+		if (!enabledLoggingLevels[level.ordinal()]) return;
+
 		AtomicInteger i = new AtomicInteger(0);
 		String out = PATTERN.matcher(message).replaceAll(r -> i.get() < objs.length? Objects.toString(objs[i.getAndAdd(1)]) : "{}");
 		System.err.println("[" + level.toString() + "] " + out);
+	}
+
+	@Override
+	public void toggleLoggingLevel(LoggingLevel level, boolean enable) {
+		enabledLoggingLevels[level.ordinal()] = enable;
 	}
 }
