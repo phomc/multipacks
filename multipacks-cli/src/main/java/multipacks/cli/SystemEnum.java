@@ -50,7 +50,11 @@ public enum SystemEnum {
 
 	public abstract Path getHomeDir();
 
+	public Path getMultipacksDir() {
+		return getHomeDir().resolve(".multipacks");
+	}
+
 	public boolean isLegacy() {
-		return Files.exists(getHomeDir()) && Files.notExists(getHomeDir().resolve(PlatformConfig.FILENAME));
+		return Files.exists(getMultipacksDir()) && Files.notExists(getMultipacksDir().resolve(PlatformConfig.FILENAME));
 	}
 }

@@ -16,16 +16,51 @@
 package multipacks.cli;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
+import multipacks.logging.LoggingStage;
+import multipacks.logging.SimpleLogger;
+import multipacks.platform.PlatformConfig;
+import multipacks.utils.io.IOUtils;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		SystemEnum currentPlatform = SystemEnum.getPlatform();
+		SystemEnum currentSystem = SystemEnum.getPlatform();
+		SimpleLogger logger = new SimpleLogger();
 
-		if (currentPlatform == SystemEnum.UNKNOWN) {
+		if (currentSystem == SystemEnum.UNKNOWN) {
 			System.err.println("Unsupported platform: " + System.getProperty("os.name"));
 			System.err.println("If you think this platform should be supported, please open new issue in our GitHub repository.");
 			System.exit(1);
 			return;
+		}
+
+		if (currentSystem.isLegacy()) {
+			System.err.println("Warning: Legacy Multipacks detected");
+			System.err.println("Your previous Multipacks folder is considered as 'legacy' because " + currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME) + " is missing.");
+			System.err.println("Moving previous Multipacks folder to .multipacks-backup...");
+
+			try (LoggingStage stage = logger.newStage("Backing up", ".multipacks to .multipacks-backup")) {
+				Path dest = currentSystem.getHomeDir().resolve(".multipacks-backup");
+				Files.move(currentSystem.getMultipacksDir(), dest, StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
+
+		if (Files.notExists(currentSystem.getMultipacksDir())) {
+			System.out.println("Creating Multipacks data...");
+
+			try (LoggingStage stage = logger.newStage("Multipacks Init", "Preparation", 2)) {
+				Files.createDirectories(currentSystem.getMultipacksDir());
+				Files.createDirectories(currentSystem.getMultipacksDir().resolve("repository"));
+
+				stage.newStage(PlatformConfig.FILENAME);
+				try (OutputStream stream = Files.newOutputStream(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME))) {
+					IOUtils.jsonToStream(PlatformConfig.createConfigForHome().toJson(), stream);
+				}
+			}
 		}
 	}
 }

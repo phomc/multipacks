@@ -51,7 +51,7 @@ public class PlatformConfig {
 	public PlatformConfig() {
 	}
 
-	public PlatformConfig createConfigForHome() {
+	public static PlatformConfig createConfigForHome() {
 		PlatformConfig config = new PlatformConfig();
 		config.repositories.put("local", "local ./repository");
 		config.installRepository = "./repository";
