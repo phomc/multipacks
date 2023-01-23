@@ -65,6 +65,7 @@ public class PlatformConfig {
 		for (Map.Entry<String, String> e : repositories.entrySet()) repoJson.addProperty(e.getKey(), e.getValue());
 		json.add(FIELD_REPOSITORIES, repoJson);
 
+		if (installRepository != null) json.addProperty(FIELD_INSTALL_REPOSITORY, installRepository);
 		return json;
 	}
 

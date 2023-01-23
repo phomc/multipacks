@@ -24,12 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 
 import multipacks.logging.Logger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
 import multipacks.platform.PlatformConfig;
 import multipacks.plugins.Plugin;
+import multipacks.repository.LocalRepository;
 import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.io.Deserializer;
@@ -42,11 +44,17 @@ public class CLIPlatform implements Platform {
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
 	private boolean pluginsLoadFinalized = false;
 
-	protected List<Repository> repositories = new ArrayList<>();
+	private List<Repository> repositories = new ArrayList<>();
+	private LocalRepository installRepository;
 
 	public CLIPlatform(Logger logger, PlatformConfig config, SystemEnum system) {
 		this.logger = logger;
 		config.collectRepositories(repo -> repositories.add(repo), system.getMultipacksDir());
+
+		if (config.installRepository != null) {
+			logger.debug("Install destination is {}", Matcher.quoteReplacement(system.getMultipacksDir().resolve(config.installRepository).toString()));
+			installRepository = new LocalRepository(system.getMultipacksDir().resolve(config.installRepository));
+		}
 	}
 
 	public void loadPlugin(ResourcePath id, Plugin plugin) {
@@ -70,6 +78,10 @@ public class CLIPlatform implements Platform {
 			Collection<Repository> repos = p.getPluginRepositories();
 			if (repos != null) repositories.addAll(repos);
 		}
+	}
+
+	public LocalRepository getInstallRepository() {
+		return installRepository;
 	}
 
 	@Override

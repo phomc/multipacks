@@ -25,11 +25,14 @@ public class MultipacksCommand extends Command {
 
 	@Subcommand("search") public final SearchCommand search;
 	@Subcommand("build") public final BuildCommand build;
+	@Subcommand("install") public final InstallCommand install;
 
 	public MultipacksCommand(CLIPlatform platform) {
 		this.platform = platform;
+
 		this.search = new SearchCommand(this);
 		this.build = new BuildCommand(this);
+		this.install = new InstallCommand(this);
 
 		helpName = "java multipacks.cli.Main";
 		helpDescription = "Multipacks CLI";

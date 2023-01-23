@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package multipacks.cli.commands;
 
 import java.io.File;
@@ -67,7 +66,7 @@ public class BuildCommand extends Command {
 
 		System.out.println("Building '" + packDir + "' ...");
 
-		try (LoggingStage stage = platform.getLogger().newStage("Build", "Initalize", 3)) {
+		try (LoggingStage stage = platform.getLogger().newStage("Build", "Initialize", 3)) {
 			LocalPack pack = new LocalPack(packDir);
 
 			try {
