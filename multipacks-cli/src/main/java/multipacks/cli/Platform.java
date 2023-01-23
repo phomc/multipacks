@@ -16,11 +16,27 @@
 package multipacks.cli;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public enum Platform {
-	WINDOWS,
-	UNIX_LIKE,
-	UNKNOWN;
+	WINDOWS {
+		@Override
+		public Path getHomeDir() {
+			return new File(System.getenv("USERPROFILE")).toPath();
+		}
+	},
+	UNIX_LIKE {
+		@Override
+		public Path getHomeDir() {
+			return new File(System.getProperty("user.home")).toPath();
+		}
+	},
+	UNKNOWN {
+		@Override
+		public Path getHomeDir() {
+			return new File(System.getProperty("user.home")).toPath();
+		}
+	};
 
 	public static Platform getPlatform() {
 		String osProp = System.getProperty("os.name").toLowerCase();
@@ -29,11 +45,5 @@ public enum Platform {
 		return UNKNOWN;
 	}
 
-	public File getHomeDir() {
-		return new File(System.getProperty("user.home", switch (this) {
-		case WINDOWS -> "C:\\Users\\" + System.getProperty("user.name");
-		case UNIX_LIKE -> "/home/" + System.getProperty("user.name");
-		default -> "/";
-		}));
-	}
+	public abstract Path getHomeDir();
 }
