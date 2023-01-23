@@ -15,6 +15,7 @@
  */
 package multipacks.cli.api;
 
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,6 +39,9 @@ import multipacks.cli.api.internal.OptionInfo;
  *
  */
 public abstract class Command {
+	protected String helpName, helpDescription;
+	protected boolean allowHelp = true;
+
 	/**
 	 * Called when this command is executed. This method will be called after all arguments and options are
 	 * populated with user's data.
@@ -123,6 +127,11 @@ public abstract class Command {
 	public void execute(Parameters params) throws CommandException {
 		build();
 
+		if (allowHelp && (params.getCurrent().equals("-h") || params.getCurrent().equals("-?") || params.getCurrent().equals("--help"))) {
+			printHelp(System.out);
+			return;
+		}
+
 		checkOptions(params);
 
 		for (ArgumentInfo arg : arguments) {
@@ -152,6 +161,36 @@ public abstract class Command {
 
 	public void execute(String... args) {
 		execute(new Parameters(args));
+	}
+
+	public void printHelp(PrintStream out) {
+		if (helpDescription != null) out.println(helpDescription);
+		out.print("Usage: " + (helpName != null? helpName : "<command>"));
+		if (options.size() > 0) out.print(" [-<Options>]");
+		if (subcommands.size() > 0) out.print(" (subcommand...)");
+
+		for (ArgumentInfo arg : arguments) {
+			String name = arg.declared.helpName();
+			out.print(" " + (arg.declared.optional()? "[" : "") + (name.length() > 0? name : "argument") + (arg.declared.optional()? "]" : ""));
+		}
+
+		out.println();
+
+		if (options.size() > 0) {
+			out.println("Options:");
+			options.values().stream().distinct().forEachOrdered(opt -> {
+				out.print("  ");
+				for (String variant : opt.declared.value()) out.print("  " + variant);
+				out.println("=<value>     " + (opt.declared.helpDescription().length() > 0? opt.declared.helpDescription() : ""));
+			});
+		}
+
+		if (subcommands.size() > 0) {
+			out.println("Subcommands:");
+			for (Map.Entry<String, Command> e : subcommands.entrySet()) {
+				out.println("  " + e.getKey() + (e.getValue().helpDescription != null? ("     " + e.getValue().helpDescription) : ""));
+			}
+		}
 	}
 
 	private void checkOptions(Parameters params) throws CommandException {

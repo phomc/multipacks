@@ -39,6 +39,12 @@ public @interface Argument {
 	public int value();
 
 	/**
+	 * Display name of this argument that will be displayed in help page.
+	 * @return Display name of this argument.
+	 */
+	public String helpName() default "";
+
+	/**
 	 * Mark this argument as optional.
 	 * @return Is this argument optional?
 	 */

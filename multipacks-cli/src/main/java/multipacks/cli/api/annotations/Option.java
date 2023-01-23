@@ -35,4 +35,5 @@ import java.lang.annotation.Target;
 @Target({ FIELD, METHOD })
 public @interface Option {
 	public String[] value();
+	public String helpDescription() default "";
 }

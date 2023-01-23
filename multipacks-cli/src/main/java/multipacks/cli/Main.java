@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import multipacks.cli.commands.MultipacksCommand;
 import multipacks.logging.LoggingStage;
 import multipacks.logging.SimpleLogger;
 import multipacks.platform.PlatformConfig;
@@ -62,5 +63,7 @@ public class Main {
 				}
 			}
 		}
+
+		new MultipacksCommand().execute(args);
 	}
 }
