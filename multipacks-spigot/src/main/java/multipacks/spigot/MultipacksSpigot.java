@@ -41,10 +41,11 @@ import multipacks.bundling.legacy.BundleIgnore;
 import multipacks.bundling.legacy.BundleInclude;
 import multipacks.bundling.legacy.BundleResult;
 import multipacks.bundling.legacy.PackBundler;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.Pack;
-import multipacks.plugins.MultipacksDefaultPlugin;
-import multipacks.plugins.MultipacksPlugin;
+import multipacks.plugins.legacy.MultipacksDefaultPlugin;
+import multipacks.plugins.legacy.MultipacksPlugin;
 import multipacks.spigot.commands.MainCommand;
 import multipacks.spigot.serving.LocalPackServer;
 import multipacks.spigot.serving.PackServer;
@@ -52,7 +53,6 @@ import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 import multipacks.utils.io.IOUtils;
-import multipacks.utils.logging.AbstractLogger;
 
 /**
  * The entry point for accessing Multipacks API for Spigot. Contains some methods for converting between Multipacks

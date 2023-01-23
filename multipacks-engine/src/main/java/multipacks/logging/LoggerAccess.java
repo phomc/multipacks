@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.platform;
-
-import multipacks.logging.LoggerAccess;
-import multipacks.modifier.ModifiersAccess;
-import multipacks.repository.RepositoriesAccess;
+package multipacks.logging;
 
 /**
- * Multipacks platform interface (some people may call this "Multipacks environment"). If you are creating your
- * own platform, you have to implement this interface. Take a look at "Multipacks for Spigot" if you need an
- * example.
  * @author nahkd
  *
  */
-public interface Platform extends RepositoriesAccess, LoggerAccess, ModifiersAccess {
+public interface LoggerAccess {
+	Logger getLogger();
 }

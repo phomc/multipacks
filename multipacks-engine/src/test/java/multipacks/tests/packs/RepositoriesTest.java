@@ -17,6 +17,7 @@ package multipacks.tests.packs;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,12 +26,14 @@ import org.junit.jupiter.api.Test;
 
 import multipacks.bundling.BundleResult;
 import multipacks.bundling.Bundler;
+import multipacks.packs.LocalPack;
 import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIdentifier;
 import multipacks.repository.LocalRepository;
 import multipacks.repository.RepositoriesAccess;
 import multipacks.repository.Repository;
 import multipacks.repository.query.PackQuery;
+import multipacks.tests.TestUtils;
 import multipacks.versioning.Version;
 
 /**
@@ -97,5 +100,23 @@ class RepositoriesTest {
 		assertNotNull(result.contents.get(new multipacks.vfs.Path("license-packB")));
 		assertNotNull(result.contents.get(new multipacks.vfs.Path("license-master")));
 		assertNotNull(result.contents.get(new multipacks.vfs.Path("pack.png")));
+	}
+
+	@Test
+	void testRepositoryUploadAndDelete() throws Exception {
+		LocalPack pack = TestUtils.getSamplePack();
+		LocalRepository repo = new LocalRepository(new File("test_repository").toPath());
+		PackIdentifier id = repo.upload(pack).get();
+		assertTrue(new File("test_repository/sample-pack/1.0.0/multipacks.index.json").exists());
+
+		repo.delete(id).get();
+		assertFalse(new File("test_repository/sample-pack/1.0.0/multipacks.index.json").exists());
+
+		deleteRecursively(new File("test_repository"));
+	}
+
+	void deleteRecursively(File f) {
+		if (f.isDirectory()) for (File child : f.listFiles()) deleteRecursively(child);
+		f.delete();
 	}
 }

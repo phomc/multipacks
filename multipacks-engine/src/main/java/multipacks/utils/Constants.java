@@ -23,4 +23,6 @@ package multipacks.utils;
 public class Constants {
 	public static final String SYSTEM_NAMESPACE = "multipacks";
 	public static final String GAME_NAMESPACE = "minecraft";
+
+	public static final String URL_ISSUES_TRACKER = "https://github.com/phomc/multipacks/issues";
 }

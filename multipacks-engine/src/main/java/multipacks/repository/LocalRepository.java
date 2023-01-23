@@ -16,8 +16,13 @@
 package multipacks.repository;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -43,6 +48,15 @@ public class LocalRepository implements AuthorizedRepository {
 
 	public LocalRepository(Path repositoryRoot) {
 		this.repositoryRoot = repositoryRoot;
+	}
+
+	public static LocalRepository fromClassLoader(ClassLoader clsLoader, String pathToRepo) {
+		try {
+			return new LocalRepository(Path.of(clsLoader.getResource(pathToRepo).toURI()));
+		} catch (URISyntaxException e) {
+			// It SHOULD NOT throw URISyntaxException
+			throw new RuntimeException(Messages.INTERNAL_ERROR, e);
+		}
 	}
 
 	@Override
@@ -89,13 +103,51 @@ public class LocalRepository implements AuthorizedRepository {
 
 	@Override
 	public CompletableFuture<PackIdentifier> upload(LocalPack pack) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Path packDestDir = repositoryRoot.resolve(pack.getIndex().name + "/" + pack.getIndex().packVersion.toString());
+
+			if (Files.notExists(packDestDir)) {
+				Files.createDirectories(packDestDir);
+			} else if (Files.exists(packDestDir.resolve("multipacks.index.json"))) {
+				return CompletableFuture.failedFuture(new RuntimeException(Messages.packFoundRepo(pack.getIndex())));
+			}
+
+			Files.walkFileTree(pack.packRoot, new SimpleFileVisitor<Path>() {
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					Files.createDirectories(packDestDir.resolve(pack.packRoot.relativize(dir).toString()));
+					return FileVisitResult.CONTINUE;
+				};
+
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.copy(file, packDestDir.resolve(pack.packRoot.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+					return FileVisitResult.CONTINUE;
+				}
+			});
+
+			return CompletableFuture.completedFuture(new PackIdentifier(pack.getIndex().name, pack.getIndex().packVersion));
+		} catch (IOException e) {
+			return CompletableFuture.failedFuture(e);
+		}
 	}
 
 	@Override
 	public CompletableFuture<Void> delete(PackIdentifier id) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Path packDestDir = repositoryRoot.resolve(id.name + "/" + id.packVersion.toString());
+			if (Files.notExists(packDestDir)) return CompletableFuture.failedFuture(new IllegalArgumentException(Messages.packNotFoundRepo(id)));
+			deleteRecursively(packDestDir);
+			return CompletableFuture.completedFuture(null);
+		} catch (IOException e) {
+			return CompletableFuture.failedFuture(e);
+		}
+	}
+
+	private void deleteRecursively(Path p) throws IOException {
+		if (Files.isDirectory(p)) {
+			for (Path child : Files.list(p).toList()) deleteRecursively(child);
+		}
+
+		Files.delete(p);
 	}
 }

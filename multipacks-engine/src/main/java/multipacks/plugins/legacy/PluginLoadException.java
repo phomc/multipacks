@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.platform;
+package multipacks.plugins.legacy;
 
-import multipacks.logging.LoggerAccess;
-import multipacks.modifier.ModifiersAccess;
-import multipacks.repository.RepositoriesAccess;
+public class PluginLoadException extends RuntimeException {
+	private static final long serialVersionUID = -818588508988080084L;
 
-/**
- * Multipacks platform interface (some people may call this "Multipacks environment"). If you are creating your
- * own platform, you have to implement this interface. Take a look at "Multipacks for Spigot" if you need an
- * example.
- * @author nahkd
- *
- */
-public interface Platform extends RepositoriesAccess, LoggerAccess, ModifiersAccess {
+	public PluginLoadException(String message) {
+		super(message);
+	}
+
+	public PluginLoadException(String message, Throwable from) {
+		super(message, from);
+	}
 }

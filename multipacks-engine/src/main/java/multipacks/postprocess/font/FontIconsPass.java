@@ -24,11 +24,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import multipacks.bundling.legacy.BundleResult;
+import multipacks.logging.legacy.AbstractLogger;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.postprocess.ProcessFailException;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
-import multipacks.utils.logging.AbstractLogger;
 import multipacks.vfs.Path;
 import multipacks.vfs.legacy.VirtualFs;
 

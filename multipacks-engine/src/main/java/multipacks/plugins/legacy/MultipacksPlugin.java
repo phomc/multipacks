@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.plugins;
+package multipacks.plugins.legacy;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +38,7 @@ import multipacks.packs.legacy.PackIdentifier;
 import multipacks.postprocess.PostProcessPass;
 import multipacks.utils.Selects;
 
+@Deprecated
 public interface MultipacksPlugin {
 	default void onLoad() {}
 

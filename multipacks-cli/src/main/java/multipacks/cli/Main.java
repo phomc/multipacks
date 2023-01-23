@@ -26,8 +26,8 @@ import multipacks.bundling.legacy.BundleIgnore;
 import multipacks.bundling.legacy.BundleInclude;
 import multipacks.management.legacy.PacksRepository;
 import multipacks.packs.legacy.PackIdentifier;
-import multipacks.plugins.MultipacksDefaultPlugin;
-import multipacks.plugins.MultipacksPlugin;
+import multipacks.plugins.legacy.MultipacksDefaultPlugin;
+import multipacks.plugins.legacy.MultipacksPlugin;
 import multipacks.versioning.Version;
 
 public class Main {

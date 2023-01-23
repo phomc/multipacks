@@ -26,14 +26,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
+import multipacks.logging.Logger;
+import multipacks.logging.SimpleLogger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
+import multipacks.plugins.InternalSystemPlugin;
 import multipacks.repository.LocalRepository;
 import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 import multipacks.utils.io.Deserializer;
-import multipacks.utils.logging.AbstractLogger;
 
 /**
  * @author nahkd
@@ -53,7 +55,7 @@ public class TestPlatform implements Platform {
 	}
 
 	public TestPlatform() {
-		Modifier.registerBuiltinModifiers(this);
+		new InternalSystemPlugin().onInit(this);
 	}
 
 	@Override
@@ -62,9 +64,8 @@ public class TestPlatform implements Platform {
 	}
 
 	@Override
-	public AbstractLogger getLogger() {
-		// TODO Auto-generated method stub
-		return null;
+	public Logger getLogger() {
+		return new SimpleLogger();
 	}
 
 	@Override

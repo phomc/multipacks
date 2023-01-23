@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.platform;
+package multipacks.plugins;
 
-import multipacks.logging.LoggerAccess;
-import multipacks.modifier.ModifiersAccess;
-import multipacks.repository.RepositoriesAccess;
+import multipacks.modifier.Modifier;
+import multipacks.platform.Platform;
 
 /**
- * Multipacks platform interface (some people may call this "Multipacks environment"). If you are creating your
- * own platform, you have to implement this interface. Take a look at "Multipacks for Spigot" if you need an
- * example.
  * @author nahkd
  *
  */
-public interface Platform extends RepositoriesAccess, LoggerAccess, ModifiersAccess {
+public class InternalSystemPlugin extends Plugin {
+	@Override
+	public void onInit(Platform platform) {
+		platform.getLogger().debug("Multipacks is initializing internal plugin...");
+		Modifier.registerBuiltinModifiers(platform);
+	}
 }

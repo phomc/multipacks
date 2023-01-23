@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import multipacks.packs.legacy.Pack;
 import multipacks.packs.legacy.PackIdentifier;
 import multipacks.packs.legacy.PackIndex;
-import multipacks.plugins.MultipacksPlugin;
+import multipacks.plugins.legacy.MultipacksPlugin;
 
 public abstract class PacksRepository {
 	/**

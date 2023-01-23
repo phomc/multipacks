@@ -17,6 +17,7 @@ package multipacks.repository;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import multipacks.packs.LocalPack;
 import multipacks.packs.Pack;
@@ -33,6 +34,7 @@ public interface Repository {
 	 * Query (a.k.a search) packs from this repository.
 	 * @param query Pack query info. Can be {@code null} to query all packs.
 	 * @return A collection of {@link PackIdentifier}.
+	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<Collection<PackIdentifier>> search(PackQuery query);
 
@@ -42,11 +44,29 @@ public interface Repository {
 	 * implementations might choose to cache as {@link LocalPack}. In this case, those packs will be loaded so you don't
 	 * have to use {@link LocalPack#loadFromStorage()}. 
 	 * @param id Pack id to obtain from repository.
-	 * @return Pack from repository.
+	 * @return Pack from repository, or {@code null} if the pack couldn't be found.
+	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the pack doesn't exists in this repository.
+	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<Pack> obtain(PackIdentifier id);
 
+	/**
+	 * Download the pack from this repository to user's machine. The download destination should be configured.
+	 * @param id Pack id to download from repository.
+	 * @return Downloaded pack contents in a form of {@link LocalPack}.
+	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the pack doesn't exists in this repository.
+	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
+	 */
 	CompletableFuture<LocalPack> download(PackIdentifier id);
 
+	/**
+	 * Login to this repository to obtain {@link AuthorizedRepository}. Authorized repositories can uploads and
+	 * deletes pack, in addition to querying and downloading.
+	 * @param username Username to login.
+	 * @param secret User's secret to login.
+	 * @return Authorized repository.
+	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the login attempt failed.
+	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
+	 */
 	CompletableFuture<AuthorizedRepository> login(String username, byte[] secret);
 }

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.plugins;
+package multipacks.logging;
 
-public class PluginLoadException extends RuntimeException {
-	private static final long serialVersionUID = -818588508988080084L;
-
-	public PluginLoadException(String message) {
-		super(message);
-	}
-
-	public PluginLoadException(String message, Throwable from) {
-		super(message, from);
-	}
+/**
+ * @author nahkd
+ *
+ */
+public enum LoggingLevel {
+	DEBUG,
+	INFO,
+	WARNING,
+	ERROR,
+	CRITICAL;
 }
