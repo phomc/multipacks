@@ -27,6 +27,7 @@ import java.util.Map;
 import multipacks.cli.api.annotations.Argument;
 import multipacks.cli.api.annotations.Option;
 import multipacks.cli.api.annotations.Subcommand;
+import multipacks.cli.api.console.TableDisplay;
 import multipacks.cli.api.internal.ArgumentInfo;
 import multipacks.cli.api.internal.OptionInfo;
 
@@ -191,21 +192,31 @@ public abstract class Command {
 
 		out.println();
 
+		TableDisplay table = new TableDisplay();
+		if (arguments.length > 0) {
+			table.add("Arguments:", null);
+			for (ArgumentInfo arg : arguments) {
+				table.add("  " + arg.declared.helpName() + " ", arg.declared.optional()? "(optional)" : null);
+			}
+		}
+
 		if (options.size() > 0) {
-			out.println("Options:");
+			table.add("Options:", null);
 			options.values().stream().distinct().forEachOrdered(opt -> {
-				out.print("  ");
-				for (String variant : opt.declared.value()) out.print("  " + variant);
-				out.println("=<value>     " + (opt.declared.helpDescription().length() > 0? opt.declared.helpDescription() : ""));
+				String head = "  ";
+				for (String variant : opt.declared.value()) head += "  " + variant;
+				table.add(head + "=<value> ", opt.declared.helpDescription().length() > 0? opt.declared.helpDescription() : null);
 			});
 		}
 
 		if (subcommands.size() > 0) {
-			out.println("Subcommands:");
+			table.add("Subcommands:", null);
 			for (Map.Entry<String, Command> e : subcommands.entrySet()) {
-				out.println("  " + e.getKey() + (e.getValue().helpDescription != null? ("     " + e.getValue().helpDescription) : ""));
+				table.add("  " + e.getKey() + " ", e.getValue().helpDescription != null? e.getValue().helpDescription : null);
 			}
 		}
+
+		table.print(out);
 	}
 
 	private void checkOptions(Parameters params) throws CommandException {
