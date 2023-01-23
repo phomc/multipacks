@@ -16,9 +16,12 @@
 package multipacks.cli;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
-public enum Platform {
+import multipacks.platform.PlatformConfig;
+
+public enum SystemEnum {
 	WINDOWS {
 		@Override
 		public Path getHomeDir() {
@@ -38,7 +41,7 @@ public enum Platform {
 		}
 	};
 
-	public static Platform getPlatform() {
+	public static SystemEnum getPlatform() {
 		String osProp = System.getProperty("os.name").toLowerCase();
 		if (osProp.contains("windows")) return WINDOWS;
 		if (osProp.contains("linux") || osProp.contains("unix") || osProp.contains("darwin") || osProp.contains("mac")) return UNIX_LIKE;
@@ -46,4 +49,8 @@ public enum Platform {
 	}
 
 	public abstract Path getHomeDir();
+
+	public boolean isLegacy() {
+		return Files.exists(getHomeDir()) && Files.notExists(getHomeDir().resolve(PlatformConfig.FILENAME));
+	}
 }

@@ -19,9 +19,9 @@ import java.io.IOException;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		Platform currentPlatform = Platform.getPlatform();
+		SystemEnum currentPlatform = SystemEnum.getPlatform();
 
-		if (currentPlatform == Platform.UNKNOWN) {
+		if (currentPlatform == SystemEnum.UNKNOWN) {
 			System.err.println("Unsupported platform: " + System.getProperty("os.name"));
 			System.err.println("If you think this platform should be supported, please open new issue in our GitHub repository.");
 			System.exit(1);

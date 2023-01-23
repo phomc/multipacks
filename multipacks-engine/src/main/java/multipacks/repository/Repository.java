@@ -15,6 +15,7 @@
  */
 package multipacks.repository;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -69,4 +70,17 @@ public interface Repository {
 	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<AuthorizedRepository> login(String username, byte[] secret);
+
+	static Repository fromConnectionString(String str, Path cwd) {
+		String[] split = str.split(" ", 2);
+		String type = split[0];
+		String connectTo = split[1];
+
+		switch (type) {
+		case "local":
+			if (cwd == null) throw new NullPointerException("CWD is not supplied to this method");
+			return new LocalRepository(cwd.resolve(connectTo));
+		default: throw new IllegalArgumentException("Unknown repository type: " + type);
+		}
+	}
 }
