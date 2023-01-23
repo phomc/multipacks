@@ -26,7 +26,6 @@ import multipacks.packs.LocalPack;
 import multipacks.packs.Pack;
 import multipacks.packs.meta.PackIdentifier;
 import multipacks.repository.query.PackQuery;
-import multipacks.utils.Messages;
 
 /**
  * A simple repository implementation. This implementation lacks some features, such as 'logging in' (you can't upload
@@ -54,7 +53,7 @@ public class SimpleRepository implements Repository {
 	private Pack obtainSync(PackIdentifier id) {
 		Optional<Pack> packOpt = packs.stream().filter(p -> id.name.equals(p.getIndex().name) && id.packVersion.compareTo(p.getIndex().packVersion) == 0).findAny();
 		if (packOpt.isPresent()) return packOpt.get();
-		else throw new IllegalArgumentException(Messages.packNotFoundRepo(id));
+		else return null;
 	}
 
 	@Override
@@ -65,6 +64,7 @@ public class SimpleRepository implements Repository {
 	@Override
 	public CompletableFuture<LocalPack> download(PackIdentifier id) {
 		Pack pack = obtainSync(id);
+		if (pack == null) return CompletableFuture.completedFuture(null);
 		if (pack instanceof LocalPack local) return CompletableFuture.completedFuture(local);
 		return CompletableFuture.failedFuture(new RuntimeException("Failed to download " + id + ": SimpleRepository does not download the pack to user's machine, unlike other repository types. Only LocalPack can be 'downloaded' from SimpleRepository"));
 	}

@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
 
 import multipacks.logging.Logger;
 import multipacks.modifier.Modifier;
@@ -52,7 +51,7 @@ public class CLIPlatform implements Platform {
 		config.collectRepositories(repo -> repositories.add(repo), system.getMultipacksDir());
 
 		if (config.installRepository != null) {
-			logger.debug("Install destination is {}", Matcher.quoteReplacement(system.getMultipacksDir().resolve(config.installRepository).toString()));
+			logger.debug("Install destination is {}", system.getMultipacksDir().resolve(config.installRepository).toString());
 			installRepository = new LocalRepository(system.getMultipacksDir().resolve(config.installRepository));
 		}
 	}

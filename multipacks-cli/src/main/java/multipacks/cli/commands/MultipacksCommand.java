@@ -26,6 +26,7 @@ public class MultipacksCommand extends Command {
 	@Subcommand("search") public final SearchCommand search;
 	@Subcommand("build") public final BuildCommand build;
 	@Subcommand("install") public final InstallCommand install;
+	@Subcommand("download") public final DownloadCommand download;
 
 	public MultipacksCommand(CLIPlatform platform) {
 		this.platform = platform;
@@ -33,6 +34,7 @@ public class MultipacksCommand extends Command {
 		this.search = new SearchCommand(this);
 		this.build = new BuildCommand(this);
 		this.install = new InstallCommand(this);
+		this.download = new DownloadCommand(this);
 
 		helpName = "java multipacks.cli.Main";
 		helpDescription = "Multipacks CLI";

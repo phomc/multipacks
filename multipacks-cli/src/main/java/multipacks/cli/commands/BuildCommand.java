@@ -75,7 +75,6 @@ public class BuildCommand extends Command {
 				throw new CommandException("An error occured", e);
 			}
 
-
 			File outputFile = new File(outputDestination != null? outputDestination : (pack.getIndex().name + "-v" + pack.getIndex().packVersion.toStringNoPrefix() + ".zip"));
 			if (outputFile.exists()) {
 				if (!override) throw new CommandException("File is already exists: " + outputFile + ". Override that file with --override=true option.");

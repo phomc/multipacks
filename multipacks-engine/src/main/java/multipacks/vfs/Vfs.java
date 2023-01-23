@@ -223,6 +223,21 @@ public class Vfs {
 		}
 	}
 
+	public void dumpContentTo(java.nio.file.Path root) throws IOException {
+		for (Vfs file : listFiles()) {
+			if (file.isDir()) {
+				java.nio.file.Path p = Files.createDirectories(root.resolve(file.name));
+				file.dumpContentTo(p);
+			} else {
+				try (InputStream inStream = file.getInputStream()) {
+					try (OutputStream outStream = Files.newOutputStream(root.resolve(file.name))) {
+						inStream.transferTo(outStream);
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	public String toString() {
 		return "vfs:/" + getPathFromRoot() + (nativePath != null? " (physical)" : "");

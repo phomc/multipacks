@@ -46,7 +46,6 @@ public interface Repository {
 	 * have to use {@link LocalPack#loadFromStorage()}. 
 	 * @param id Pack id to obtain from repository.
 	 * @return Pack from repository, or {@code null} if the pack couldn't be found.
-	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the pack doesn't exists in this repository.
 	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<Pack> obtain(PackIdentifier id);
@@ -54,8 +53,7 @@ public interface Repository {
 	/**
 	 * Download the pack from this repository to user's machine. The download destination should be configured.
 	 * @param id Pack id to download from repository.
-	 * @return Downloaded pack contents in a form of {@link LocalPack}.
-	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the pack doesn't exists in this repository.
+	 * @return Downloaded pack contents in a form of {@link LocalPack}, or {@code null} if the pack couldn't be found.
 	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<LocalPack> download(PackIdentifier id);
