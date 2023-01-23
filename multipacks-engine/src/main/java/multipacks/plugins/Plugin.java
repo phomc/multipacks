@@ -17,9 +17,12 @@ package multipacks.plugins;
 
 import java.util.Collection;
 
+import multipacks.packs.LocalPack;
 import multipacks.platform.Platform;
+import multipacks.repository.LocalRepository;
 import multipacks.repository.RepositoriesAccess;
 import multipacks.repository.Repository;
+import multipacks.repository.SimpleRepository;
 
 /**
  * Plugins (as known as "add-ons") are used to add extra features to Multipacks, without having to fork the
@@ -27,14 +30,40 @@ import multipacks.repository.Repository;
  * @author nahkd
  *
  */
-public interface Plugin {
-	void onInit(Platform platform);
+public abstract class Plugin {
+	public abstract void onInit(Platform platform);
 
 	/**
 	 * Get repositories from this plugin. These repositories will be present in {@link RepositoriesAccess#getRepositories()}.
 	 * @return A collection of repositories, or {@code null} if there is none.
+	 * @implNote You may override this method to return a collection of repositories.
+	 * @see #repositoryFromPlugin(String)
 	 */
-	default Collection<Repository> getPluginRepositories() {
+	public Collection<Repository> getPluginRepositories() {
 		return null;
+	}
+
+	// Plugin APIs
+	/**
+	 * Get local repository from this plugin resources. This method was meant to be used inside your plugin's
+	 * {@link #getPluginRepositories()} method.
+	 * @param pathToRepo Path to repository directory, which is placed inside your plugin JAR (or {@code src/main/resources}
+	 * if you are in development environment).
+	 * @return The local repository obtained from this plugin resources.
+	 * @see SimpleRepository#SimpleRepository(multipacks.packs.Pack...)
+	 * @see #packFromPlugin(String)
+	 */
+	protected LocalRepository repositoryFromPlugin(String pathToRepo) {
+		return LocalRepository.fromClassLoader(this.getClass().getClassLoader(), pathToRepo);
+	}
+
+	/**
+	 * Get local pack from this plugin resources.
+	 * @param pathToPack Path to pack directory, which is placed inside your plugin JAR (or {@code src/main/resources} if
+	 * you are in development environment).
+	 * @return The local pack obtained from this plugin resources.
+	 */
+	protected LocalPack packFromPlugin(String pathToPack) {
+		return LocalPack.fromClassLoader(this.getClass().getClassLoader(), pathToPack);
 	}
 }

@@ -22,7 +22,7 @@ import multipacks.platform.Platform;
  * @author nahkd
  *
  */
-public class InternalSystemPlugin implements Plugin {
+public class InternalSystemPlugin extends Plugin {
 	@Override
 	public void onInit(Platform platform) {
 		platform.getLogger().debug("Multipacks is initializing internal plugin...");

@@ -17,12 +17,14 @@ package multipacks.packs;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.google.gson.JsonArray;
 
 import multipacks.packs.meta.PackIndex;
+import multipacks.utils.Messages;
 import multipacks.utils.io.IOUtils;
 import multipacks.vfs.Vfs;
 
@@ -44,6 +46,15 @@ public class LocalPack implements Pack {
 
 	public LocalPack(Path packRoot) {
 		this.packRoot = packRoot;
+	}
+
+	public static LocalPack fromClassLoader(ClassLoader clsLoader, String pathToRepo) {
+		try {
+			return new LocalPack(Path.of(clsLoader.getResource(pathToRepo).toURI()));
+		} catch (URISyntaxException e) {
+			// It SHOULD NOT throw URISyntaxException
+			throw new RuntimeException(Messages.INTERNAL_ERROR, e);
+		}
 	}
 
 	public void loadFromStorage() throws IOException {
