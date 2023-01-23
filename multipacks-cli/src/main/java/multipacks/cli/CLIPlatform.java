@@ -85,7 +85,7 @@ public class CLIPlatform implements Platform {
 	@Override
 	public Modifier createModifier(ResourcePath id) {
 		Supplier<Modifier> ctor = modifierCtors.get(id);
-		if (ctor != null) ctor.get();
+		if (ctor != null) return ctor.get();
 		return null;
 	}
 

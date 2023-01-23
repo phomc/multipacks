@@ -23,12 +23,13 @@ import multipacks.cli.api.annotations.Subcommand;
 public class MultipacksCommand extends Command {
 	public final CLIPlatform platform;
 
-	@Subcommand("search")
-	public final SearchCommand search;
+	@Subcommand("search") public final SearchCommand search;
+	@Subcommand("build") public final BuildCommand build;
 
 	public MultipacksCommand(CLIPlatform platform) {
 		this.platform = platform;
 		this.search = new SearchCommand(this);
+		this.build = new BuildCommand(this);
 
 		helpName = "java multipacks.cli.Main";
 		helpDescription = "Multipacks CLI";
