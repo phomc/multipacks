@@ -26,6 +26,7 @@ public class CommandRoot extends Command {
 	@Argument(1) public int secondArg;
 
 	@Option("--my-option") public String myOption;
+	@Option("--state") public boolean state = false;
 
 	@Subcommand("subcommand") public final SubcommandCommand subcommand = new SubcommandCommand();
 
@@ -34,5 +35,6 @@ public class CommandRoot extends Command {
 		System.out.println("firstArg = " + firstArg);
 		System.out.println("secondArg = " + secondArg);
 		System.out.println("myOption = " + myOption);
+		System.out.println("state = " + state);
 	}
 }

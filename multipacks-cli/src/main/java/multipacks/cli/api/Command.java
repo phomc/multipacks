@@ -218,7 +218,11 @@ public abstract class Command {
 			OptionInfo opt = options.get(split[0]);
 			if (opt == null) break;
 
-			opt.set(split[1]);
+			if (split.length == 1) {
+				if (opt.type.isAssignableFrom(boolean.class)) opt.set("true");
+			} else {
+				opt.set(split[1]);
+			}
 		}
 	}
 

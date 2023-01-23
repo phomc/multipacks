@@ -31,6 +31,15 @@ class CommandTest {
 	}
 
 	@Test
+	void testState() {
+		CommandRoot root = new CommandRoot();
+		root.execute("first", "42", "--state");
+		assertEquals("first", root.firstArg);
+		assertEquals(42, root.secondArg);
+		assertTrue(root.state);
+	}
+
+	@Test
 	void testSubcommand() {
 		CommandRoot root = new CommandRoot();
 		root.execute("second", "1337", "subcommand", "12.34");
