@@ -150,4 +150,9 @@ public class LocalRepository implements AuthorizedRepository {
 
 		Files.delete(p);
 	}
+
+	@Override
+	public String toString() {
+		return "local " + repositoryRoot;
+	}
 }

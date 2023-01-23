@@ -75,10 +75,11 @@ public class Main {
 			}
 		}
 
-		CLIPlatform platform = new CLIPlatform(logger);
+		CLIPlatform platform = new CLIPlatform(logger, new PlatformConfig(IOUtils.jsonFromPath(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME)).getAsJsonObject()), currentSystem);
 
 		// TODO: Load JAR plugins
 		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
+		platform.finalizePluginsLoad();
 
 		new MultipacksCommand(platform).execute(args);
 	}

@@ -36,6 +36,9 @@ import multipacks.cli.api.internal.OptionInfo;
  * @see Argument
  * @see Option
  * @see Subcommand
+ * @see #onExecute()
+ * @see #onExecuteWithoutSubcommand()
+ * @see #postExecute()
  *
  */
 public abstract class Command {
@@ -44,16 +47,26 @@ public abstract class Command {
 
 	/**
 	 * Called when this command is executed. This method will be called after all arguments and options are
-	 * populated with user's data.
+	 * populated with user's data and before subcommand (if any).
 	 * @throws CommandException
 	 */
-	protected abstract void onExecute() throws CommandException;
+	protected void onExecute() throws CommandException {
+		// NO-OP
+	}
 
 	/**
 	 * Called after subcommand is executed, or after {@link #onExecute()} if there's no subcommands.
 	 * @throws CommandException
 	 */
 	protected void postExecute() throws CommandException {
+		// NO-OP
+	}
+
+	/**
+	 * Called when this command is executed without subcommand.
+	 * @throws CommandException
+	 */
+	protected void onExecuteWithoutSubcommand() throws CommandException {
 		// NO-OP
 	}
 
@@ -154,6 +167,8 @@ public abstract class Command {
 
 			params.getThenAdvance();
 			subcommand.execute(params);
+		} else {
+			onExecuteWithoutSubcommand();
 		}
 
 		postExecute();
@@ -171,7 +186,7 @@ public abstract class Command {
 
 		for (ArgumentInfo arg : arguments) {
 			String name = arg.declared.helpName();
-			out.print(" " + (arg.declared.optional()? "[" : "") + (name.length() > 0? name : "argument") + (arg.declared.optional()? "]" : ""));
+			out.print(" " + (arg.declared.optional()? "[" : "<") + (name.length() > 0? name : "argument") + (arg.declared.optional()? "]" : ">"));
 		}
 
 		out.println();

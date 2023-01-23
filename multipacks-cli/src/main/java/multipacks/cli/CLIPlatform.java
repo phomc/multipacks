@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import multipacks.logging.Logger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
+import multipacks.platform.PlatformConfig;
 import multipacks.plugins.Plugin;
 import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
@@ -28,8 +29,9 @@ public class CLIPlatform implements Platform {
 
 	protected List<Repository> repositories = new ArrayList<>();
 
-	public CLIPlatform(Logger logger) {
+	public CLIPlatform(Logger logger, PlatformConfig config, SystemEnum system) {
 		this.logger = logger;
+		config.collectRepositories(repo -> repositories.add(repo), system.getMultipacksDir());
 	}
 
 	public void loadPlugin(ResourcePath id, Plugin plugin) {
