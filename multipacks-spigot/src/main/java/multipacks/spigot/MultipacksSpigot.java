@@ -17,8 +17,42 @@ package multipacks.spigot;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import multipacks.plugins.InternalSystemPlugin;
+import multipacks.spigot.platform.SpigotPlatform;
+import multipacks.utils.Constants;
 import multipacks.utils.PlatformAPI;
+import multipacks.utils.ResourcePath;
 
 @PlatformAPI
 public class MultipacksSpigot extends JavaPlugin {
+	private static SpigotPlatform platform;
+
+	@Override
+	public void onEnable() {
+		platform = new SpigotPlatform(this);
+		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
+
+		getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+			platform.getLogger().info("Finalizing Multipacks plugins registry...");
+			platform.finalizePluginsLoad();
+		});
+	}
+
+	public void reloadPlugin() {
+		try {
+			platform.reloadConfig();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to reload plugin", e);
+		}
+	}
+
+	@Override
+	public void onDisable() {
+		platform = null;
+	}
+
+	public static SpigotPlatform getPlatform() {
+		if (platform == null) throw new NullPointerException("Plugin is not enabled yet");
+		return platform;
+	}
 }
