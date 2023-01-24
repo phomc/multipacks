@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import multipacks.cli.api.console.FancyStackTrace;
 import multipacks.cli.commands.MultipacksCommand;
 import multipacks.logging.LoggingLevel;
 import multipacks.logging.LoggingStage;
@@ -34,10 +35,10 @@ import multipacks.utils.io.IOUtils;
 public class Main {
 	public static void main(String[] args) throws IOException {
 		SystemEnum currentSystem = SystemEnum.getPlatform();
-
 		SimpleLogger logger = new SimpleLogger();
+		boolean isDebug = Boolean.parseBoolean(System.getenv().getOrDefault("MULTIPACKS_DEBUG", "false"));
 
-		if (System.getenv("MULTIPACKS_DEBUG") != null && System.getenv("MULTIPACKS_DEBUG").equalsIgnoreCase("true")) {
+		if (isDebug) {
 			logger.debug("Debug logging level is enabled");
 		} else {
 			logger.toggleLoggingLevel(LoggingLevel.DEBUG, false);
@@ -81,6 +82,17 @@ public class Main {
 		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
 		platform.finalizePluginsLoad();
 
-		new MultipacksCommand(platform).execute(args);
+		try {
+			new MultipacksCommand(platform).execute(args);
+		} catch (Exception e) {
+			System.out.println("An error occured:");
+			System.out.println("---");
+			FancyStackTrace.print(e, System.out, isDebug);
+
+			if (!isDebug) {
+				System.out.println("---");
+				System.out.println("Tip: Toggle stack traces by adding MULTIPACKS_DEBUG=true environment variable.");
+			}
+		}
 	}
 }
