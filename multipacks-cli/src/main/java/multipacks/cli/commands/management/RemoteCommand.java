@@ -51,6 +51,7 @@ public class RemoteCommand extends Command {
 	public String secret;
 
 	@Subcommand("upload") public final UploadCommand upload;
+	@Subcommand("delete") public final DeleteCommand delete;
 
 	protected AuthorizedRepository repository;
 
@@ -58,6 +59,7 @@ public class RemoteCommand extends Command {
 		this.platform = parent.platform;
 
 		upload = new UploadCommand(this);
+		delete = new DeleteCommand(this);
 
 		helpName = "remote";
 		helpDescription = "Upload or delete pack from remote repository";
