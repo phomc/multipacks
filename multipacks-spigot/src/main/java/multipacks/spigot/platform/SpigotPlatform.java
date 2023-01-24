@@ -70,8 +70,11 @@ public class SpigotPlatform implements Platform {
 
 	public void reloadConfig() throws IOException {
 		Path configFile = getMultipacksDir().resolve(PlatformConfig.FILENAME);
+
 		if (Files.notExists(configFile)) {
 			logger.warning("File {} does not exists (searching {}), creating new file...", PlatformConfig.FILENAME, configFile);
+			Files.createDirectories(configFile.getParent());
+
 			SpigotPlatformConfig config = SpigotPlatformConfig.createDefaultConfig();
 			IOUtils.jsonToFile(config.toJson(), configFile.toFile());
 

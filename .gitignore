@@ -5,9 +5,12 @@
 build
 bin
 
-# Eclipse Gradle plugin generated files
+# Eclipse Buildship generated files
 # Eclipse Core
 .project
 .settings
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+# Ignore other directories
+/multipacks-*/run
