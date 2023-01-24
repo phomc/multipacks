@@ -15,6 +15,7 @@
  */
 package multipacks.spigot;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import multipacks.plugins.InternalSystemPlugin;
@@ -30,6 +31,9 @@ public class MultipacksSpigot extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		platform = new SpigotPlatform(this);
+		platform.getLogger().info("Multipacks for Spigot, version {} (API version {})", getDescription().getVersion(), getDescription().getAPIVersion());
+		platform.getLogger().info("Server software version: {}", Bukkit.getVersion());
+
 		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
 
 		getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
