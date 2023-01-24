@@ -85,6 +85,8 @@ public class LocalRepository implements AuthorizedRepository {
 	@Override
 	public CompletableFuture<Pack> obtain(PackIdentifier id) {
 		return download(id).thenApply(p -> {
+			if (p == null) return null;
+
 			try {
 				p.loadFromStorage();
 				return p;
@@ -97,7 +99,7 @@ public class LocalRepository implements AuthorizedRepository {
 	@Override
 	public CompletableFuture<LocalPack> download(PackIdentifier id) {
 		Path packRoot = repositoryRoot.resolve(id.name).resolve(id.packVersion.toStringNoPrefix());
-		if (!Files.exists(packRoot)) return CompletableFuture.failedFuture(new IllegalArgumentException(Messages.packNotFoundRepo(id)));
+		if (!Files.exists(packRoot)) return CompletableFuture.completedFuture(null);
 		return CompletableFuture.completedFuture(new LocalPack(packRoot));
 	}
 
@@ -149,5 +151,10 @@ public class LocalRepository implements AuthorizedRepository {
 		}
 
 		Files.delete(p);
+	}
+
+	@Override
+	public String toString() {
+		return "local " + repositoryRoot;
 	}
 }

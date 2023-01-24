@@ -15,6 +15,7 @@
  */
 package multipacks.repository;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -45,7 +46,6 @@ public interface Repository {
 	 * have to use {@link LocalPack#loadFromStorage()}. 
 	 * @param id Pack id to obtain from repository.
 	 * @return Pack from repository, or {@code null} if the pack couldn't be found.
-	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the pack doesn't exists in this repository.
 	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<Pack> obtain(PackIdentifier id);
@@ -53,8 +53,7 @@ public interface Repository {
 	/**
 	 * Download the pack from this repository to user's machine. The download destination should be configured.
 	 * @param id Pack id to download from repository.
-	 * @return Downloaded pack contents in a form of {@link LocalPack}.
-	 * @throws CompletionException wrapped {@link IllegalArgumentException}; if the pack doesn't exists in this repository.
+	 * @return Downloaded pack contents in a form of {@link LocalPack}, or {@code null} if the pack couldn't be found.
 	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<LocalPack> download(PackIdentifier id);
@@ -69,4 +68,17 @@ public interface Repository {
 	 * @throws CompletionException wrapped {@link RuntimeException}; if something went wrong.
 	 */
 	CompletableFuture<AuthorizedRepository> login(String username, byte[] secret);
+
+	static Repository fromConnectionString(String str, Path cwd) {
+		String[] split = str.split(" ", 2);
+		String type = split[0];
+		String connectTo = split[1];
+
+		switch (type) {
+		case "local":
+			if (cwd == null) throw new NullPointerException("CWD is not supplied to this method");
+			return new LocalRepository(cwd.resolve(connectTo));
+		default: throw new IllegalArgumentException("Unknown repository type: " + type);
+		}
+	}
 }

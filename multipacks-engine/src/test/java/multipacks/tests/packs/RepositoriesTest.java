@@ -70,12 +70,8 @@ class RepositoriesTest {
 		Pack pack = repo.obtain(new PackIdentifier("packA", new Version("1.0.0"))).get();
 		assertEquals("packA", pack.getIndex().name);
 
-		try {
-			repo.obtain(new PackIdentifier("packA", new Version("1.0.2"))).get();
-			fail("Not thrown when getting non-existent pack");
-		} catch (Exception e) {
-			// Must throw exception here.
-		}
+		Pack nonExistent = repo.obtain(new PackIdentifier("packA", new Version("1.0.2"))).get();
+		assertNull(nonExistent);
 	}
 
 	@Test

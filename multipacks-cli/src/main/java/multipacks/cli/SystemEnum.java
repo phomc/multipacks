@@ -16,24 +16,45 @@
 package multipacks.cli;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public enum Platform {
-	WINDOWS,
-	UNIX_LIKE,
-	UNKNOWN;
+import multipacks.platform.PlatformConfig;
 
-	public static Platform getPlatform() {
+public enum SystemEnum {
+	WINDOWS {
+		@Override
+		public Path getHomeDir() {
+			return new File(System.getenv("USERPROFILE")).toPath();
+		}
+	},
+	UNIX_LIKE {
+		@Override
+		public Path getHomeDir() {
+			return new File(System.getProperty("user.home")).toPath();
+		}
+	},
+	UNKNOWN {
+		@Override
+		public Path getHomeDir() {
+			return new File(System.getProperty("user.home")).toPath();
+		}
+	};
+
+	public static SystemEnum getPlatform() {
 		String osProp = System.getProperty("os.name").toLowerCase();
 		if (osProp.contains("windows")) return WINDOWS;
 		if (osProp.contains("linux") || osProp.contains("unix") || osProp.contains("darwin") || osProp.contains("mac")) return UNIX_LIKE;
 		return UNKNOWN;
 	}
 
-	public File getHomeDir() {
-		return new File(System.getProperty("user.home", switch (this) {
-		case WINDOWS -> "C:\\Users\\" + System.getProperty("user.name");
-		case UNIX_LIKE -> "/home/" + System.getProperty("user.name");
-		default -> "/";
-		}));
+	public abstract Path getHomeDir();
+
+	public Path getMultipacksDir() {
+		return getHomeDir().resolve(".multipacks");
+	}
+
+	public boolean isLegacy() {
+		return Files.exists(getMultipacksDir()) && Files.notExists(getMultipacksDir().resolve(PlatformConfig.FILENAME));
 	}
 }

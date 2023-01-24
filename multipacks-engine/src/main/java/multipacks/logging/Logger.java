@@ -21,6 +21,7 @@ package multipacks.logging;
  */
 public interface Logger {
 	void log(LoggingLevel level, String message, Object... objs);
+	void toggleLoggingLevel(LoggingLevel level, boolean enable);
 
 	default LoggingStage newStage(String display, String stageName, int maxStages) {
 		return new LoggingStage(this, display, stageName, maxStages);
