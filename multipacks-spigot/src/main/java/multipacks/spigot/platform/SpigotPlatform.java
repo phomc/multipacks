@@ -82,7 +82,7 @@ public class SpigotPlatform implements Platform {
 			Files.createDirectories(getMultipacksDir().resolve(config.masterPack));
 
 			// Master pack init
-			PackIndex index = new PackIndex("master", new Version("1.0.0"), "Multipacks for Spigot", new Version("1.19"), "Declare which packs you want use in 'dependencies' field");
+			PackIndex index = new PackIndex("master", new Version("1.0.0"), "Multipacks for Spigot", MultipacksSpigot.detectGameVersion(), "Declare which packs you want use in 'dependencies' field");
 			IOUtils.jsonToFile(index.toJson(), getMultipacksDir().resolve(config.masterPack).resolve(LocalPack.FILE_INDEX).toFile());
 		}
 
@@ -93,11 +93,13 @@ public class SpigotPlatform implements Platform {
 		if (config.masterPack != null) {
 			logger.info("Master pack declared in configuration file: {}", config.masterPack);
 			masterPack = new LocalPack(getMultipacksDir().resolve(config.masterPack));
+			masterPack.loadFromStorage();
 		} else {
 			masterPack = null;
 		}
 
 		masterBuildOutput = null;
+		if (masterPack != null && config.prebuild) getMasterBuildOutput();
 	}
 
 	public LocalPack getMasterPack() {
@@ -112,7 +114,7 @@ public class SpigotPlatform implements Platform {
 			long nano = System.nanoTime();
 
 			Bundler bundler = new Bundler().fromPlatform(this);
-			masterBuildOutput = bundler.bundle(masterPack, new Version("1.19") /* TODO: game version */);
+			masterBuildOutput = bundler.bundle(masterPack, MultipacksSpigot.detectGameVersion());
 
 			logger.info("Master pack built in {}ms", (System.nanoTime() - nano) * Math.pow(10, -6));
 		}

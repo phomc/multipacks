@@ -15,6 +15,9 @@
  */
 package multipacks.spigot;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,9 +26,11 @@ import multipacks.spigot.platform.SpigotPlatform;
 import multipacks.utils.Constants;
 import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
+import multipacks.versioning.Version;
 
 @PlatformAPI
 public class MultipacksSpigot extends JavaPlugin {
+	private static final Pattern VERSION_PATTERN = Pattern.compile("MC:\\s+?(?<version>((\\d+)\\.?)+)");
 	private static SpigotPlatform platform;
 
 	@Override
@@ -33,6 +38,17 @@ public class MultipacksSpigot extends JavaPlugin {
 		platform = new SpigotPlatform(this);
 		platform.getLogger().info("Multipacks for Spigot, version {} (API version {})", getDescription().getVersion(), getDescription().getAPIVersion());
 		platform.getLogger().info("Server software version: {}", Bukkit.getVersion());
+
+		Version gameVersion = detectGameVersion();
+		if (gameVersion == null) {
+			platform.getLogger().warning("---");
+			platform.getLogger().warning("Warning: Cannot obtain game version (Bukkit.getVersion() = '{}')", Bukkit.getVersion());
+			platform.getLogger().warning("Please send the message above to our issues tracker: {}", Constants.URL_ISSUES_TRACKER);
+			platform.getLogger().warning("Multipacks for Spigot will failback target game version to {}", getDescription().getAPIVersion());
+			platform.getLogger().warning("---");
+		} else {
+			platform.getLogger().info("Detected game version: {}", gameVersion);
+		}
 
 		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
 
@@ -58,5 +74,16 @@ public class MultipacksSpigot extends JavaPlugin {
 	public static SpigotPlatform getPlatform() {
 		if (platform == null) throw new NullPointerException("Plugin is not enabled yet");
 		return platform;
+	}
+
+	public static Version detectGameVersion() {
+		String bukkitVersion = Bukkit.getVersion();
+		Matcher matcher = VERSION_PATTERN.matcher(bukkitVersion);
+
+		if (matcher.find()) {
+			return new Version(matcher.group("version"));
+		}
+
+		return null;
 	}
 }

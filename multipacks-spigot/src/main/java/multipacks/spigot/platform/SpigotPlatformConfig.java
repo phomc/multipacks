@@ -26,8 +26,10 @@ import multipacks.utils.Selects;
  */
 public class SpigotPlatformConfig extends PlatformConfig {
 	public static final String FIELD_MASTER_PACK = "masterPack";
+	public static final String FIELD_PREBUILD = "prebuild";
 
 	public String masterPack;
+	public boolean prebuild;
 
 	public SpigotPlatformConfig() {
 		super();
@@ -36,6 +38,7 @@ public class SpigotPlatformConfig extends PlatformConfig {
 	public SpigotPlatformConfig(JsonObject json) {
 		super(json);
 		masterPack = Selects.getChain(json.get(FIELD_MASTER_PACK), j -> j.getAsString(), null);
+		prebuild = Selects.getChain(json.get(FIELD_PREBUILD), j -> j.getAsBoolean(), true);
 	}
 
 	public static SpigotPlatformConfig createDefaultConfig() {
@@ -43,6 +46,7 @@ public class SpigotPlatformConfig extends PlatformConfig {
 		config.repositories.put("local", "local ./repository");
 		config.installRepository = "./repository";
 		config.masterPack = "./master-pack";
+		config.prebuild = true;
 		return config;
 	}
 
@@ -50,6 +54,7 @@ public class SpigotPlatformConfig extends PlatformConfig {
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();
 		if (masterPack != null) json.addProperty(FIELD_MASTER_PACK, masterPack);
+		json.addProperty(FIELD_PREBUILD, prebuild);
 		return json;
 	}
 }
