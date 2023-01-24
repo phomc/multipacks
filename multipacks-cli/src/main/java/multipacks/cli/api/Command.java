@@ -153,7 +153,7 @@ public abstract class Command {
 
 			if (params.endOfParams()) {
 				if (arg.declared.optional()) break;
-				throw new CommandException("Argument #" + arg.declared.value() + " is required");
+				throw new CommandException("Argument " + (arg.declared.helpName().length() > 0? arg.declared.helpName() : ("#" + arg.declared.value())) + " is required");
 			}
 
 			arg.set(params.getThenAdvance());

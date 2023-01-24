@@ -19,6 +19,7 @@ import multipacks.cli.CLIPlatform;
 import multipacks.cli.api.Command;
 import multipacks.cli.api.CommandException;
 import multipacks.cli.api.annotations.Subcommand;
+import multipacks.cli.commands.management.RemoteCommand;
 
 public class MultipacksCommand extends Command {
 	public final CLIPlatform platform;
@@ -28,6 +29,7 @@ public class MultipacksCommand extends Command {
 	@Subcommand("install") public final InstallCommand install;
 	@Subcommand("uninstall") public final UninstallCommand uninstall;
 	@Subcommand("download") public final DownloadCommand download;
+	@Subcommand("remote") public final RemoteCommand remote;
 
 	public MultipacksCommand(CLIPlatform platform) {
 		this.platform = platform;
@@ -37,6 +39,7 @@ public class MultipacksCommand extends Command {
 		this.install = new InstallCommand(this);
 		this.uninstall = new UninstallCommand(this);
 		this.download = new DownloadCommand(this);
+		this.remote = new RemoteCommand(this);
 
 		helpName = "java multipacks.cli.Main";
 		helpDescription = "Multipacks CLI";

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.cli.commands;
+package multipacks.cli.commands.management;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,22 +28,24 @@ import multipacks.cli.api.annotations.Argument;
 import multipacks.logging.LoggingStage;
 import multipacks.packs.LocalPack;
 import multipacks.packs.meta.PackIdentifier;
-import multipacks.repository.LocalRepository;
 
 /**
  * @author nahkd
  *
  */
-public class InstallCommand extends Command {
+public class UploadCommand extends Command {
 	public final CLIPlatform platform;
+	public final RemoteCommand parent;
 
 	@Argument(value = 0, helpName = "path/to/packDir")
 	public String pathToPack = ".";
 
-	public InstallCommand(MultipacksCommand parent) {
+	public UploadCommand(RemoteCommand parent) {
 		this.platform = parent.platform;
-		helpName = "install";
-		helpDescription = "Install pack to local repository";
+		this.parent = parent;
+
+		helpName = "upload";
+		helpDescription = "Upload pack to remote repository";
 	}
 
 	@Override
@@ -55,10 +57,7 @@ public class InstallCommand extends Command {
 
 		PackIdentifier id;
 
-		try (LoggingStage stage = platform.getLogger().newStage("Install", "Initialize")) {
-			LocalRepository installRepo = platform.getInstallRepository();
-			if (installRepo == null) throw new CommandException("Install repository does not defined in .multipacks/multipacks.config.json. Consider adding '\"install\": \"path/to/repo\"' to config file.");
-
+		try (LoggingStage stage = platform.getLogger().newStage("Remote", "Initialize upload")) {
 			LocalPack pack = new LocalPack(packDir);
 
 			try {
@@ -67,12 +66,12 @@ public class InstallCommand extends Command {
 				throw new CommandException("An error occured", e);
 			}
 
-			stage.newStage("Install pack");
-			id = installRepo.upload(pack).get();
+			stage.newStage("Upload pack");
+			id = parent.repository.upload(pack).get();
 		} catch (InterruptedException | ExecutionException e) {
 			throw new CommandException("An error occured", e);
 		}
 
-		System.out.println("Pack is installed to local repository: " + id.name + " version " + id.packVersion);
+		System.out.println("Pack is uploaded to repository: " + id.name + " version " + id.packVersion);
 	}
 }
