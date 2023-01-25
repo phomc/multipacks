@@ -1,0 +1,6 @@
+{
+	"id": "multipacks:additions",
+	"name": "Multipacks Additions",
+	"author": "PhoMC",
+	"main": "multipacks.plugins.additions.MultipacksAdditions"
+}
