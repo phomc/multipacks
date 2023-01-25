@@ -16,13 +16,17 @@
 package multipacks.repository;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -52,7 +56,29 @@ public class LocalRepository implements AuthorizedRepository {
 
 	public static LocalRepository fromClassLoader(ClassLoader clsLoader, String pathToRepo) {
 		try {
-			return new LocalRepository(Path.of(clsLoader.getResource(pathToRepo).toURI()));
+			URI uri = clsLoader.getResource(pathToRepo).toURI();
+			if (uri.getScheme().equalsIgnoreCase("jar")) {
+				// We are loading from JAR
+				FileSystem fs;
+				for (FileSystemProvider provider : FileSystemProvider.installedProviders()) {
+					if (provider.getScheme().equalsIgnoreCase("jar")) {
+						try {
+							fs = provider.getFileSystem(uri);
+						} catch (FileSystemNotFoundException e) {
+							// File system not found, create a new one
+							try {
+								fs = provider.newFileSystem(uri, Collections.emptyMap());
+							} catch (IOException e1) {
+								throw new RuntimeException("An error occured", e1);
+							}
+						}
+
+						return new LocalRepository(fs.getPath(pathToRepo));
+					}
+				}
+			}
+
+			return new LocalRepository(Path.of(uri));
 		} catch (URISyntaxException e) {
 			// It SHOULD NOT throw URISyntaxException
 			throw new RuntimeException(Messages.INTERNAL_ERROR, e);

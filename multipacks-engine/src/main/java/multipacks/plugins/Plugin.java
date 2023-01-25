@@ -31,6 +31,8 @@ import multipacks.repository.SimpleRepository;
  *
  */
 public abstract class Plugin {
+	public static final String INDEX_FILENAME = "multipacks.plugin.json";
+
 	public abstract void onInit(Platform platform);
 
 	/**

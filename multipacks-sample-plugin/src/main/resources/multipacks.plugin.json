@@ -1,5 +1,6 @@
 {
-    "name": "Sample plugin",
-    "author": "nahkd123",
-    "main": "multipacks.sampleplugin.SamplePlugin"
+	"id": "multipacks:sample_plugin",
+	"name": "Sample plugin",
+	"author": "PhoMC",
+	"main": "multipacks.sampleplugin.SamplePlugin"
 }
