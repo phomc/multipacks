@@ -41,6 +41,7 @@ public class MultipacksCommand extends Command {
 	private List<URLClassLoader> openedClassLoaders = new ArrayList<>();
 
 	@Subcommand("search") public final SearchCommand search;
+	@Subcommand("info") public final InfoCommand info;
 	@Subcommand("build") public final BuildCommand build;
 	@Subcommand("install") public final InstallCommand install;
 	@Subcommand("uninstall") public final UninstallCommand uninstall;
@@ -51,6 +52,7 @@ public class MultipacksCommand extends Command {
 		this.platform = platform;
 
 		this.search = new SearchCommand(this);
+		this.info = new InfoCommand(this);
 		this.build = new BuildCommand(this);
 		this.install = new InstallCommand(this);
 		this.uninstall = new UninstallCommand(this);

@@ -35,9 +35,11 @@ import multipacks.versioning.Version;
 public class PackIndex extends PackInfo {
 	public static final String FIELD_DESCRIPTION = "description";
 	public static final String FIELD_DEPENDENCIES = "dependencies";
+	public static final String FIELD_FEATURES = "features";
 
 	public String description;
 	public final List<PackQuery> dependencies = new ArrayList<>();
+	public final List<String> features = new ArrayList<>();
 
 	public PackIndex(String name, Version packVersion, String author, Version sourceGameVersion, String description) {
 		super(name, packVersion, author, sourceGameVersion);
@@ -48,17 +50,22 @@ public class PackIndex extends PackInfo {
 		super(json);
 
 		description = Selects.getChain(json.get(FIELD_DESCRIPTION), j -> j.getAsString(), null);
-		Selects.getChain(json.get(FIELD_DEPENDENCIES), j -> {
-			j.getAsJsonArray().forEach(e -> dependencies.add(PackQuery.parse(e.getAsString())));
-			return null;
-		}, null);
+		if (json.has(FIELD_DEPENDENCIES)) json.get(FIELD_DEPENDENCIES).getAsJsonArray().forEach(e -> dependencies.add(PackQuery.parse(e.getAsString())));
+		if (json.has(FIELD_FEATURES)) json.get(FIELD_FEATURES).getAsJsonArray().forEach(e -> features.add(e.getAsString()));
 	}
 
 	@Override
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();
+
 		if (description != null && description.trim().length() > 0) json.addProperty(FIELD_DESCRIPTION, description);
 		if (dependencies.size() > 0) json.add(FIELD_DEPENDENCIES, queriesToJson());
+		if (features.size() > 0) {
+			JsonArray arr = new JsonArray();
+			for (String feature : features) arr.add(feature);
+			json.add(FIELD_FEATURES, arr);
+		}
+
 		return json;
 	}
 
@@ -75,6 +82,14 @@ public class PackIndex extends PackInfo {
 		pack.addProperty("pack_format", GameVersions.getPackFormat(targetGameVersion));
 		pack.addProperty("description", description != null? description : "Generated using PhoMC Multipacks");
 		root.add("pack", pack);
+
+		if (features.size() > 0) {
+			JsonObject features = new JsonObject();
+			JsonArray enabled = new JsonArray();
+			for (String feature : this.features) enabled.add(feature);
+			features.add("enabled", enabled);
+			root.add("features", features);
+		}
 
 		return root;
 	}
