@@ -16,12 +16,14 @@
 package multipacks.spigot.helpers;
 
 import multipacks.modifier.builtin.glyphs.Glyph;
+import multipacks.utils.PlatformAPI;
 import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author nahkd
  *
  */
+@PlatformAPI
 public class GlyphHelper {
 	public static TextComponent toBungee(Glyph glyph) {
 		TextComponent tc = new TextComponent(String.valueOf(glyph.assigned));

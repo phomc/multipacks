@@ -38,6 +38,7 @@ import multipacks.platform.PlatformConfig;
 import multipacks.plugins.Plugin;
 import multipacks.repository.Repository;
 import multipacks.spigot.MultipacksSpigot;
+import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.io.Deserializer;
 import multipacks.utils.io.IOUtils;
@@ -68,6 +69,7 @@ public class SpigotPlatform implements Platform {
 		}
 	}
 
+	@PlatformAPI
 	public void reloadConfig() throws IOException {
 		Path configFile = getMultipacksDir().resolve(PlatformConfig.FILENAME);
 
@@ -102,10 +104,12 @@ public class SpigotPlatform implements Platform {
 		if (masterPack != null && config.prebuild) getMasterBuildOutput();
 	}
 
+	@PlatformAPI
 	public LocalPack getMasterPack() {
 		return masterPack;
 	}
 
+	@PlatformAPI
 	public BundleResult getMasterBuildOutput() {
 		if (masterPack == null) return null;
 
@@ -122,6 +126,7 @@ public class SpigotPlatform implements Platform {
 		return masterBuildOutput;
 	}
 
+	@PlatformAPI
 	public void loadPlugin(ResourcePath id, Plugin plugin) {
 		if (pluginsLoadFinalized) throw new IllegalStateException("Plugins registration is closed");
 		if (plugins.containsKey(id)) throw new IllegalArgumentException("Plugin is already loaded: " + id);
@@ -135,6 +140,7 @@ public class SpigotPlatform implements Platform {
 		plugins.put(id, plugin);
 	}
 
+	@PlatformAPI
 	public void finalizePluginsLoad() {
 		if (pluginsLoadFinalized) return;
 		pluginsLoadFinalized = true;
@@ -145,6 +151,7 @@ public class SpigotPlatform implements Platform {
 		}
 	}
 
+	@PlatformAPI
 	public Path getMultipacksDir() {
 		return plugin.getDataFolder().toPath();
 	}

@@ -19,11 +19,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
 import multipacks.modifier.builtin.models.Model;
+import multipacks.utils.PlatformAPI;
 
 /**
  * @author nahkd
  *
  */
+@PlatformAPI
 public class ModelHelper {
 	public static ItemStack createItemStack(Model model) {
 		return Bukkit.getItemFactory().createItemStack(model.item.itemId + "{CustomModelData:" + model.modelId + "}");
