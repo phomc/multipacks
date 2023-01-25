@@ -23,9 +23,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import multipacks.modifier.builtin.atlases.AtlasesModifier;
 import multipacks.modifier.builtin.glyphs.GlyphsModifier;
 import multipacks.modifier.builtin.models.ModelsModifier;
+import multipacks.modifier.builtin.slices.SlicesModifier;
 import multipacks.packs.Pack;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
@@ -82,6 +82,6 @@ public abstract class Modifier {
 	public static void registerBuiltinModifiers(ModifiersAccess access) {
 		GlyphsModifier.registerTo(access);
 		ModelsModifier.registerTo(access);
-		AtlasesModifier.registerTo(access);
+		SlicesModifier.registerTo(access);
 	}
 }

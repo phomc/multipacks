@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier.builtin.atlases;
+package multipacks.modifier.builtin.slices;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
