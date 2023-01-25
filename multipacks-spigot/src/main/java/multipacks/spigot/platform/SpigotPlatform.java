@@ -52,8 +52,6 @@ public class SpigotPlatform implements Platform {
 	private Map<ResourcePath, Deserializer<Modifier>> modifierDeserializers = new HashMap<>();
 
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
-	private boolean pluginsLoadFinalized = false;
-
 	private List<Repository> repositories = new ArrayList<>();
 	private LocalPack masterPack;
 	private BundleResult masterBuildOutput;
@@ -61,16 +59,27 @@ public class SpigotPlatform implements Platform {
 	public SpigotPlatform(MultipacksSpigot plugin) {
 		this.plugin = plugin;
 		this.logger = new SpigotLogger(plugin.getLogger());
-
-		try {
-			reloadConfig();
-		} catch (IOException e) {
-			throw new RuntimeException("An error occured while loading config", e);
-		}
 	}
 
 	@PlatformAPI
-	public void reloadConfig() throws IOException {
+	public void loadConfig() throws IOException {
+		repositories.clear();
+		modifierCtors.clear();
+		modifierDeserializers.clear();
+
+		logger.debug("Loading Multipack plugins...");
+		for (Plugin p : plugins.values()) {
+			try {
+				p.onInit(this);
+
+				Collection<Repository> repos = p.getPluginRepositories();
+				if (repos != null) repositories.addAll(repos);
+			} catch (Exception e) {
+				logger.error("Error while loading plugin:");
+				e.printStackTrace();
+			}
+		}
+
 		Path configFile = getMultipacksDir().resolve(PlatformConfig.FILENAME);
 
 		if (Files.notExists(configFile)) {
@@ -127,28 +136,9 @@ public class SpigotPlatform implements Platform {
 	}
 
 	@PlatformAPI
-	public void loadPlugin(ResourcePath id, Plugin plugin) {
-		if (pluginsLoadFinalized) throw new IllegalStateException("Plugins registration is closed");
-		if (plugins.containsKey(id)) throw new IllegalArgumentException("Plugin is already loaded: " + id);
-
-		try {
-			plugin.onInit(this);
-		} catch (Exception e) {
-			throw new RuntimeException("Plugin load failed: " + id, e);
-		}
-
+	public void addPlugin(ResourcePath id, Plugin plugin) {
+		if (plugins.containsKey(id)) throw new IllegalArgumentException("Plugin is already added: " + id);
 		plugins.put(id, plugin);
-	}
-
-	@PlatformAPI
-	public void finalizePluginsLoad() {
-		if (pluginsLoadFinalized) return;
-		pluginsLoadFinalized = true;
-
-		for (Plugin p : plugins.values()) {
-			Collection<Repository> repos = p.getPluginRepositories();
-			if (repos != null) repositories.addAll(repos);
-		}
 	}
 
 	@PlatformAPI

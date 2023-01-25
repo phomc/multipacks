@@ -50,17 +50,16 @@ public class MultipacksSpigot extends JavaPlugin {
 			platform.getLogger().info("Detected game version: {}", gameVersion);
 		}
 
-		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
+		platform.addPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
 
 		getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-			platform.getLogger().info("Finalizing Multipacks plugins registry...");
-			platform.finalizePluginsLoad();
+			reloadPlugin();
 		});
 	}
 
 	public void reloadPlugin() {
 		try {
-			platform.reloadConfig();
+			platform.loadConfig();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to reload plugin", e);
 		}
