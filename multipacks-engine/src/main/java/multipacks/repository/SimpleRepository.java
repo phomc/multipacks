@@ -36,10 +36,16 @@ import multipacks.repository.query.PackQuery;
  */
 public class SimpleRepository implements Repository {
 	private List<Pack> packs = new ArrayList<>();
+	private String displayName;
 
 	public SimpleRepository(Pack... packs) {
 		this.packs = new ArrayList<>();
 		this.packs.addAll(Arrays.asList(packs));
+	}
+
+	public SimpleRepository setDisplayName(String displayName) {
+		this.displayName = displayName;
+		return this;
 	}
 
 	@Override
@@ -72,5 +78,10 @@ public class SimpleRepository implements Repository {
 	@Override
 	public CompletableFuture<AuthorizedRepository> login(String username, byte[] secret) {
 		return CompletableFuture.failedFuture(new RuntimeException("SimpleRepository does not allows logging in; You can't upload or delete packs from this repository."));
+	}
+
+	@Override
+	public String toString() {
+		return "external repository " + displayName;
 	}
 }
