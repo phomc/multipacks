@@ -15,41 +15,17 @@
  */
 package multipacks.packs;
 
-import java.io.File;
-import java.io.IOException;
+import com.google.gson.JsonArray;
 
-import multipacks.utils.IOUtils;
+import multipacks.packs.meta.PackIndex;
+import multipacks.vfs.Vfs;
 
-public class Pack {
-	private File packRoot;
-	private PackIndex index;
-	private PackIdentifier identifier;
-
-	public Pack(File packRoot) throws IOException {
-		this.packRoot = packRoot;
-		this.index = PackIndex.fromJson(IOUtils.jsonFromFile(new File(packRoot, "multipacks.json")).getAsJsonObject());
-		this.identifier = index.getIdentifier();
-	}
-
-	/**
-	 * Construct a brand new pack without local root directory. Use this if you want to build a dynamic pack. Oh and
-	 * to actually build a dynamic pack, you'll have to extends {@link DynamicPack}. 
-	 */
-	public Pack(PackIndex index) {
-		this.packRoot = null;
-		this.index = index;
-		this.identifier = index.getIdentifier();
-	}
-
-	public PackIndex getIndex() {
-		return index;
-	}
-
-	public File getRoot() {
-		return packRoot;
-	}
-
-	public PackIdentifier getIdentifier() {
-		return identifier;
-	}
+/**
+ * @author nahkd
+ *
+ */
+public interface Pack {
+	PackIndex getIndex();
+	JsonArray getModifiersConfig();
+	Vfs createVfs();
 }

@@ -15,161 +15,81 @@
  */
 package multipacks.cli;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
-import multipacks.bundling.BundleIgnore;
-import multipacks.bundling.BundleInclude;
-import multipacks.management.PacksRepository;
-import multipacks.packs.PackIdentifier;
-import multipacks.plugins.MultipacksDefaultPlugin;
-import multipacks.plugins.MultipacksPlugin;
-import multipacks.versioning.Version;
+import multipacks.cli.api.console.FancyStackTrace;
+import multipacks.cli.commands.MultipacksCommand;
+import multipacks.logging.LoggingLevel;
+import multipacks.logging.LoggingStage;
+import multipacks.logging.SimpleLogger;
+import multipacks.platform.PlatformConfig;
+import multipacks.plugins.InternalSystemPlugin;
+import multipacks.utils.Constants;
+import multipacks.utils.ResourcePath;
+import multipacks.utils.io.IOUtils;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		Platform currentPlatform = Platform.getPlatform();
+		SystemEnum currentSystem = SystemEnum.getPlatform();
+		SimpleLogger logger = new SimpleLogger();
+		boolean isDebug = Boolean.parseBoolean(System.getenv().getOrDefault("MULTIPACKS_DEBUG", "false"));
 
-		if (currentPlatform == Platform.UNKNOWN) {
+		if (isDebug) {
+			logger.debug("Debug logging level is enabled");
+		} else {
+			logger.toggleLoggingLevel(LoggingLevel.DEBUG, false);
+		}
+
+		if (currentSystem == SystemEnum.UNKNOWN) {
 			System.err.println("Unsupported platform: " + System.getProperty("os.name"));
 			System.err.println("If you think this platform should be supported, please open new issue in our GitHub repository.");
 			System.exit(1);
 			return;
 		}
 
-		if (args.length == 0) {
-			System.out.println("Multipacks CLI");
-			System.out.println("Usage: java multipacks.cli.Main <subcommand...> [options...]");
-			System.out.println("Subcommands:");
-			System.out.println("  list            List repositories or packs");
-			System.out.println("  pack            Pack command");
-			System.out.println();
-			System.out.println("Options:");
-			System.out.println("  -F  --filter <ID> [>=, >, <=, <]<Version>");
-			System.out.println("        Set filter for querying packs");
-			System.out.println("  -R  --repo <'#' + Index | 'file:/path/'>");
-			System.out.println("        Select repository (see index with 'list repo')");
-			System.out.println("  -O  --output </path/to/output>");
-			System.out.println("        Set output path");
-			System.out.println("      --skip");
-			System.out.println("        Skip 'pack init' prompts");
-			System.out.println("      --ignore-errors");
-			System.out.println("        Ignore errors as much as possible");
-			System.out.println("  -I  --ignore <Pack feature>");
-			System.out.println("        Ignore pack features (use -I multiple times to ignores more)");
-			System.out.println("        Available features to ignore: " + String.join(", ", Stream.of(BundleIgnore.values()).map(v -> v.toString().toLowerCase()).toArray(String[]::new)));
-			System.out.println("      --include <Pack type A, Pack type B...>");
-			System.out.println("        Include 1 or more different pack types to output. The parameter is separated with comma (',') character");
-			System.out.println("        Available pack types: " + String.join(", ", Stream.of(BundleInclude.values()).map(v -> v.toString().toLowerCase()).toArray(String[]::new)));
-			System.out.println("  -W  --watch");
-			System.out.println("        Watch for any changes (usable with pack build)");
-			System.out.println("      --plugin </path/to/plugin.jar>");
-			System.out.println("        Load Multipacks Engine plugin from a JAR file");
-			System.out.println("        By default, this will not load any plugin but the integrated one");
-			return;
-		}
+		if (currentSystem.isLegacy()) {
+			System.err.println("Warning: Legacy Multipacks detected");
+			System.err.println("Your previous Multipacks folder is considered as 'legacy' because " + currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME) + " is missing.");
+			System.err.println("Moving previous Multipacks folder to .multipacks-backup...");
 
-		// Load plugins
-		MultipacksPlugin.loadPlugin(new MultipacksDefaultPlugin());
-
-		MultipacksCLI cli = new MultipacksCLI(currentPlatform);
-		List<String> regularArguments = new ArrayList<>();
-
-		for (int i = 0; i < args.length; i++) {
-			String s = args[i];
-
-			if (!s.startsWith("-")) {
-				regularArguments.add(s);
-				continue;
-			}
-
-			// TODO: Use switch-case?
-
-			if (s.equals("-F") || s.equals("--filter")) {
-				String id = args[++i];
-				String versionStr = args[++i];
-				cli.filter = new PackIdentifier(id, new Version(versionStr));
-			} else if (s.equals("-R") || s.equals("--repo")) {
-				String repoStr = args[++i];
-
-				if (repoStr.startsWith("#")) {
-					int repoIdx = Integer.parseInt(repoStr.substring(1));
-
-					if (repoIdx >= cli.repositories.size()) {
-						System.err.println("Repository #" + repoIdx + " doesn't exists (Out of bound)");
-						System.err.println("Tip: Use 'list repo' to view all repositories and its index");
-						System.exit(1);
-						return;
-					}
-
-					cli.selectedRepository = cli.repositories.get(repoIdx);
-				} else {
-					cli.selectedRepository = PacksRepository.parseRepository(null, repoStr);
-
-					if (cli.selectedRepository == null) {
-						System.err.println("Unknown repository string: " + repoStr);
-						System.err.println("Valid string formats:");
-						System.err.println(" - '#' + Index");
-						System.err.println(" - 'file:/path/to/repository'");
-						System.exit(1);
-						return;
-					}
-				}
-			} else if (s.equals("-O") || s.equals("--output")) {
-				cli.outputTo = new File(args[++i].replace('/', File.separatorChar).replace('\\', File.separatorChar));
-			} else if (s.equals("--skip")) {
-				cli.skipPrompts = true;
-			} else if (s.equals("--ignore-errors")) {
-				cli.ignoreErrors = true;
-			} else if (s.equals("--ignore")) {
-				String featureString = args[++i];
-
-				try {
-					BundleIgnore ignore = BundleIgnore.valueOf(featureString.toUpperCase());
-					cli.bundleIgnoreFeatures.add(ignore);
-				} catch (IllegalArgumentException e) {
-					System.err.println("Unknown feature: " + featureString);
-					System.exit(1);
-					return;
-				}
-			} else if (s.equals("--include")) {
-				String includeString = args[++i];
-				String[] split = includeString.split(",");
-				BundleInclude[] includes = new BundleInclude[split.length];
-
-				for (int j = 0; j < split.length; j++) {
-					String includeStr = split[j];
-
-					try {
-						includes[j] = BundleInclude.valueOf(includeStr.trim().toUpperCase());
-					} catch (IllegalArgumentException e) {
-						System.err.println("Unknown pack type: " + includeStr);
-						System.exit(1);
-						return;
-					}
-				}
-
-				cli.bundleIncludes = includes;
-			} else if (s.equals("-W") || s.equals("--watch")) {
-				cli.watchInputs = true;
-			} else if (s.equals("--plugin")) {
-				String plugin = args[++i];
-				System.out.println("Plugin: " + plugin);
-				MultipacksPlugin.loadJarPlugin(new File(plugin));
-			} else {
-				System.err.println("Unknown option: " + s);
-				System.exit(1);
-				return;
+			try (LoggingStage stage = logger.newStage("Backing up", ".multipacks to .multipacks-backup")) {
+				Path dest = currentSystem.getHomeDir().resolve(".multipacks-backup");
+				Files.move(currentSystem.getMultipacksDir(), dest, StandardCopyOption.REPLACE_EXISTING);
 			}
 		}
 
-		cli.exec(regularArguments.toArray(String[]::new));
+		if (Files.notExists(currentSystem.getMultipacksDir())) {
+			System.out.println("Creating Multipacks data...");
 
-		// Clean up
-		for (URLClassLoader loader : MultipacksPlugin.JAR_HANDLES) loader.close();
+			try (LoggingStage stage = logger.newStage("Multipacks Init", "Preparation", 2)) {
+				Files.createDirectories(currentSystem.getMultipacksDir());
+				Files.createDirectories(currentSystem.getMultipacksDir().resolve("repository"));
+
+				stage.newStage(PlatformConfig.FILENAME);
+				try (OutputStream stream = Files.newOutputStream(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME))) {
+					IOUtils.jsonToStream(PlatformConfig.createConfigForHome().toJson(), stream);
+				}
+			}
+		}
+
+		CLIPlatform platform = new CLIPlatform(logger, new PlatformConfig(IOUtils.jsonFromPath(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME)).getAsJsonObject()), currentSystem);
+		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
+
+		try {
+			new MultipacksCommand(platform).execute(args);
+		} catch (Exception e) {
+			System.out.println("An error occured:");
+			System.out.println("---");
+			FancyStackTrace.print(e, System.out, isDebug);
+
+			if (!isDebug) {
+				System.out.println("---");
+				System.out.println("Tip: Toggle stack traces by adding MULTIPACKS_DEBUG=true environment variable.");
+			}
+		}
 	}
 }

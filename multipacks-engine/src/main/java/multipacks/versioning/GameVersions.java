@@ -45,7 +45,7 @@ public class GameVersions {
 		VERSIONS.add(new VersionEntry(6, "1.16.2", "1.16.2"));
 		VERSIONS.add(new VersionEntry(7, ">=1.17", "<1.18"));
 		VERSIONS.add(new VersionEntry(8, ">=1.18", "<1.19"));
-		VERSIONS.add(new VersionEntry(9, ">=1.19", ">=1.19.2"));
+		VERSIONS.add(new VersionEntry(9, ">=1.19", "<=1.19.2"));
 
 		VERSIONS.add(new VersionEntry(12, ">=1.19.3", ">=1.19.3"));
 	}

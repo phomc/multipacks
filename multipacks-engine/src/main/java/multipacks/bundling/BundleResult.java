@@ -15,27 +15,52 @@
  */
 package multipacks.bundling;
 
-import java.util.HashMap;
-import java.util.function.Supplier;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.attribute.FileTime;
+import java.util.Collections;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import multipacks.postprocess.allocations.Allocator;
-import multipacks.vfs.VirtualFs;
+import multipacks.modifier.Modifier;
+import multipacks.utils.ResourcePath;
+import multipacks.vfs.Vfs;
 
+/**
+ * @author nahkd
+ *
+ */
 public class BundleResult {
-	private final HashMap<Class<?>, Object> transformResults = new HashMap<>();
-	public VirtualFs files;
+	public final Vfs contents;
+	protected Map<ResourcePath, Modifier> modifiers;
 
-	@SuppressWarnings("unchecked")
-	public <T> T getOrCreate(Class<T> clazz, Supplier<T> creator) {
-		if (clazz == Allocator.class) throw new IllegalArgumentException("Cannot take in Allocator class. Please extends Allocator.");
+	public BundleResult(Vfs contents) {
+		this.contents = contents;
+	}
 
-		Object obj = transformResults.get(clazz);
+	public Map<ResourcePath, Modifier> getModifiers() {
+		return Collections.unmodifiableMap(modifiers);
+	}
 
-		if (obj == null) {
-			obj = creator.get();
-			transformResults.put(clazz, obj);
+	public void writeZipData(OutputStream stream) throws IOException {
+		ZipOutputStream zip = new ZipOutputStream(stream, StandardCharsets.UTF_8);
+		FileTime bundleTime = FileTime.fromMillis(System.currentTimeMillis());
+		vfsAddZipEntry(contents, bundleTime, zip);
+		zip.finish();
+	}
+
+	private void vfsAddZipEntry(Vfs file, FileTime bundleTime, ZipOutputStream zip) throws IOException {
+		if (file.isDir()) {
+			for (Vfs child : file.listFiles()) vfsAddZipEntry(child, bundleTime, zip);
+		} else {
+			ZipEntry entry = new ZipEntry(file.getPathFromRoot().toString())
+					.setCreationTime(bundleTime)
+					.setLastModifiedTime(bundleTime);
+			zip.putNextEntry(entry);
+			zip.write(file.getContent());
+			zip.closeEntry();
 		}
-
-		return (T) obj;
 	}
 }

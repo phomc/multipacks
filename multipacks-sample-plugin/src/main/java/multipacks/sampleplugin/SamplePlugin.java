@@ -15,11 +15,21 @@
  */
 package multipacks.sampleplugin;
 
-import multipacks.plugins.MultipacksPlugin;
+import java.util.Arrays;
+import java.util.Collection;
 
-public class SamplePlugin implements MultipacksPlugin {
+import multipacks.platform.Platform;
+import multipacks.plugins.Plugin;
+import multipacks.repository.Repository;
+
+public class SamplePlugin extends Plugin {
 	@Override
-	public void onLoad() {
-		System.out.println("Hello world!");
+	public void onInit(Platform platform) {
+		platform.getLogger().info("Hello world! Sample plugin is loading...");
+	}
+
+	@Override
+	public Collection<Repository> getPluginRepositories() {
+		return Arrays.asList(repositoryFromPlugin("internalRepository"));
 	}
 }

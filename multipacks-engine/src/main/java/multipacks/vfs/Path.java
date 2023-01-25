@@ -30,6 +30,8 @@ import multipacks.utils.ResourcePath;
  *
  */
 public class Path {
+	public static final Path ROOT = new Path("");
+
 	private String[] segments;
 
 	/**
