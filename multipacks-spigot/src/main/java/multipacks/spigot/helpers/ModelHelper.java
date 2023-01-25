@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.spigot;
+package multipacks.spigot.helpers;
 
-import multipacks.postprocess.font.Glyph;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
+
+import multipacks.modifier.builtin.models.Model;
+import multipacks.utils.PlatformAPI;
 
 /**
- * Utility class for messing with Bungeecord Chat API (shipped with Spigot).
  * @author nahkd
  *
  */
-public class BungeeGlyphs {
-	/**
-	 * Convert custom font texture glyph to chat component builder. This method respect the glyph font id,
-	 * so you can have a dedicated font will all of your icons without interfering "minecraft:default" font.
-	 */
-	public static ComponentBuilder from(Glyph glyph) {
-		return new ComponentBuilder(String.valueOf(glyph.character)).font(glyph.fontId.toString());
+@PlatformAPI
+public class ModelHelper {
+	public static ItemStack createItemStack(Model model) {
+		return Bukkit.getItemFactory().createItemStack(model.item.itemId + "{CustomModelData:" + model.modelId + "}");
 	}
 }

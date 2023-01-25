@@ -2,33 +2,4 @@ name: Multipacks
 author: MangoPlex
 version: ${version}
 main: multipacks.spigot.MultipacksSpigot
-api-version: 1.18
-
-commands:
-  multipacks:
-    description: Multipacks main command
-    usage: "/multipacks"
-    permission: multipacks.admin.command
-    permission-message: "Multipacks Spigot ${version} by MangoPlex"
-
-permissions:
-  multipacks.admin.*:
-    description: Allow all permissions
-    default: op
-    children:
-      multipacks.admin.command: true
-      multipacks.admin.reload: true
-      multipacks.admin.rebuild: true
-      multipacks.admin.install: true
-  multipacks.admin.command:
-    description: Allow player to use /multipacks
-    default: false
-  multipacks.admin.reload:
-    description: Allow player to reload Multipacks Spigot configuration
-    default: false
-  multipacks.admin.rebuild:
-    description: Allow player to rebuild master pack
-    default: false
-  multipacks.admin.install:
-    description: Allow player to install pack to repository
-    default: false
+api-version: 1.14
