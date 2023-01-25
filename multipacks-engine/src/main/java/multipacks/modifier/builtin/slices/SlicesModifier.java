@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier.builtin.atlases;
+package multipacks.modifier.builtin.slices;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -40,8 +40,8 @@ import multipacks.vfs.Vfs;
  * @author nahkd
  *
  */
-public class AtlasesModifier extends BuiltinModifierBase<Void> {
-	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/atlases");
+public class SlicesModifier extends BuiltinModifierBase<Void> {
+	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/slices");
 
 	public static final String FIELD_FILE = "file";
 	public static final String FIELD_TEMPLATE = "template";
@@ -88,6 +88,6 @@ public class AtlasesModifier extends BuiltinModifierBase<Void> {
 	}
 
 	public static void registerTo(ModifiersAccess access) {
-		access.registerModifier(ID, AtlasesModifier::new);
+		access.registerModifier(ID, SlicesModifier::new);
 	}
 }

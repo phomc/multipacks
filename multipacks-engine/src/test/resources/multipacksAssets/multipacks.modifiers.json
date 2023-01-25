@@ -25,7 +25,7 @@
 		]
 	},
 	{
-		"type": "multipacks:builtin/atlases",
+		"type": "multipacks:builtin/slices",
 		"config": [
 			{
 				"file": "assets/multipacks/textures/sample_atlas.png",
