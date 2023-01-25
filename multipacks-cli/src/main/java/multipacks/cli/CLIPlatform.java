@@ -41,8 +41,6 @@ public class CLIPlatform implements Platform {
 	private Map<ResourcePath, Deserializer<Modifier>> modifierDeserializers = new HashMap<>();
 
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
-	private boolean pluginsLoadFinalized = false;
-
 	private List<Repository> repositories = new ArrayList<>();
 	private LocalRepository installRepository;
 
@@ -57,26 +55,17 @@ public class CLIPlatform implements Platform {
 	}
 
 	public void loadPlugin(ResourcePath id, Plugin plugin) {
-		if (pluginsLoadFinalized) throw new IllegalStateException("Plugins registration is closed");
 		if (plugins.containsKey(id)) throw new IllegalArgumentException("Plugin is already loaded: " + id);
 
 		try {
 			plugin.onInit(this);
+			Collection<Repository> repos = plugin.getPluginRepositories();
+			if (repos != null) repositories.addAll(repos);
 		} catch (Exception e) {
 			throw new RuntimeException("Plugin load failed: " + id, e);
 		}
 
 		plugins.put(id, plugin);
-	}
-
-	public void finalizePluginsLoad() {
-		if (pluginsLoadFinalized) return;
-		pluginsLoadFinalized = true;
-
-		for (Plugin p : plugins.values()) {
-			Collection<Repository> repos = p.getPluginRepositories();
-			if (repos != null) repositories.addAll(repos);
-		}
 	}
 
 	public LocalRepository getInstallRepository() {

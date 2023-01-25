@@ -75,6 +75,12 @@ public class DownloadCommand extends Command {
 			}
 		}
 
+		try {
+			Files.createDirectories(destDir);
+		} catch (IOException e) {
+			throw new CommandException("Failed to create " + destDir, e);
+		}
+
 		System.out.println("Downloading " + packName + " version " + packVersion + "...");
 
 		try (LoggingStage stage = platform.getLogger().newStage("Download", "Initialize")) {
