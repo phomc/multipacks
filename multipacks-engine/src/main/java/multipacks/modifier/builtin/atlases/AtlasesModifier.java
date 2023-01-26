@@ -15,12 +15,11 @@
  */
 package multipacks.modifier.builtin.atlases;
 
-import java.awt.image.BufferedImage;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.imageio.ImageIO;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -28,53 +27,45 @@ import com.google.gson.JsonSyntaxException;
 
 import multipacks.modifier.ModifiersAccess;
 import multipacks.modifier.builtin.BuiltinModifierBase;
+import multipacks.modifier.builtin.atlases.sources.AtlasSource;
 import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
-import multipacks.vfs.Path;
+import multipacks.utils.io.IOUtils;
 import multipacks.vfs.Vfs;
 
 /**
+ * <b>Note:</b> This is not something like "cutting from image and export that area to another image file". This one
+ * is about atlases generation (generate atlases inside {@code assets/namespace/atlases}).<br> 
  * @author nahkd
  *
  */
 public class AtlasesModifier extends BuiltinModifierBase<Void> {
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/atlases");
 
-	public static final String FIELD_FILE = "file";
-	public static final String FIELD_TEMPLATE = "template";
+	public static final String FIELD_ATLAS = "atlas";
+	public static final String FIELD_SOURCE_TYPE = "sourceType";
+
+	public final Map<ResourcePath, Atlas> atlases = new HashMap<>();
 
 	@Override
 	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, Void data, ModifiersAccess access) {
 		if (config.isJsonObject()) {
 			JsonObject obj = config.getAsJsonObject();
 
-			if (obj.has(FIELD_FILE)) {
-				Path filePath = new Path(obj.get(FIELD_FILE).getAsString());
-				Vfs file = scoped.get(filePath);
-				Template template = Template.resolveTemplate(scoped, null, Selects.nonNull(obj.get(FIELD_TEMPLATE), Messages.missingFieldAny(FIELD_TEMPLATE)));
+			if (obj.has(FIELD_ATLAS)) {
+				ResourcePath atlasId = new ResourcePath(obj.get(FIELD_ATLAS).getAsString());
+				Atlas atlas = atlases.get(atlasId);
+				if (atlas == null) atlases.put(atlasId, atlas = new Atlas(atlasId));
 
-				try (InputStream srcStream = file.getInputStream()) {
-					BufferedImage src = ImageIO.read(srcStream);
-					int scale = template.scale;
+				String sourceType = Selects.nonNull(obj.get(FIELD_SOURCE_TYPE), Messages.missingFieldAny(FIELD_SOURCE_TYPE)).getAsString();
+				AtlasSource source = AtlasSource.sourceFromConfig(sourceType, obj);
+				if (source == null) throw new JsonSyntaxException("Unknown atlas source type: " + sourceType);
 
-					for (Part part : template.parts) {
-						BufferedImage out = part.region.slice(src, scale);
-						Path destPath = new Path(part.applyNameTemplate(filePath));
-						Vfs destFile = file.getParent().touch(destPath);
-
-						try (OutputStream destStream = destFile.getOutputStream()) {
-							ImageIO.write(out, "PNG", destStream);
-						}
-					}
-				} catch (IOException e) {
-					throw new RuntimeException("Failed to apply atlases modifier", e);
-				}
-
-				file.getParent().delete(file.getName());
-			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_FILE));
+				atlas.sources.add(source);
+			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ATLAS));
 		}
 	}
 
@@ -85,9 +76,25 @@ public class AtlasesModifier extends BuiltinModifierBase<Void> {
 
 	@Override
 	public void finalizeModifier(Vfs contents, ModifiersAccess access) {
+		for (Atlas atlas : atlases.values()) {
+			Vfs atlasFile = contents.touch(atlas.getTargetPath());
+			try {
+				IOUtils.jsonToVfs(atlas.toOutput(), atlasFile);
+			} catch (IOException e) {
+				throw new RuntimeException("An error occured while writing atlas '" + atlas.id + "'", e);
+			}
+		}
+	}
+
+	@Override
+	public void serializeModifier(DataOutput output, ModifiersAccess access) throws IOException {
+	}
+
+	public static AtlasesModifier deserializeModifier(DataInput input) throws IOException {
+		return new AtlasesModifier();
 	}
 
 	public static void registerTo(ModifiersAccess access) {
-		access.registerModifier(ID, AtlasesModifier::new);
+		access.registerModifier(ID, AtlasesModifier::new, AtlasesModifier::deserializeModifier);
 	}
 }

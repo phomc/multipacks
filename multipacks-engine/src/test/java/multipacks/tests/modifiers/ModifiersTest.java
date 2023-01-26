@@ -25,6 +25,7 @@ import multipacks.modifier.Modifier;
 import multipacks.modifier.builtin.atlases.AtlasesModifier;
 import multipacks.modifier.builtin.glyphs.GlyphsModifier;
 import multipacks.modifier.builtin.models.ModelsModifier;
+import multipacks.modifier.builtin.slices.SlicesModifier;
 import multipacks.packs.Pack;
 import multipacks.tests.TestPlatform;
 import multipacks.tests.TestUtils;
@@ -66,11 +67,11 @@ class ModifiersTest {
 	}
 
 	@Test
-	void testAtlasesModifier() {
+	void testSlicesModifier() {
 		BundleResult result = obtainBundle();
-		Modifier mod = result.getModifiers().get(AtlasesModifier.ID);
+		Modifier mod = result.getModifiers().get(SlicesModifier.ID);
 
-		if (mod instanceof AtlasesModifier) {
+		if (mod instanceof SlicesModifier) {
 			Vfs content = result.contents;
 			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_up.png")));
 			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_down.png")));
@@ -78,6 +79,17 @@ class ModifiersTest {
 			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_east.png")));
 			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_south.png")));
 			assertNotNull(content.get(new Path("assets/multipacks/textures/sample_atlas_west.png")));
+		} else fail("Not an instance of SlicesModifier");
+	}
+
+	@Test
+	void testAtlasesModifier() {
+		BundleResult result = obtainBundle();
+		Modifier mod = result.getModifiers().get(AtlasesModifier.ID);
+
+		if (mod instanceof AtlasesModifier amod) {
+			assertNotNull(amod.atlases.get(new ResourcePath("minecraft:armor_trims")));
+			assertNotNull(amod.atlases.get(new ResourcePath("sample:sample_atlas")));
 		} else fail("Not an instance of AtlasesModifier");
 	}
 }
