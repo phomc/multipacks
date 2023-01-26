@@ -32,5 +32,36 @@
 				"template": {"include": "assets/multipacks/textures/atlas_template.json"}
 			}
 		]
+	},
+	{
+		"type": "multipacks:builtin/atlases",
+		"config": [
+			{
+				"atlas": "minecraft:armor_trims",
+				"sourceType": "paletted_permutations",
+				"textures": [
+					"multipacks:trims/models/armor/tater",
+					"multipacks:trims/models/armor/tater_leggings"
+				],
+				"paletteKey": "trims/color_palettes/trim_palette",
+				"permutations": {
+					"quartz": "trims/color_palettes/quartz",
+					"iron": "trims/color_palettes/iron",
+					"gold": "trims/color_palettes/gold",
+					"diamond": "trims/color_palettes/diamond",
+					"netherite": "trims/color_palettes/netherite",
+					"redstone": "trims/color_palettes/redstone",
+					"copper": "trims/color_palettes/copper",
+					"emerald": "trims/color_palettes/emerald",
+					"lapis": "trims/color_palettes/lapis",
+					"amethyst": "trims/color_palettes/amethyst"
+				}
+			},
+			{
+				"atlas": "sample:sample_atlas",
+				"sourceType": "single",
+				"resource": "assets/multipacks/textures/sample_atlas_north"
+			}
+		]
 	}
 ]
