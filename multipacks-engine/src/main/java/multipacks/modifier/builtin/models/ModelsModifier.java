@@ -49,7 +49,7 @@ public class ModelsModifier extends Modifier<multipacks.modifier.builtin.models.
 		public ResourcePath named;
 		public String predicateType;
 
-		// TODO: Return value in config object
+		public ModelOverride overrideResult;
 	}
 
 	public static final String ERROR_MISSING_MODEL_A = "Missing model JSON for ";
@@ -104,6 +104,7 @@ public class ModelsModifier extends Modifier<multipacks.modifier.builtin.models.
 			}
 
 			if (config.named != null) namedOverrides.put(config.named, override);
+			config.overrideResult = override;
 		} catch (IOException e) {
 			throw new RuntimeException("An error occured", e);
 		}
