@@ -15,42 +15,53 @@
  */
 package multipacks.cli;
 
-import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import multipacks.logging.Logger;
 import multipacks.modifier.Modifier;
+import multipacks.modifier.ModifierInfo;
 import multipacks.platform.Platform;
-import multipacks.platform.PlatformConfig;
 import multipacks.plugins.Plugin;
 import multipacks.repository.LocalRepository;
 import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
-import multipacks.utils.io.Deserializer;
+import multipacks.versioning.Version;
+import multipacks.vfs.Vfs;
 
 public class CLIPlatform implements Platform {
 	private Logger logger;
-	private Map<ResourcePath, Supplier<Modifier>> modifierCtors = new HashMap<>();
-	private Map<ResourcePath, Deserializer<Modifier>> modifierDeserializers = new HashMap<>();
+	private Map<ResourcePath, ModifierInfo<?, ?, ?>> modifiers;
 
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
 	private List<Repository> repositories = new ArrayList<>();
 	private LocalRepository installRepository;
+	private Path gameDir;
 
-	public CLIPlatform(Logger logger, PlatformConfig config, SystemEnum system) {
+	public CLIPlatform(Logger logger, CLIPlatformConfig config, SystemEnum system) {
 		this.logger = logger;
 		config.collectRepositories(repo -> repositories.add(repo), system.getMultipacksDir());
 
 		if (config.installRepository != null) {
 			logger.debug("Install destination is {}", system.getMultipacksDir().resolve(config.installRepository).toString());
 			installRepository = new LocalRepository(system.getMultipacksDir().resolve(config.installRepository));
+		}
+
+		if (config.gameDir != null) {
+			logger.debug("Game directory is {}", config.gameDir);
+			gameDir = new File(config.gameDir).toPath();
 		}
 	}
 
@@ -72,6 +83,30 @@ public class CLIPlatform implements Platform {
 		return installRepository;
 	}
 
+	public Path getGameJar(Version version) {
+		if (gameDir == null) throw new IllegalStateException("Game installation folder is not defined in .multipacks/multipacks.config.json");
+		return gameDir.resolve("versions").resolve(version.toStringNoPrefix()).resolve(version.toStringNoPrefix() + ".jar");
+	}
+
+	public void getGameJarFile(Vfs output, multipacks.vfs.Path path) {
+		Path jar = getGameJar(new Version("1.19.3"));
+		String[] segments = path.getSegments();
+
+		try (FileSystem fs = FileSystems.newFileSystem(jar)) {
+			Path current = fs.getPath(segments[0]);
+			for (int i = 1; i < segments.length; i++) current = current.resolve(segments[i]);
+
+			Vfs file = output.touch(path);
+			try (InputStream inStream = Files.newInputStream(current)) {
+				try (OutputStream outStream = file.getOutputStream()) {
+					inStream.transferTo(outStream);
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("An error occured", e);
+		}
+	}
+
 	@Override
 	public Collection<Repository> getRepositories() {
 		return Collections.unmodifiableCollection(repositories);
@@ -83,29 +118,18 @@ public class CLIPlatform implements Platform {
 	}
 
 	@Override
-	public Modifier createModifier(ResourcePath id) {
-		Supplier<Modifier> ctor = modifierCtors.get(id);
-		if (ctor != null) return ctor.get();
-		return null;
-	}
-
-	@Override
-	public Modifier deserializeModifier(ResourcePath id, DataInput input) throws IOException {
-		Deserializer<Modifier> deserializer = modifierDeserializers.get(id);
-		if (deserializer != null) return deserializer.deserialize(input);
-		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends Modifier> void registerModifier(ResourcePath id, Supplier<T> supplier, Deserializer<T> deserializer) {
-		if (modifierCtors.containsKey(id)) throw new IllegalArgumentException("Modifier is already registered: " + id);
-		modifierCtors.put(id, (Supplier<Modifier>) supplier);
-		modifierDeserializers.put(id, (Deserializer<Modifier>) deserializer);
+	public <C, X, T extends Modifier<C, X>> void registerModifier(ResourcePath id, ModifierInfo<C, X, T> info) {
+		if (modifiers.containsKey(id)) throw new IllegalArgumentException("Modifier is already registered: " + id);
+		modifiers.put(id, info);
 	}
 
 	@Override
 	public List<ResourcePath> getRegisteredModifiers() {
-		return new ArrayList<>(modifierCtors.keySet());
+		return new ArrayList<>(modifiers.keySet());
+	}
+
+	@Override
+	public ModifierInfo<?, ?, ?> getModifierInfo(ResourcePath id) {
+		return modifiers.get(id);
 	}
 }

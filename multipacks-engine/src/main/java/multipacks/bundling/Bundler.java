@@ -21,9 +21,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 import com.google.gson.GsonBuilder;
@@ -40,7 +38,6 @@ import multipacks.repository.RepositoriesAccess;
 import multipacks.repository.Repository;
 import multipacks.repository.query.PackQuery;
 import multipacks.utils.Messages;
-import multipacks.utils.ResourcePath;
 import multipacks.versioning.Version;
 import multipacks.vfs.Vfs;
 
@@ -80,9 +77,10 @@ public class Bundler {
 				.setModifiersAccess(platform);
 	}
 
-	private Vfs bundleWithoutFinish(Pack pack, Vfs licensesStore, Vfs packFinalOutput, Map<ResourcePath, Modifier> modifiersMap) {
+	private BundleContext bundleWithoutFinish(Pack pack, Vfs licensesStore, Vfs packFinalOutput) {
 		// TODO: Return CompletableFuture instead
 		Vfs content = Vfs.createVirtualRoot();
+		BundleContext ctx = new BundleContext(this, pack, content);
 
 		if (pack.getIndex().dependencies.size() > 0) {
 			if (repositories == null) throw new NullPointerException("Repositories accessor is missing for this Bundler");
@@ -103,7 +101,7 @@ public class Bundler {
 						}
 
 						Pack dep = repo.obtain(latest).get();
-						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore, null, modifiersMap), content);
+						Vfs.copyRecursive(bundleWithoutFinish(dep, licensesStore, null).content, content);
 					} catch (ExecutionException | InterruptedException e) {
 						throw new RuntimeException(e);
 					}
@@ -124,7 +122,7 @@ public class Bundler {
 		JsonArray modifiersConfig = pack.getModifiersConfig();
 		if (modifiersConfig != null) {
 			if (modifiers == null) throw new NullPointerException("Modifiers accessor is missing for this Bundler");
-			Modifier.applyModifiers(pack, content, modifiersConfig, modifiers, modifiersMap);
+			Modifier.applyModifiers(ctx, modifiersConfig);
 		}
 
 		// Licenses & pack.png
@@ -154,24 +152,22 @@ public class Bundler {
 			}
 		}
 
-		return content;
+		return ctx;
 	}
 
 	public BundleResult bundle(Pack pack, Version targetGameVersion) {
-		HashMap<ResourcePath, Modifier> modifiersMap = new HashMap<>();
-
 		Vfs licenses = Vfs.createVirtualRoot();
 		Vfs finalOutput = Vfs.createVirtualRoot();
-		Vfs content = bundleWithoutFinish(pack, licenses, finalOutput, modifiersMap);
+		BundleContext ctx = bundleWithoutFinish(pack, licenses, finalOutput);
 
-		Vfs.copyRecursive(licenses, content);
-		Vfs.copyRecursive(finalOutput, content);
+		Vfs.copyRecursive(licenses, ctx.content);
+		Vfs.copyRecursive(finalOutput, ctx.content);
 
-		BundleResult result = new BundleResult(content);
-		result.modifiers = modifiersMap;
-		for (Modifier modifier : modifiersMap.values()) modifier.finalizeModifier(content, modifiers);
+		BundleResult result = new BundleResult(ctx.content);
+		result.modifiers = ctx.modifiers;
+		for (Modifier<?, ?> modifier : ctx.modifiers.values()) modifier.finalizeModifier(ctx.content, modifiers);
 
-		Vfs packMcmeta = content.touch("pack.mcmeta");
+		Vfs packMcmeta = ctx.content.touch("pack.mcmeta");
 		try (OutputStream stream = packMcmeta.getOutputStream()) {
 			JsonObject json = pack.getIndex().buildPackMcmeta(targetGameVersion);
 			JsonWriter writer = new JsonWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));

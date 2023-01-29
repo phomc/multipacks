@@ -13,25 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier.builtin.models;
+package multipacks.modifier;
+
+import java.util.function.Supplier;
+
+import multipacks.utils.io.Deserializer;
 
 /**
- * Represent a model that's attached to an item. You can obtain the item with custom model by giving yourself
- * an item with id = {@link ItemModels#itemId} and {@code CustomModelData} = {@link #modelId}.
  * @author nahkd
  *
  */
-public class Model {
-	public final ItemModels item;
-	public final int modelId;
+public class ModifierInfo<C, X, T extends Modifier<C, X>> {
+	public Supplier<T> supplier;
+	public Deserializer<T> deserializer;
 
-	public Model(ItemModels item, int modelId) {
-		this.item = item;
-		this.modelId = modelId;
+	public ModifierInfo<C, X, T> setConstructor(Supplier<T> ctor) {
+		supplier = ctor;
+		return this;
 	}
 
-	@Override
-	public String toString() {
-		return item.itemId + " -> #" + modelId;
+	public ModifierInfo<C, X, T> setDeserializer(Deserializer<T> deserializer) {
+		this.deserializer = deserializer;
+		return this;
 	}
 }

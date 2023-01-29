@@ -13,24 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier.builtin.models;
+package multipacks.modifier.builtin.models.overrides;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.gson.JsonObject;
 
+import multipacks.modifier.builtin.models.BaseItemModel;
 import multipacks.utils.ResourcePath;
 
 /**
+ * This model override is for predicates that Multipacks doesn't know.
  * @author nahkd
  *
  */
-public class ItemModels {
-	public final ResourcePath itemId;
-	public final Map<ResourcePath, Model> models = new HashMap<>();
+public class UnknownModelOverride extends ModelOverride {
+	public final String name;
+	public final double value;
 
-	protected int currentIdx = 1;
+	public UnknownModelOverride(BaseItemModel base, ResourcePath modelPath, String name, double value) {
+		super(base, modelPath);
+		this.name = name;
+		this.value = value;
+	}
 
-	public ItemModels(ResourcePath itemId) {
-		this.itemId = itemId;
+	@Override
+	public JsonObject toPredicateJson() {
+		JsonObject predicate = new JsonObject();
+		predicate.addProperty(name, value);
+		return predicate;
 	}
 }

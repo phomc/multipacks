@@ -47,6 +47,7 @@ public class MultipacksCommand extends Command {
 	@Subcommand("uninstall") public final UninstallCommand uninstall;
 	@Subcommand("download") public final DownloadCommand download;
 	@Subcommand("remote") public final RemoteCommand remote;
+	@Subcommand("include") public final IncludeCommand include;
 
 	public MultipacksCommand(CLIPlatform platform) {
 		this.platform = platform;
@@ -58,6 +59,7 @@ public class MultipacksCommand extends Command {
 		this.uninstall = new UninstallCommand(this);
 		this.download = new DownloadCommand(this);
 		this.remote = new RemoteCommand(this);
+		this.include = new IncludeCommand(this);
 
 		helpName = "java multipacks.cli.Main";
 		helpDescription = "Multipacks CLI";

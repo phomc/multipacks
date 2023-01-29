@@ -15,8 +15,6 @@
  */
 package multipacks.modifier;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -28,12 +26,19 @@ import multipacks.utils.io.Deserializer;
  *
  */
 public interface ModifiersAccess {
-	Modifier createModifier(ResourcePath id);
-	Modifier deserializeModifier(ResourcePath id, DataInput input) throws IOException;
-	<T extends Modifier> void registerModifier(ResourcePath id, Supplier<T> supplier, Deserializer<T> deserializer);
+	ModifierInfo<?, ?, ?> getModifierInfo(ResourcePath id);
+	<C, X, T extends Modifier<C, X>> void registerModifier(ResourcePath id, ModifierInfo<C, X, T> info);
+
+	@SuppressWarnings("unchecked")
+	default <C, X, T extends Modifier<C, X>> void registerModifier(ResourcePath id, Supplier<T> supplier, Deserializer<T> deserializer) {
+		registerModifier(id, new ModifierInfo<>()
+				.setConstructor((Supplier<Modifier<Object, Object>>) supplier)
+				.setDeserializer((Deserializer<Modifier<Object, Object>>) deserializer));
+	}
+
 	List<ResourcePath> getRegisteredModifiers();
 
-	default void registerModifier(ResourcePath id, Supplier<Modifier> supplier) {
+	default <C, X> void registerModifier(ResourcePath id, Supplier<Modifier<C, X>> supplier) {
 		registerModifier(id, supplier, input -> supplier.get());
 	}
 }

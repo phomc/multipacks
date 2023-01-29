@@ -30,9 +30,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import multipacks.bundling.BundleContext;
+import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
-import multipacks.modifier.builtin.BuiltinModifierBase;
-import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Holder;
 import multipacks.utils.Messages;
@@ -46,7 +46,25 @@ import multipacks.vfs.Vfs;
  * @author nahkd
  *
  */
-public class GlyphsModifier extends BuiltinModifierBase<List<GlyphsAllocation>> {
+public class GlyphsModifier extends Modifier<multipacks.modifier.builtin.glyphs.GlyphsModifier.Config, multipacks.modifier.builtin.glyphs.GlyphsModifier.Context> {
+	public static class Config {
+		public ConfigType type;
+		public List<GlyphsAllocation> allocations;
+		public ResourcePath id;
+		public Path bitmap;
+		public int space, ascent, height;
+	}
+
+	public static class Context {
+		public final List<GlyphsAllocation> allocations = new ArrayList<>();
+	}
+
+	public static enum ConfigType {
+		ALLOCATE,
+		BITMAP,
+		SPACE
+	}
+
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/glyphs");
 
 	public static final String ERROR_OUT_OF_SPACES = "Out of spaces for next character";
@@ -62,6 +80,88 @@ public class GlyphsModifier extends BuiltinModifierBase<List<GlyphsAllocation>> 
 
 	public final HashMap<ResourcePath, FontInfo> fonts = new HashMap<>();
 	public final HashMap<ResourcePath, Glyph> glyphs = new HashMap<>();
+
+	@Override
+	public Config configure(JsonObject json) {
+		Config config = new Config();
+
+		if (json.has(FIELD_ALLOCATE)) {
+			config.type = ConfigType.ALLOCATE;
+			config.allocations = new ArrayList<>();
+			JsonArray arr = json.get(FIELD_ALLOCATE).getAsJsonArray();
+
+			for (JsonElement e : arr) {
+				GlyphsAllocation allocation = new GlyphsAllocation(fonts, e.getAsJsonObject());
+				config.allocations.add(allocation);
+			}
+		} else if (json.has(FIELD_ID)) {
+			config.id = new ResourcePath(json.get(FIELD_ID).getAsString());
+
+			if (json.has(FIELD_BITMAP)) {
+				config.type = ConfigType.BITMAP;
+				config.bitmap = new Path(Selects.nonNull(json.get(FIELD_BITMAP), Messages.missingFieldAny(FIELD_BITMAP)).getAsString());
+				config.ascent = Selects.nonNull(json.get(FIELD_ASCENT), Messages.missingFieldAny(FIELD_ASCENT)).getAsInt();
+				config.height = Selects.getChain(json.get(FIELD_HEIGHT), j -> j.getAsInt(), 8);
+			} else if (json.has(FIELD_SPACE)) {
+				config.type = ConfigType.SPACE;
+				config.space = json.get(FIELD_SPACE).getAsInt();
+			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_BITMAP, FIELD_SPACE));
+		} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ALLOCATE, FIELD_ID));
+
+		return config;
+	}
+
+	@Override
+	public Context createContext() {
+		return new Context();
+	}
+
+	@Override
+	public void applyModifier(BundleContext context, Path cwd, Config config, Context ctx) {
+		if (config.type == ConfigType.ALLOCATE) {
+			ctx.allocations.addAll(config.allocations);
+		} else if (config.type == ConfigType.BITMAP) {
+			Vfs bitmapFile = context.content.get(cwd.join(config.bitmap));
+
+			// TODO: remap bitmap file to somewhere...
+			// assets/<namespace>/textures/font/multipacks_<ID>.png
+			// <namespace>:font/multipacks_<ID>.png
+			Vfs bitmapDest = context.content.mkdir("assets").mkdir(config.id.namespace).mkdir("textures").mkdir("font").touch("multipacks_" + config.id.path + ".png");
+			try (InputStream in = bitmapFile.getInputStream()) {
+				try (OutputStream out = bitmapDest.getOutputStream()) {
+					in.transferTo(out);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to copy from " + bitmapFile + " to " + bitmapDest, e);
+			}
+
+			bitmapFile.getParent().delete(bitmapFile.getName());
+
+			Holder<FontInfo> fontPtr = new Holder<>(null);
+			char ch = findNextSuitableChar(ctx.allocations, fontPtr);
+			Glyph g = new Glyph(config.id, fontPtr.value, ch);
+			glyphs.put(config.id, g);
+
+			JsonObject bitmapProvider = new JsonObject();
+			bitmapProvider.addProperty("type", "bitmap");
+			bitmapProvider.addProperty("file", config.id.namespace + ":font/multipacks_" + config.id.path + ".png");
+			bitmapProvider.addProperty("ascent", config.ascent);
+			bitmapProvider.addProperty("height", config.height);
+
+			JsonArray bitmapChars = new JsonArray();
+			bitmapChars.add(ch);
+			bitmapProvider.add("chars", bitmapChars);
+
+			fontPtr.value.providers.add(bitmapProvider);
+		} else if (config.type == ConfigType.SPACE) {
+			Holder<FontInfo> fontPtr = new Holder<>(null);
+			char ch = findNextSuitableChar(ctx.allocations, fontPtr);
+			Glyph g = new Glyph(config.id, fontPtr.value, ch);
+			glyphs.put(config.id, g);
+
+			fontPtr.value.spaceWidths.put(ch, config.space);
+		}
+	}
 
 	@Override
 	public void finalizeModifier(Vfs contents, ModifiersAccess access) {
@@ -137,76 +237,6 @@ public class GlyphsModifier extends BuiltinModifierBase<List<GlyphsAllocation>> 
 
 	public static void registerTo(ModifiersAccess access) {
 		access.registerModifier(ID, GlyphsModifier::new, GlyphsModifier::deserializeModifier);
-	}
-
-	@Override
-	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, List<GlyphsAllocation> allocations, ModifiersAccess access) {
-		if (config.isJsonObject()) {
-			JsonObject obj = config.getAsJsonObject();
-
-			if (obj.has(FIELD_ALLOCATE)) {
-				JsonArray arr = obj.get(FIELD_ALLOCATE).getAsJsonArray();
-
-				for (JsonElement e : arr) {
-					GlyphsAllocation allocation = new GlyphsAllocation(fonts, e.getAsJsonObject());
-					allocations.add(allocation);
-				}
-			} else if (obj.has(FIELD_ID)) {
-				ResourcePath id = new ResourcePath(obj.get(FIELD_ID).getAsString());
-
-				if (obj.has(FIELD_BITMAP)) {
-					Vfs bitmapFile = scoped.get(new Path(Selects.nonNull(obj.get(FIELD_BITMAP), Messages.missingFieldAny(FIELD_BITMAP)).getAsString()));
-					int ascent = Selects.nonNull(obj.get(FIELD_ASCENT), Messages.missingFieldAny(FIELD_ASCENT)).getAsInt();
-					int height = Selects.getChain(obj.get(FIELD_HEIGHT), j -> j.getAsInt(), 8);
-
-					// TODO: remap bitmap file to somewhere...
-					// assets/<namespace>/textures/font/multipacks_<ID>.png
-					// <namespace>:font/multipacks_<ID>.png
-					Vfs bitmapDest = root.mkdir("assets").mkdir(id.namespace).mkdir("textures").mkdir("font").touch("multipacks_" + id.path + ".png");
-					try (InputStream in = bitmapFile.getInputStream()) {
-						try (OutputStream out = bitmapDest.getOutputStream()) {
-							in.transferTo(out);
-						}
-					} catch (IOException e) {
-						throw new RuntimeException("Failed to copy from " + bitmapFile + " to " + bitmapDest, e);
-					}
-
-					bitmapFile.getParent().delete(bitmapFile.getName());
-
-					Holder<FontInfo> fontPtr = new Holder<>(null);
-					char ch = findNextSuitableChar(allocations, fontPtr);
-					Glyph g = new Glyph(id, fontPtr.value, ch);
-					glyphs.put(id, g);
-
-					JsonObject bitmapProvider = new JsonObject();
-					bitmapProvider.addProperty("type", "bitmap");
-					bitmapProvider.addProperty("file", id.namespace + ":font/multipacks_" + id.path + ".png");
-					bitmapProvider.addProperty("ascent", ascent);
-					bitmapProvider.addProperty("height", height);
-
-					JsonArray bitmapChars = new JsonArray();
-					bitmapChars.add(ch);
-					bitmapProvider.add("chars", bitmapChars);
-
-					fontPtr.value.providers.add(bitmapProvider);
-				} else if (obj.has(FIELD_SPACE)) {
-					int width = obj.get(FIELD_SPACE).getAsInt();
-
-					Holder<FontInfo> fontPtr = new Holder<>(null);
-					char ch = findNextSuitableChar(allocations, fontPtr);
-					Glyph g = new Glyph(id, fontPtr.value, ch);
-					glyphs.put(id, g);
-
-					fontPtr.value.spaceWidths.put(ch, width);
-				} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_BITMAP, FIELD_SPACE));
-
-			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ALLOCATE, FIELD_ID));
-		}
-	}
-
-	@Override
-	protected List<GlyphsAllocation> createLocalData() {
-		return new ArrayList<>();
 	}
 
 	private char findNextSuitableChar(List<GlyphsAllocation> allocations, Holder<FontInfo> fontPtr) {
