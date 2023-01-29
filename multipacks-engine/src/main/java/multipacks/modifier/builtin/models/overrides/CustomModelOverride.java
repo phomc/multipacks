@@ -13,24 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier.builtin.models;
+package multipacks.modifier.builtin.models.overrides;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.gson.JsonObject;
 
+import multipacks.modifier.builtin.models.BaseItemModel;
 import multipacks.utils.ResourcePath;
 
 /**
  * @author nahkd
  *
  */
-public class ItemModels {
-	public final ResourcePath itemId;
-	public final Map<ResourcePath, Model> models = new HashMap<>();
+public class CustomModelOverride extends ModelOverride {
+	public static final String PREDICATE_TYPE = "custom_model_data";
 
-	protected int currentIdx = 1;
+	public final int modelId;
 
-	public ItemModels(ResourcePath itemId) {
-		this.itemId = itemId;
+	public CustomModelOverride(BaseItemModel base, ResourcePath modelPath, int modelId) {
+		super(base, modelPath);
+		this.modelId = modelId;
+	}
+
+	@Override
+	public JsonObject toPredicateJson() {
+		JsonObject predicate = new JsonObject();
+		predicate.addProperty(PREDICATE_TYPE, modelId);
+		return predicate;
 	}
 }
