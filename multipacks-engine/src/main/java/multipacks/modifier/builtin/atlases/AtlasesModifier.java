@@ -21,19 +21,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import multipacks.bundling.BundleContext;
+import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
-import multipacks.modifier.builtin.BuiltinModifierBase;
 import multipacks.modifier.builtin.atlases.sources.AtlasSource;
-import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 import multipacks.utils.io.IOUtils;
+import multipacks.vfs.Path;
 import multipacks.vfs.Vfs;
 
 /**
@@ -42,7 +42,12 @@ import multipacks.vfs.Vfs;
  * @author nahkd
  *
  */
-public class AtlasesModifier extends BuiltinModifierBase<Void> {
+public class AtlasesModifier extends Modifier<multipacks.modifier.builtin.atlases.AtlasesModifier.Config, Void> {
+	public static class Config {
+		public ResourcePath atlasId;
+		public AtlasSource source;
+	}
+
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/atlases");
 
 	public static final String FIELD_ATLAS = "atlas";
@@ -51,27 +56,30 @@ public class AtlasesModifier extends BuiltinModifierBase<Void> {
 	public final Map<ResourcePath, Atlas> atlases = new HashMap<>();
 
 	@Override
-	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, Void data, ModifiersAccess access) {
-		if (config.isJsonObject()) {
-			JsonObject obj = config.getAsJsonObject();
+	public Config configure(JsonObject json) {
+		Config config = new Config();
 
-			if (obj.has(FIELD_ATLAS)) {
-				ResourcePath atlasId = new ResourcePath(obj.get(FIELD_ATLAS).getAsString());
-				Atlas atlas = atlases.get(atlasId);
-				if (atlas == null) atlases.put(atlasId, atlas = new Atlas(atlasId));
+		if (json.has(FIELD_ATLAS)) {
+			config.atlasId = new ResourcePath(json.get(FIELD_ATLAS).getAsString());
 
-				String sourceType = Selects.nonNull(obj.get(FIELD_SOURCE_TYPE), Messages.missingFieldAny(FIELD_SOURCE_TYPE)).getAsString();
-				AtlasSource source = AtlasSource.sourceFromConfig(sourceType, obj);
-				if (source == null) throw new JsonSyntaxException("Unknown atlas source type: " + sourceType);
+			String sourceType = Selects.nonNull(json.get(FIELD_SOURCE_TYPE), Messages.missingFieldAny(FIELD_SOURCE_TYPE)).getAsString();
+			config.source = AtlasSource.sourceFromConfig(sourceType, json);
+			if (config.source == null) throw new JsonSyntaxException("Unknown atlas source type: " + sourceType);
+		} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ATLAS));
 
-				atlas.sources.add(source);
-			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_ATLAS));
-		}
+		return config;
 	}
 
 	@Override
-	protected Void createLocalData() {
+	public Void createContext() {
 		return null;
+	}
+
+	@Override
+	public void applyModifier(BundleContext context, Path cwd, Config config, Void modContext) {
+		Atlas atlas = atlases.get(config.atlasId);
+		if (atlas == null) atlases.put(config.atlasId, atlas = new Atlas(config.atlasId));
+		atlas.sources.add(config.source);
 	}
 
 	@Override

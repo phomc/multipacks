@@ -21,16 +21,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import multipacks.bundling.BundleContext;
+import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
-import multipacks.modifier.builtin.BuiltinModifierBase;
 import multipacks.modifier.builtin.models.overrides.CustomModelOverride;
 import multipacks.modifier.builtin.models.overrides.ModelOverride;
 import multipacks.modifier.builtin.models.overrides.TrimModelOverride;
-import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
@@ -43,7 +42,16 @@ import multipacks.vfs.Vfs;
  * @author nahkd
  *
  */
-public class ModelsModifier extends BuiltinModifierBase<Void> {
+public class ModelsModifier extends Modifier<multipacks.modifier.builtin.models.ModelsModifier.Config, Void> {
+	public static class Config {
+		public ResourcePath target;
+		public ResourcePath model;
+		public ResourcePath named;
+		public String predicateType;
+
+		public ModelOverride overrideResult;
+	}
+
 	public static final String ERROR_MISSING_MODEL_A = "Missing model JSON for ";
 	public static final String ERROR_MISSING_MODEL_B = ". If you are using Multipacks CLI, you can use 'multipacks-cli include <path/to/model.json>'";
 
@@ -58,6 +66,49 @@ public class ModelsModifier extends BuiltinModifierBase<Void> {
 
 	public final Map<ResourcePath, BaseItemModel> items = new HashMap<>();
 	public final Map<ResourcePath, ModelOverride> namedOverrides = new HashMap<>();
+
+	@Override
+	public Config configure(JsonObject json) {
+		Config config = new Config();
+
+		if (json.has(FIELD_TARGET)) {
+			config.target = new ResourcePath(Selects.nonNull(json.get(FIELD_TARGET), Messages.missingFieldAny(FIELD_TARGET)).getAsString());
+			config.model = new ResourcePath(Selects.nonNull(json.get(FIELD_MODEL), Messages.missingFieldAny(FIELD_MODEL)).getAsString());
+			config.named = Selects.getChain(json.get(FIELD_NAMED), j -> new ResourcePath(j.getAsString()), null);
+			config.predicateType = Selects.nonNull(json.get(FIELD_PREDICATE), Messages.missingFieldAny(FIELD_PREDICATE)).getAsString();
+		} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_NAMED));
+
+		return config;
+	}
+
+	@Override
+	public Void createContext() {
+		return null;
+	}
+
+	@Override
+	public void applyModifier(BundleContext context, Path cwd, Config config, Void modContext) {
+		Vfs targetModelFile = context.content.mkdir("assets").mkdir(config.target.namespace).mkdir("models").mkdir("item").get(config.target.path + ".json");
+		if (targetModelFile == null) throw new RuntimeException(ERROR_MISSING_MODEL_A + config.target.namespace + ":item/" + config.target.path + ERROR_MISSING_MODEL_B);
+
+		try {
+			JsonObject targetModel = IOUtils.jsonFromVfs(targetModelFile).getAsJsonObject();
+			BaseItemModel base = items.get(config.target);
+			if (base == null) items.put(config.target, base = new BaseItemModel(config.target, targetModel));
+
+			ModelOverride override;
+			switch (config.predicateType) {
+			case CustomModelOverride.PREDICATE_TYPE: override = base.allocateCustomModelId(config.model, config.named); break;
+			case TrimModelOverride.PREDICATE_TYPE: override = base.allocateTrim(config.model, config.named); break;
+			default: throw new JsonSyntaxException("Unknown predicate type: " + config.predicateType);
+			}
+
+			if (config.named != null) namedOverrides.put(config.named, override);
+			config.overrideResult = override;
+		} catch (IOException e) {
+			throw new RuntimeException("An error occured", e);
+		}
+	}
 
 	@Override
 	public void finalizeModifier(Vfs contents, ModifiersAccess access) {
@@ -84,44 +135,5 @@ public class ModelsModifier extends BuiltinModifierBase<Void> {
 
 	public static void registerTo(ModifiersAccess access) {
 		access.registerModifier(ID, ModelsModifier::new, ModelsModifier::deserializeModifier);
-	}
-
-	@Override
-	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, Void data, ModifiersAccess access) {
-		if (config.isJsonObject()) {
-			JsonObject obj = config.getAsJsonObject();
-
-			if (obj.has(FIELD_TARGET)) {
-				ResourcePath targetId = new ResourcePath(Selects.nonNull(obj.get(FIELD_TARGET), Messages.missingFieldAny(FIELD_TARGET)).getAsString());
-				ResourcePath modelId = new ResourcePath(Selects.nonNull(obj.get(FIELD_MODEL), Messages.missingFieldAny(FIELD_MODEL)).getAsString());
-				ResourcePath namedOverride = Selects.getChain(obj.get(FIELD_NAMED), j -> new ResourcePath(j.getAsString()), null);
-				String predicateType = Selects.nonNull(obj.get(FIELD_PREDICATE), Messages.missingFieldAny(FIELD_PREDICATE)).getAsString();
-
-				Vfs targetModelFile = root.mkdir("assets").mkdir(targetId.namespace).mkdir("models").mkdir("item").get(targetId.path + ".json");
-				if (targetModelFile == null) throw new RuntimeException(ERROR_MISSING_MODEL_A + targetId.namespace + ":item/" + targetId.path + ERROR_MISSING_MODEL_B);
-
-				try {
-					JsonObject targetModel = IOUtils.jsonFromVfs(targetModelFile).getAsJsonObject();
-					BaseItemModel base = items.get(targetId);
-					if (base == null) items.put(targetId, base = new BaseItemModel(targetId, targetModel));
-
-					ModelOverride override;
-					switch (predicateType) {
-					case CustomModelOverride.PREDICATE_TYPE: override = base.allocateCustomModelId(modelId, namedOverride); break;
-					case TrimModelOverride.PREDICATE_TYPE: override = base.allocateTrim(modelId, namedOverride); break;
-					default: throw new JsonSyntaxException("Unknown predicate type: " + predicateType);
-					}
-
-					if (namedOverride != null) namedOverrides.put(namedOverride, override);
-				} catch (IOException e) {
-					throw new RuntimeException("An error occured", e);
-				}
-			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_NAMED));
-		}
-	}
-
-	@Override
-	protected Void createLocalData() {
-		return null;
 	}
 }

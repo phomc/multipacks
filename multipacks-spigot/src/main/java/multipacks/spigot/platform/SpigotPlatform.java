@@ -15,7 +15,6 @@
  */
 package multipacks.spigot.platform;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,12 +24,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import multipacks.bundling.BundleResult;
 import multipacks.bundling.Bundler;
 import multipacks.logging.Logger;
 import multipacks.modifier.Modifier;
+import multipacks.modifier.ModifierInfo;
 import multipacks.packs.LocalPack;
 import multipacks.packs.meta.PackIndex;
 import multipacks.platform.Platform;
@@ -40,7 +39,6 @@ import multipacks.repository.Repository;
 import multipacks.spigot.MultipacksSpigot;
 import multipacks.utils.PlatformAPI;
 import multipacks.utils.ResourcePath;
-import multipacks.utils.io.Deserializer;
 import multipacks.utils.io.IOUtils;
 import multipacks.versioning.Version;
 
@@ -48,8 +46,7 @@ public class SpigotPlatform implements Platform {
 	private MultipacksSpigot plugin;
 
 	private SpigotLogger logger;
-	private Map<ResourcePath, Supplier<Modifier>> modifierCtors = new HashMap<>();
-	private Map<ResourcePath, Deserializer<Modifier>> modifierDeserializers = new HashMap<>();
+	private Map<ResourcePath, ModifierInfo<?, ?, ?>> modifiers;
 
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
 	private List<Repository> repositories = new ArrayList<>();
@@ -64,8 +61,7 @@ public class SpigotPlatform implements Platform {
 	@PlatformAPI
 	public void loadConfig() throws IOException {
 		repositories.clear();
-		modifierCtors.clear();
-		modifierDeserializers.clear();
+		modifiers.clear();
 
 		logger.debug("Loading Multipack plugins...");
 		for (Plugin p : plugins.values()) {
@@ -157,29 +153,18 @@ public class SpigotPlatform implements Platform {
 	}
 
 	@Override
-	public Modifier createModifier(ResourcePath id) {
-		Supplier<Modifier> ctor = modifierCtors.get(id);
-		if (ctor != null) return ctor.get();
-		return null;
-	}
-
-	@Override
-	public Modifier deserializeModifier(ResourcePath id, DataInput input) throws IOException {
-		Deserializer<Modifier> deserializer = modifierDeserializers.get(id);
-		if (deserializer != null) return deserializer.deserialize(input);
-		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends Modifier> void registerModifier(ResourcePath id, Supplier<T> supplier, Deserializer<T> deserializer) {
-		if (modifierCtors.containsKey(id)) throw new IllegalArgumentException("Modifier is already registered: " + id);
-		modifierCtors.put(id, (Supplier<Modifier>) supplier);
-		modifierDeserializers.put(id, (Deserializer<Modifier>) deserializer);
+	public <C, X, T extends Modifier<C, X>> void registerModifier(ResourcePath id, ModifierInfo<C, X, T> info) {
+		if (modifiers.containsKey(id)) throw new IllegalArgumentException("Modifier is already registered: " + id);
+		modifiers.put(id, info);
 	}
 
 	@Override
 	public List<ResourcePath> getRegisteredModifiers() {
-		return new ArrayList<>(modifierCtors.keySet());
+		return new ArrayList<>(modifiers.keySet());
+	}
+
+	@Override
+	public ModifierInfo<?, ?, ?> getModifierInfo(ResourcePath id) {
+		return modifiers.get(id);
 	}
 }
