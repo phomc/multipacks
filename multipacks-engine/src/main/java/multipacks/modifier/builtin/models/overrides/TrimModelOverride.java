@@ -13,25 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.modifier.builtin.models;
+package multipacks.modifier.builtin.models.overrides;
+
+import com.google.gson.JsonObject;
+
+import multipacks.modifier.builtin.models.BaseItemModel;
+import multipacks.utils.ResourcePath;
 
 /**
- * Represent a model that's attached to an item. You can obtain the item with custom model by giving yourself
- * an item with id = {@link ItemModels#itemId} and {@code CustomModelData} = {@link #modelId}.
  * @author nahkd
  *
  */
-public class Model {
-	public final ItemModels item;
-	public final int modelId;
+public class TrimModelOverride extends ModelOverride {
+	public static final String PREDICATE_TYPE = "trim_type";
 
-	public Model(ItemModels item, int modelId) {
-		this.item = item;
-		this.modelId = modelId;
+	public final double trimType;
+
+	public TrimModelOverride(BaseItemModel base, ResourcePath modelPath, double trimType) {
+		super(base, modelPath);
+		this.trimType = trimType;
 	}
 
 	@Override
-	public String toString() {
-		return item.itemId + " -> #" + modelId;
+	public JsonObject toPredicateJson() {
+		JsonObject predicate = new JsonObject();
+		predicate.addProperty(PREDICATE_TYPE, trimType);
+		return predicate;
 	}
 }

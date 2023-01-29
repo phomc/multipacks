@@ -18,7 +18,8 @@ package multipacks.spigot.helpers;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
-import multipacks.modifier.builtin.models.Model;
+import multipacks.modifier.builtin.models.overrides.CustomModelOverride;
+import multipacks.modifier.builtin.models.overrides.ModelOverride;
 import multipacks.utils.PlatformAPI;
 
 /**
@@ -27,7 +28,9 @@ import multipacks.utils.PlatformAPI;
  */
 @PlatformAPI
 public class ModelHelper {
-	public static ItemStack createItemStack(Model model) {
-		return Bukkit.getItemFactory().createItemStack(model.item.itemId + "{CustomModelData:" + model.modelId + "}");
+	public static ItemStack createItemStack(ModelOverride override) {
+		// TODO: https://openjdk.org/jeps/406
+		if (override instanceof CustomModelOverride cmo) return Bukkit.getItemFactory().createItemStack(override.base.itemId + "{CustomModelData:" + cmo.modelId + "}");
+		return null;
 	}
 }

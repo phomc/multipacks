@@ -62,7 +62,7 @@ class ModifiersTest {
 		Modifier mod = result.getModifiers().get(ModelsModifier.ID);
 
 		if (mod instanceof ModelsModifier mmod) {
-			assertNotNull(mmod.models.get(new ResourcePath("sample", "my_cool_item")));
+			assertNotNull(mmod.namedOverrides.get(new ResourcePath("sample", "my_cool_item")));
 		} else fail("Not an instance of ModelsModifier");
 	}
 
