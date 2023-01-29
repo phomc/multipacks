@@ -22,6 +22,12 @@
 				"predicate": "custom_model_data",
 				"model": "multipacks:sample_model",
 				"named": "sample:my_cool_item"
+			},
+			{
+				"target": "minecraft:barrier",
+				"predicate": "trim_type",
+				"model": "multipacks:sample_model",
+				"named": "sample:my_cool_item"
 			}
 		]
 	},

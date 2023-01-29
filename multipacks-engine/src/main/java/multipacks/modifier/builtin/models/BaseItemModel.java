@@ -17,6 +17,7 @@ package multipacks.modifier.builtin.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import com.google.gson.JsonObject;
 
 import multipacks.modifier.builtin.models.overrides.CustomModelOverride;
 import multipacks.modifier.builtin.models.overrides.ModelOverride;
+import multipacks.modifier.builtin.models.overrides.TrimModelOverride;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.Selects;
 
@@ -40,6 +42,7 @@ public class BaseItemModel {
 	public final Map<ResourcePath, ModelOverride> namedOverrides = new HashMap<>();
 
 	private int lastModelId = 1;
+	private HashSet<Double> occupiedTrims = new HashSet<>();
 
 	public BaseItemModel(ResourcePath itemId, JsonObject modelContent) {
 		this.itemId = itemId;
@@ -55,12 +58,24 @@ public class BaseItemModel {
 			overrides.add(override);
 
 			if (override instanceof CustomModelOverride cmo) lastModelId = Math.max(lastModelId, cmo.modelId + 1);
+			if (override instanceof TrimModelOverride tmo) occupiedTrims.add(tmo.trimType);
 		}
 	}
 
 	public CustomModelOverride allocateCustomModelId(ResourcePath model, ResourcePath namedOverride) {
 		int id = lastModelId++;
 		CustomModelOverride out = new CustomModelOverride(this, model, id);
+
+		overrides.add(out);
+		if (namedOverride != null) namedOverrides.put(namedOverride, out);
+		return out;
+	}
+
+	public TrimModelOverride allocateTrim(ResourcePath model, ResourcePath namedOverride) {
+		double val;
+		do { val = Math.random(); } while (occupiedTrims.contains(val));
+		TrimModelOverride out = new TrimModelOverride(this, model, val);
+
 		overrides.add(out);
 		if (namedOverride != null) namedOverrides.put(namedOverride, out);
 		return out;

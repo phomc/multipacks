@@ -21,24 +21,23 @@ import multipacks.modifier.builtin.models.BaseItemModel;
 import multipacks.utils.ResourcePath;
 
 /**
- * This model override is for predicates that Multipacks doesn't know.
  * @author nahkd
  *
  */
-public class UnknownModelOverride extends ModelOverride {
-	public final String name;
-	public final double value;
+public class TrimModelOverride extends ModelOverride {
+	public static final String PREDICATE_TYPE = "trim_type";
 
-	public UnknownModelOverride(BaseItemModel base, ResourcePath modelPath, String name, double value) {
+	public final double trimType;
+
+	public TrimModelOverride(BaseItemModel base, ResourcePath modelPath, double trimType) {
 		super(base, modelPath);
-		this.name = name;
-		this.value = value;
+		this.trimType = trimType;
 	}
 
 	@Override
 	public JsonObject toPredicateJson() {
 		JsonObject predicate = new JsonObject();
-		predicate.addProperty(name, value);
+		predicate.addProperty(PREDICATE_TYPE, trimType);
 		return predicate;
 	}
 }

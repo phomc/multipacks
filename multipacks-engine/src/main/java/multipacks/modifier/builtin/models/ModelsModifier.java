@@ -29,6 +29,7 @@ import multipacks.modifier.ModifiersAccess;
 import multipacks.modifier.builtin.BuiltinModifierBase;
 import multipacks.modifier.builtin.models.overrides.CustomModelOverride;
 import multipacks.modifier.builtin.models.overrides.ModelOverride;
+import multipacks.modifier.builtin.models.overrides.TrimModelOverride;
 import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Messages;
@@ -44,6 +45,7 @@ import multipacks.vfs.Vfs;
  */
 public class ModelsModifier extends BuiltinModifierBase<Void> {
 	public static final String ERROR_MISSING_MODEL_A = "Missing model JSON for ";
+	public static final String ERROR_MISSING_MODEL_B = ". If you are using Multipacks CLI, you can use 'multipacks-cli include <path/to/model.json>'";
 
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/models");
 
@@ -96,11 +98,7 @@ public class ModelsModifier extends BuiltinModifierBase<Void> {
 				String predicateType = Selects.nonNull(obj.get(FIELD_PREDICATE), Messages.missingFieldAny(FIELD_PREDICATE)).getAsString();
 
 				Vfs targetModelFile = root.mkdir("assets").mkdir(targetId.namespace).mkdir("models").mkdir("item").get(targetId.path + ".json");
-
-				// TODO: Obtain model from user's game installation (if exists)
-				// We'll obtain it from ~/.minecraft/versions/<Version>/<version>.jar:assets/...
-				// Or we can obtain it by downloading the JAR included inside version JSON file
-				if (targetModelFile == null) throw new RuntimeException(ERROR_MISSING_MODEL_A + targetId.namespace + ":item/" + targetId.path);
+				if (targetModelFile == null) throw new RuntimeException(ERROR_MISSING_MODEL_A + targetId.namespace + ":item/" + targetId.path + ERROR_MISSING_MODEL_B);
 
 				try {
 					JsonObject targetModel = IOUtils.jsonFromVfs(targetModelFile).getAsJsonObject();
@@ -110,6 +108,7 @@ public class ModelsModifier extends BuiltinModifierBase<Void> {
 					ModelOverride override;
 					switch (predicateType) {
 					case CustomModelOverride.PREDICATE_TYPE: override = base.allocateCustomModelId(modelId, namedOverride); break;
+					case TrimModelOverride.PREDICATE_TYPE: override = base.allocateTrim(modelId, namedOverride); break;
 					default: throw new JsonSyntaxException("Unknown predicate type: " + predicateType);
 					}
 

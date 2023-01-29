@@ -58,6 +58,7 @@ public abstract class ModelOverride {
 
 			return switch (predicateType) {
 			case CustomModelOverride.PREDICATE_TYPE -> new CustomModelOverride(base, model, predicateValue.getAsInt());
+			case TrimModelOverride.PREDICATE_TYPE -> new TrimModelOverride(base, model, predicateValue.getAsDouble());
 			default -> new UnknownModelOverride(base, model, predicateType, predicateValue.getAsDouble());
 			};
 		} else {
