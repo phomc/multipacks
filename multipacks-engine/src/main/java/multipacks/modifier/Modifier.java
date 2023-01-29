@@ -48,6 +48,15 @@ public abstract class Modifier<C, X> {
 	public abstract void applyModifier(BundleContext context, Path cwd, C config, X modContext);
 	public abstract void finalizeModifier(Vfs contents, ModifiersAccess access);
 
+	public void applyModifier(BundleContext context, Path cwd, C config) {
+		X ctx = createContext();
+		applyModifier(context, cwd, config, ctx);
+	}
+
+	public void applyModifier(BundleContext context, C config) {
+		applyModifier(context, Path.ROOT, config);
+	}
+
 	/**
 	 * Serialize this modifier.
 	 * @param output Output data stream, which you can write modifier outputs there.
