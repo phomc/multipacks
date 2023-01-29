@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package multipacks.spigot.platform;
+package multipacks.cli;
 
 import com.google.gson.JsonObject;
 
@@ -24,36 +24,30 @@ import multipacks.utils.Selects;
  * @author nahkd
  *
  */
-public class SpigotPlatformConfig extends PlatformConfig {
-	public static final String FIELD_MASTER_PACK = "masterPack";
-	public static final String FIELD_PREBUILD = "prebuild";
+public class CLIPlatformConfig extends PlatformConfig {
+	public static final String FIELD_GAME_DIR = "gameDir";
 
-	public String masterPack;
-	public boolean prebuild;
+	public String gameDir;
 
-	public SpigotPlatformConfig() {
-		super();
+	public CLIPlatformConfig(JsonObject json) {
+		super(json);
+		this.gameDir = Selects.getChain(json.get(FIELD_GAME_DIR), j -> j.getAsString(), null);
 	}
 
-	public SpigotPlatformConfig(JsonObject json) {
-		super(json);
-		masterPack = Selects.getChain(json.get(FIELD_MASTER_PACK), j -> j.getAsString(), null);
-		prebuild = Selects.getChain(json.get(FIELD_PREBUILD), j -> j.getAsBoolean(), true);
+	public CLIPlatformConfig() {
 	}
 
 	@Override
-	public SpigotPlatformConfig defaultConfig() {
+	public PlatformConfig defaultConfig() {
 		super.defaultConfig();
-		masterPack = "./master-pack";
-		prebuild = true;
+		gameDir = SystemEnum.getPlatform().getMinecraftDir().toAbsolutePath().toString();
 		return this;
 	}
 
 	@Override
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();
-		if (masterPack != null) json.addProperty(FIELD_MASTER_PACK, masterPack);
-		json.addProperty(FIELD_PREBUILD, prebuild);
+		if (gameDir != null) json.addProperty(FIELD_GAME_DIR, gameDir);
 		return json;
 	}
 }

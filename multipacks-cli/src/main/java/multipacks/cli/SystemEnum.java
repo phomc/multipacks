@@ -24,21 +24,13 @@ import multipacks.platform.PlatformConfig;
 public enum SystemEnum {
 	WINDOWS {
 		@Override
-		public Path getHomeDir() {
-			return new File(System.getenv("USERPROFILE")).toPath();
+		public Path getMinecraftDir() {
+			return new File(System.getenv("APPDATA")).toPath().resolve(".minecraft");
 		}
 	},
 	UNIX_LIKE {
-		@Override
-		public Path getHomeDir() {
-			return new File(System.getProperty("user.home")).toPath();
-		}
 	},
 	UNKNOWN {
-		@Override
-		public Path getHomeDir() {
-			return new File(System.getProperty("user.home")).toPath();
-		}
 	};
 
 	public static SystemEnum getPlatform() {
@@ -48,10 +40,16 @@ public enum SystemEnum {
 		return UNKNOWN;
 	}
 
-	public abstract Path getHomeDir();
+	public Path getHomeDir() {
+		return new File(System.getProperty("user.home")).toPath();
+	}
 
 	public Path getMultipacksDir() {
 		return getHomeDir().resolve(".multipacks");
+	}
+
+	public Path getMinecraftDir() {
+		return getHomeDir().resolve(".minecraft");
 	}
 
 	public boolean isLegacy() {
