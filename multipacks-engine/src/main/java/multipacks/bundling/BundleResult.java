@@ -34,13 +34,13 @@ import multipacks.vfs.Vfs;
  */
 public class BundleResult {
 	public final Vfs contents;
-	protected Map<ResourcePath, Modifier> modifiers;
+	protected Map<ResourcePath, Modifier<?, ?>> modifiers;
 
 	public BundleResult(Vfs contents) {
 		this.contents = contents;
 	}
 
-	public Map<ResourcePath, Modifier> getModifiers() {
+	public Map<ResourcePath, Modifier<?, ?>> getModifiers() {
 		return Collections.unmodifiableMap(modifiers);
 	}
 

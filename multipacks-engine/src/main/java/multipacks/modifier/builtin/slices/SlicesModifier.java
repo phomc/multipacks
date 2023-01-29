@@ -26,9 +26,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import multipacks.bundling.BundleContext;
+import multipacks.modifier.Modifier;
 import multipacks.modifier.ModifiersAccess;
-import multipacks.modifier.builtin.BuiltinModifierBase;
-import multipacks.packs.Pack;
 import multipacks.utils.Constants;
 import multipacks.utils.Messages;
 import multipacks.utils.ResourcePath;
@@ -40,47 +40,64 @@ import multipacks.vfs.Vfs;
  * @author nahkd
  *
  */
-public class SlicesModifier extends BuiltinModifierBase<Void> {
+public class SlicesModifier extends Modifier<multipacks.modifier.builtin.slices.SlicesModifier.Config, Void> {
+	public static class Config {
+		public Path file;
+		public JsonElement templateJson;
+		public Template template;
+
+		public void resolveTemplate(Vfs scoped) {
+			if (template != null) return;
+			template = Template.resolveTemplate(scoped, null, templateJson);
+		}
+	}
+
 	public static final ResourcePath ID = new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/slices");
 
 	public static final String FIELD_FILE = "file";
 	public static final String FIELD_TEMPLATE = "template";
 
 	@Override
-	protected void applyWithScopedConfig(Pack fromPack, Vfs root, Vfs scoped, JsonElement config, Void data, ModifiersAccess access) {
-		if (config.isJsonObject()) {
-			JsonObject obj = config.getAsJsonObject();
+	public Config configure(JsonObject json) {
+		Config config = new Config();
 
-			if (obj.has(FIELD_FILE)) {
-				Path filePath = new Path(obj.get(FIELD_FILE).getAsString());
-				Vfs file = scoped.get(filePath);
-				Template template = Template.resolveTemplate(scoped, null, Selects.nonNull(obj.get(FIELD_TEMPLATE), Messages.missingFieldAny(FIELD_TEMPLATE)));
+		if (json.has(FIELD_FILE)) {
+			config.file = new Path(json.get(FIELD_FILE).getAsString());
+			config.templateJson = Selects.nonNull(json.get(FIELD_TEMPLATE), Messages.missingFieldAny(FIELD_TEMPLATE));
+		} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_FILE));
 
-				try (InputStream srcStream = file.getInputStream()) {
-					BufferedImage src = ImageIO.read(srcStream);
-					int scale = template.scale;
-
-					for (Part part : template.parts) {
-						BufferedImage out = part.region.slice(src, scale);
-						Path destPath = new Path(part.applyNameTemplate(filePath));
-						Vfs destFile = file.getParent().touch(destPath);
-
-						try (OutputStream destStream = destFile.getOutputStream()) {
-							ImageIO.write(out, "PNG", destStream);
-						}
-					}
-				} catch (IOException e) {
-					throw new RuntimeException("Failed to apply atlases modifier", e);
-				}
-
-				file.getParent().delete(file.getName());
-			} else throw new JsonSyntaxException(Messages.missingFieldAny(FIELD_INCLUDE, FIELD_FILE));
-		}
+		return config;
 	}
 
 	@Override
-	protected Void createLocalData() {
+	public Void createContext() {
 		return null;
+	}
+
+	@Override
+	public void applyModifier(BundleContext context, Path cwd, Config config, Void modContext) {
+		Vfs scoped = context.content.get(cwd);
+		config.resolveTemplate(scoped);
+		Vfs file = scoped.get(config.file);
+
+		try (InputStream srcStream = file.getInputStream()) {
+			BufferedImage src = ImageIO.read(srcStream);
+			int scale = config.template.scale;
+
+			for (Part part : config.template.parts) {
+				BufferedImage out = part.region.slice(src, scale);
+				Path destPath = new Path(part.applyNameTemplate(config.file));
+				Vfs destFile = file.getParent().touch(destPath);
+
+				try (OutputStream destStream = destFile.getOutputStream()) {
+					ImageIO.write(out, "PNG", destStream);
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to apply atlases modifier", e);
+		}
+
+		file.getParent().delete(file.getName());
 	}
 
 	@Override

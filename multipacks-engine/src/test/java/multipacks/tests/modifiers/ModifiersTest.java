@@ -48,7 +48,7 @@ class ModifiersTest {
 	@Test
 	void testGlyphsModifier() {
 		BundleResult result = obtainBundle();
-		Modifier mod = result.getModifiers().get(GlyphsModifier.ID);
+		Modifier<?, ?> mod = result.getModifiers().get(GlyphsModifier.ID);
 
 		if (mod instanceof GlyphsModifier gmod) {
 			assertNotNull(gmod.glyphs.get(new ResourcePath("sample", "my_glyph")));
@@ -59,7 +59,7 @@ class ModifiersTest {
 	@Test
 	void testModelsModifier() {
 		BundleResult result = obtainBundle();
-		Modifier mod = result.getModifiers().get(ModelsModifier.ID);
+		Modifier<?, ?> mod = result.getModifiers().get(ModelsModifier.ID);
 
 		if (mod instanceof ModelsModifier mmod) {
 			assertNotNull(mmod.namedOverrides.get(new ResourcePath("sample", "my_cool_item")));
@@ -69,7 +69,7 @@ class ModifiersTest {
 	@Test
 	void testSlicesModifier() {
 		BundleResult result = obtainBundle();
-		Modifier mod = result.getModifiers().get(SlicesModifier.ID);
+		Modifier<?, ?> mod = result.getModifiers().get(SlicesModifier.ID);
 
 		if (mod instanceof SlicesModifier) {
 			Vfs content = result.contents;
@@ -85,7 +85,7 @@ class ModifiersTest {
 	@Test
 	void testAtlasesModifier() {
 		BundleResult result = obtainBundle();
-		Modifier mod = result.getModifiers().get(AtlasesModifier.ID);
+		Modifier<?, ?> mod = result.getModifiers().get(AtlasesModifier.ID);
 
 		if (mod instanceof AtlasesModifier amod) {
 			assertNotNull(amod.atlases.get(new ResourcePath("minecraft:armor_trims")));
