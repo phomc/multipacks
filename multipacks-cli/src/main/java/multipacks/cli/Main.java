@@ -71,12 +71,12 @@ public class Main {
 
 				stage.newStage(PlatformConfig.FILENAME);
 				try (OutputStream stream = Files.newOutputStream(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME))) {
-					IOUtils.jsonToStream(PlatformConfig.createConfigForHome().toJson(), stream);
+					IOUtils.jsonToStream(new CLIPlatformConfig().defaultConfig().toJson(), stream);
 				}
 			}
 		}
 
-		CLIPlatform platform = new CLIPlatform(logger, new PlatformConfig(IOUtils.jsonFromPath(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME)).getAsJsonObject()), currentSystem);
+		CLIPlatform platform = new CLIPlatform(logger, new CLIPlatformConfig(IOUtils.jsonFromPath(currentSystem.getMultipacksDir().resolve(PlatformConfig.FILENAME)).getAsJsonObject()), currentSystem);
 		platform.loadPlugin(new ResourcePath(Constants.SYSTEM_NAMESPACE, "builtin/internal_system_plugin"), new InternalSystemPlugin());
 
 		try {

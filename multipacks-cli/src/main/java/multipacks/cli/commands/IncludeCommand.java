@@ -19,31 +19,31 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
 
 import multipacks.cli.CLIPlatform;
 import multipacks.cli.api.Command;
 import multipacks.cli.api.CommandException;
 import multipacks.cli.api.annotations.Argument;
-import multipacks.logging.LoggingStage;
 import multipacks.packs.LocalPack;
-import multipacks.packs.meta.PackIdentifier;
-import multipacks.repository.LocalRepository;
+import multipacks.vfs.Vfs;
 
 /**
  * @author nahkd
  *
  */
-public class InstallCommand extends Command {
+public class IncludeCommand extends Command {
 	public final CLIPlatform platform;
 
-	@Argument(value = 0, helpName = "path/to/packDir")
+	@Argument(value = 0, helpName = "assets/path/to/file.ext")
+	public String filePath;
+
+	@Argument(value = 1, optional = true, helpName = "path/to/packDir = .")
 	public String pathToPack = ".";
 
-	public InstallCommand(MultipacksCommand parent) {
+	public IncludeCommand(MultipacksCommand parent) {
 		this.platform = parent.platform;
-		helpName = "install";
-		helpDescription = "Install pack to local repository";
+		helpName = "include";
+		helpDescription = "Include file from game installation to pack folder";
 	}
 
 	@Override
@@ -53,26 +53,13 @@ public class InstallCommand extends Command {
 		if (!Files.isDirectory(packDir)) throw new CommandException("Not a directory: " + packDir);
 		if (!Files.exists(packDir.resolve(LocalPack.FILE_INDEX))) throw new CommandException("Missing " + LocalPack.FILE_INDEX + ": " + packDir);
 
-		PackIdentifier id;
+		Vfs temp = Vfs.createVirtualRoot();
+		platform.getGameJarFile(temp, new multipacks.vfs.Path(filePath));
 
-		try (LoggingStage stage = platform.getLogger().newStage("Install", "Initialize")) {
-			LocalRepository installRepo = platform.getInstallRepository();
-			if (installRepo == null) throw new CommandException("Install repository is not defined in .multipacks/multipacks.config.json. Consider adding '\"install\": \"path/to/repo\"' to config file.");
-
-			LocalPack pack = new LocalPack(packDir);
-
-			try {
-				pack.loadFromStorage();
-			} catch (IOException e) {
-				throw new CommandException("An error occured", e);
-			}
-
-			stage.newStage("Install pack");
-			id = installRepo.upload(pack).get();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new CommandException("An error occured", e);
+		try {
+			temp.dumpContentTo(packDir);
+		} catch (IOException e) {
+			throw new CommandException("An error occured while writing to pack folder", e);
 		}
-
-		System.out.println("Pack is installed to local repository: " + id.name + " version " + id.packVersion);
 	}
 }

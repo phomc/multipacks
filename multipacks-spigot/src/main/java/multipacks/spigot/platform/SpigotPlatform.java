@@ -86,7 +86,7 @@ public class SpigotPlatform implements Platform {
 			logger.warning("File {} does not exists (searching {}), creating new file...", PlatformConfig.FILENAME, configFile);
 			Files.createDirectories(configFile.getParent());
 
-			SpigotPlatformConfig config = SpigotPlatformConfig.createDefaultConfig();
+			SpigotPlatformConfig config = new SpigotPlatformConfig().defaultConfig();
 			IOUtils.jsonToFile(config.toJson(), configFile.toFile());
 
 			Files.createDirectories(getMultipacksDir().resolve(config.installRepository));

@@ -51,11 +51,10 @@ public class PlatformConfig {
 	public PlatformConfig() {
 	}
 
-	public static PlatformConfig createConfigForHome() {
-		PlatformConfig config = new PlatformConfig();
-		config.repositories.put("local", "local ./repository");
-		config.installRepository = "./repository";
-		return config;
+	public PlatformConfig defaultConfig() {
+		repositories.put("local", "local ./repository");
+		installRepository = "./repository";
+		return this;
 	}
 
 	public JsonObject toJson() {

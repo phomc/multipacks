@@ -16,7 +16,14 @@
 package multipacks.cli;
 
 import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,12 +35,13 @@ import java.util.function.Supplier;
 import multipacks.logging.Logger;
 import multipacks.modifier.Modifier;
 import multipacks.platform.Platform;
-import multipacks.platform.PlatformConfig;
 import multipacks.plugins.Plugin;
 import multipacks.repository.LocalRepository;
 import multipacks.repository.Repository;
 import multipacks.utils.ResourcePath;
 import multipacks.utils.io.Deserializer;
+import multipacks.versioning.Version;
+import multipacks.vfs.Vfs;
 
 public class CLIPlatform implements Platform {
 	private Logger logger;
@@ -43,14 +51,20 @@ public class CLIPlatform implements Platform {
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
 	private List<Repository> repositories = new ArrayList<>();
 	private LocalRepository installRepository;
+	private Path gameDir;
 
-	public CLIPlatform(Logger logger, PlatformConfig config, SystemEnum system) {
+	public CLIPlatform(Logger logger, CLIPlatformConfig config, SystemEnum system) {
 		this.logger = logger;
 		config.collectRepositories(repo -> repositories.add(repo), system.getMultipacksDir());
 
 		if (config.installRepository != null) {
 			logger.debug("Install destination is {}", system.getMultipacksDir().resolve(config.installRepository).toString());
 			installRepository = new LocalRepository(system.getMultipacksDir().resolve(config.installRepository));
+		}
+
+		if (config.gameDir != null) {
+			logger.debug("Game directory is {}", config.gameDir);
+			gameDir = new File(config.gameDir).toPath();
 		}
 	}
 
@@ -70,6 +84,30 @@ public class CLIPlatform implements Platform {
 
 	public LocalRepository getInstallRepository() {
 		return installRepository;
+	}
+
+	public Path getGameJar(Version version) {
+		if (gameDir == null) throw new IllegalStateException("Game installation folder is not defined in .multipacks/multipacks.config.json");
+		return gameDir.resolve("versions").resolve(version.toStringNoPrefix()).resolve(version.toStringNoPrefix() + ".jar");
+	}
+
+	public void getGameJarFile(Vfs output, multipacks.vfs.Path path) {
+		Path jar = getGameJar(new Version("1.19.3"));
+		String[] segments = path.getSegments();
+
+		try (FileSystem fs = FileSystems.newFileSystem(jar)) {
+			Path current = fs.getPath(segments[0]);
+			for (int i = 1; i < segments.length; i++) current = current.resolve(segments[i]);
+
+			Vfs file = output.touch(path);
+			try (InputStream inStream = Files.newInputStream(current)) {
+				try (OutputStream outStream = file.getOutputStream()) {
+					inStream.transferTo(outStream);
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("An error occured", e);
+		}
 	}
 
 	@Override
