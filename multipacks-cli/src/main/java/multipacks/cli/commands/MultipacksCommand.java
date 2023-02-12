@@ -40,6 +40,7 @@ public class MultipacksCommand extends Command {
 	public final CLIPlatform platform;
 	private List<URLClassLoader> openedClassLoaders = new ArrayList<>();
 
+	@Subcommand("init") public final InitCommand init;
 	@Subcommand("search") public final SearchCommand search;
 	@Subcommand("info") public final InfoCommand info;
 	@Subcommand("build") public final BuildCommand build;
@@ -52,6 +53,7 @@ public class MultipacksCommand extends Command {
 	public MultipacksCommand(CLIPlatform platform) {
 		this.platform = platform;
 
+		this.init = new InitCommand(this);
 		this.search = new SearchCommand(this);
 		this.info = new InfoCommand(this);
 		this.build = new BuildCommand(this);
