@@ -43,7 +43,7 @@ import multipacks.vfs.Vfs;
 
 public class CLIPlatform implements Platform {
 	private Logger logger;
-	private Map<ResourcePath, ModifierInfo<?, ?, ?>> modifiers;
+	private Map<ResourcePath, ModifierInfo<?, ?, ?>> modifiers = new HashMap<>();
 
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
 	private List<Repository> repositories = new ArrayList<>();

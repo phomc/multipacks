@@ -15,6 +15,8 @@
  */
 package multipacks.logging;
 
+import java.text.DecimalFormat;
+
 /**
  * Current stage of the software. For example, in Multipacks, it could be "modifiers apply stage" or
  * "bundling stage".
@@ -22,6 +24,8 @@ package multipacks.logging;
  *
  */
 public class LoggingStage implements AutoCloseable {
+	private static final DecimalFormat FORMATTER = new DecimalFormat("#0.000");
+
 	private Logger logger;
 	private String display, currentName;
 	private int maxStages, currentStage;
@@ -49,7 +53,7 @@ public class LoggingStage implements AutoCloseable {
 	@Override
 	public void close() {
 		long elapsed = System.nanoTime() - nanosecStart;
-		logger.info("{} [Completed in {}ms] \u2713", display, elapsed * Math.pow(10, -6));
+		logger.info("{} [Completed in {}ms] \u2713", display, FORMATTER.format(elapsed * Math.pow(10, -6)));
 		logger = null;
 	}
 }

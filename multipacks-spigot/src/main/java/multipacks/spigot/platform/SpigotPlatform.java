@@ -46,7 +46,7 @@ public class SpigotPlatform implements Platform {
 	private MultipacksSpigot plugin;
 
 	private SpigotLogger logger;
-	private Map<ResourcePath, ModifierInfo<?, ?, ?>> modifiers;
+	private Map<ResourcePath, ModifierInfo<?, ?, ?>> modifiers = new HashMap<>();
 
 	private Map<ResourcePath, Plugin> plugins = new HashMap<>();
 	private List<Repository> repositories = new ArrayList<>();
